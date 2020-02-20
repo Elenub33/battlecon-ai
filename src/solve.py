@@ -1,15 +1,18 @@
+"""Raw game solution routines."""
+
 from numpy import *
 from cvxopt import matrix, solvers
 solvers.options['show_progress'] = False
 
-def solve (mat, a0,b0,a1,b1):
+
+def solve (mat,a0,b0,a1,b1):
     mat = array(mat)
     print "NO KNOWLEDGE"
-    (s0,v0) = solve_game_matrix_cvxopt (mat)
+    (s0,v0) = solve_game_matrix (mat)
     print "Player 0:"
     print s0.transpose()
     print "Value:", v0
-    (s1,v1) = solve_game_matrix_cvxopt (-mat.transpose())
+    (s1,v1) = solve_game_matrix (-mat.transpose())
     print "player 1:"
     print s1.transpose()
     print "Value:", v1
@@ -57,7 +60,7 @@ def solve_game_matrix (mat):
 # each player's strategy is made of decision A and decision B
 # player 0 learns of player 1's decision A before making his own decision B
 # a0,b0,a1,b1 are sizes of decision sets for each stage for each player
-        
+
 def solve_for_player0_with_b1_known (mat, a0, b0, a1, b1):
     # make matrix positive
     min_mat = float(mat.min())
@@ -103,7 +106,7 @@ def solve_for_player0_with_b1_known (mat, a0, b0, a1, b1):
     value = 1.0 / objective + (min_mat - 1)
     return (solution, value)
 
-# same, but player 1 learns a0 
+# same, but player 1 learns a0
 def solve_for_player0_with_b0_known (mat, a0, b0, a1, b1):
     # make matrix positive
     min_mat = float(mat.min())
@@ -115,7 +118,7 @@ def solve_for_player0_with_b0_known (mat, a0, b0, a1, b1):
     # target is simple sum of distribution variables
     c = matrix ([1.0 for i in range (a0*b0)] + \
                 [0.0 for i in range (b0*a1)])
-                        
+
     # a0*b0 single variable positivity constraints
     # a1 constraints of type: sum of auxiliary variable > 1.0
     # a0*b0*a1 mat based constraints between real and auxiliary variables
