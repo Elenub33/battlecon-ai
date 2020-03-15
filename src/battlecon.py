@@ -283,7 +283,7 @@ def duel(name0, name1, repeat, bases0="alpha", bases1="alpha", first_beats=False
       victories[0] += 1
     elif winner == name1:
       victories[1] += 1
-    print(winner, end=' ')
+    print(winner, end=" ")
     sys.stdout.flush()
   print()
   print(victories[0], ":", victories[1])
@@ -343,7 +343,7 @@ def menu(options, n_cols=1):
         break
       option = options[i]
       spaces = " " * (max_width + 5 - len(option) - len(str(i + 1)))
-      print("[%d] %s%s" % (i + 1, option, spaces), end=' ')
+      print("[%d] %s%s" % (i + 1, option, spaces), end=" ")
     print()
   # inputs number in range 1..n
   ans = input_number(len(options) + 1, 1)
@@ -1589,12 +1589,12 @@ class Game:
               print("p0 clash indices")
               for ii in g0:
                 for jj in g1:
-                  print(p0.clash_strat_index(ii, jj, i, j), end=' ')
+                  print(p0.clash_strat_index(ii, jj, i, j), end=" ")
                 print()
               print("p1 clash indices")
               for ii in g0:
                 for jj in g1:
-                  print(p1.clash_strat_index(jj, ii, j, i), end=' ')
+                  print(p1.clash_strat_index(jj, ii, j, i), end=" ")
                 print()
               raise e
             # and solve it
@@ -1686,9 +1686,9 @@ class Game:
           total = 0
           print("\n", p)
           for m in p.filtered_mix:
-            print(str(int(100 * m[1] + 0.5)) + "%", p.get_strategy_name(m[0]), end=' ')
+            print(str(int(100 * m[1] + 0.5)) + "%", p.get_strategy_name(m[0]), end=" ")
             if total + m[1] >= r and total < r:
-              print(" ***", end=' ')
+              print(" ***", end=" ")
             print(" ")
             total = total + m[1]
         print("\n" + self.player[0].name + "'s Value:", self.value[i][j], "\n")
@@ -1741,14 +1741,14 @@ class Game:
     n, m = array_results.shape
     worst = array_results.argmin(1)
     for i in range(n):
-      print(array_results[i, worst[i]], ":", end=' ')
-      print(self.player[0].get_strategy_name(self.player[0].strats[i]), "--->", end=' ')
+      print(array_results[i, worst[i]], ":", end=" ")
+      print(self.player[0].get_strategy_name(self.player[0].strats[i]), "--->", end=" ")
       print(self.player[1].get_strategy_name(self.player[1].strats[worst[i]]))
     print("##################################################")
     worst = array_results.argmax(0)
     for j in range(m):
-      print(array_results[worst[j], j], ":", end=' ')
-      print(self.player[1].get_strategy_name(self.player[1].strats[j]), "--->", end=' ')
+      print(array_results[worst[j], j], ":", end=" ")
+      print(self.player[1].get_strategy_name(self.player[1].strats[j]), "--->", end=" ")
       print(self.player[0].get_strategy_name(self.player[0].strats[worst[j]]))
 
   # run one simulation by strategy names
@@ -1761,22 +1761,26 @@ class Game:
     self.initial_restore(self.initial_state)
     for p in self.player:
       p.set_preferred_range()
-    print((
-      "preferred ranges: %.2f - %.2f    [%d]"
-      % (
-        self.player[0].preferred_range,
-        self.player[1].preferred_range,
-        self.distance(),
+    print(
+      (
+        "preferred ranges: %.2f - %.2f    [%d]"
+        % (
+          self.player[0].preferred_range,
+          self.player[1].preferred_range,
+          self.distance(),
+        )
       )
-    ))
-    print((
-      "range_evaluation: %.2f - %.2f = %.2f"
-      % (
-        self.player[0].evaluate_range(),
-        self.player[1].evaluate_range(),
-        self.player[0].evaluate_range() - self.player[1].evaluate_range(),
+    )
+    print(
+      (
+        "range_evaluation: %.2f - %.2f = %.2f"
+        % (
+          self.player[0].evaluate_range(),
+          self.player[1].evaluate_range(),
+          self.player[0].evaluate_range() - self.player[1].evaluate_range(),
+        )
       )
-    ))
+    )
     s0 = [
       s
       for s in self.player[0].strats
@@ -1835,14 +1839,14 @@ class Game:
       pair_prob = mix1[b0 * a1 * b1 + a1i]
       if pair_prob > 0.0001:
         for b0i in range(b0):
-          print(self.player[1 - first].get_strategy_name(ss1[a1i * b1]), end=' ')
-          print("vs.", end=' ')
+          print(self.player[1 - first].get_strategy_name(ss1[a1i * b1]), end=" ")
+          print("vs.", end=" ")
           opposing_ante = self.player[first].get_ante_name(ss0[b0i][2])
           print(("No Ante" if opposing_ante == "" else opposing_ante))
           for b1i in range(b1):
             prob = mix1[b0i * a1 * b1 + a1i * b1 + b1i]
             if prob > 0.0001:
-              print("   ", str(int(100 * prob / pair_prob + 0.5)) + "%", end=' ')
+              print("   ", str(int(100 * prob / pair_prob + 0.5)) + "%", end=" ")
               my_ante = self.player[1 - first].get_ante_name(ss1[b1i][2])
               print(("No Ante" if my_ante == "" else my_ante))
     print()
@@ -2282,9 +2286,11 @@ class Character(object):
     bases = sorted(list(set(m[0][1] for m in self.mix)), key=attrgetter("order"))
     # friendly reminder of bases in hand when asking about styles
     if len(styles) > 1:
-      print("(Bases in hand: " + ", ".join(
-        b.name for b in bases if not isinstance(b, SpecialBase)
-      ) + ")\n")
+      print(
+        "(Bases in hand: "
+        + ", ".join(b.name for b in bases if not isinstance(b, SpecialBase))
+        + ")\n"
+      )
     style = styles[menu(styles)] if len(styles) > 1 else styles[0]
     if isinstance(style, SpecialAction):
       bases = [b for b in bases if isinstance(b, SpecialBase)]
@@ -4846,7 +4852,7 @@ class Baenvier(Character):
 
   def input_ante(self, pair):
     if self.pool:
-      print ("Ante a Spell Eater Token?")
+      print("Ante a Spell Eater Token?")
       return menu(["No", "Yes"])
     else:
       return 0
@@ -5172,7 +5178,7 @@ class Cadenza(Character):
 
   def input_ante(self, pair):
     if self.pool:
-      print ("Ante an Iron Body Token?")
+      print("Ante an Iron Body Token?")
       return menu(["No", "Yes"])
     else:
       return 0
@@ -6586,7 +6592,7 @@ class Heketch(Character):
 
   def input_ante(self, pair):
     if self.pool:
-      print ("Ante Dark Force token?")
+      print("Ante Dark Force token?")
       ans = menu(["No", "Yes"])
       if ans == 0:
         return 0
@@ -8118,9 +8124,9 @@ class Luc(Character):
     p = len(self.pool)
     if p > 0:
       possible_antes = [a for a in [0, 1, 3, 5] if a <= p]
-      print("Number of Time tokens [" + ",".join(
-        [str(a) for a in possible_antes]
-      ) + "]: ")
+      print(
+        "Number of Time tokens [" + ",".join([str(a) for a in possible_antes]) + "]: "
+      )
       while True:
         ante = input_number(len(self.pool) + 1)
         if ante in possible_antes:
@@ -10234,9 +10240,7 @@ class Voco(Character):
   # the positions in which zombies can soak damage
   # current version - attacker's space and adjacent spaces
   def soak_positions(self):
-    return set((self.opponent.position - 1, self.opponent.position + 1)) & set(
-      range(7)
-    )
+    return set((self.opponent.position - 1, self.opponent.position + 1)) & set(range(7))
 
   def get_soak(self):
     return self.zombie_soak
@@ -10939,7 +10943,9 @@ class HallicrisSnare(Finisher):
   priority = 6
 
   def hit_trigger(self):
-    self.me.pull(list(range(6)), specific_movement_reaction=self.specific_movement_reaction)
+    self.me.pull(
+      list(range(6)), specific_movement_reaction=self.specific_movement_reaction
+    )
 
   def specific_movement_reaction(self, initiator, mover, old_position, direct):
     # Get +1 power per pull
@@ -17749,7 +17755,8 @@ class Overlords(Style):
     if self.me.base.is_attack and self.me.base.deals_damage:
       power = self.me.get_power()
       self.me.pull(
-        list(range(power + 1)), specific_movement_reaction=self.specific_movement_reaction
+        list(range(power + 1)),
+        specific_movement_reaction=self.specific_movement_reaction,
       )
 
   @property

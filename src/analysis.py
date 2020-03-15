@@ -138,16 +138,14 @@ def victories(
     return None
   if not silent:
     print("power:", percentify((win + draw / 2.0) / games))
-    print("win: %d (%s) - %s by time out" % (
-      win,
-      percentify(win / games),
-      percentify(time_win / float(win)),
-    ))
-    print("lose: %d (%s) - %s by time out" % (
-      lose,
-      percentify(lose / games),
-      percentify(time_lose / float(lose)),
-    ))
+    print(
+      "win: %d (%s) - %s by time out"
+      % (win, percentify(win / games), percentify(time_win / float(win)),)
+    )
+    print(
+      "lose: %d (%s) - %s by time out"
+      % (lose, percentify(lose / games), percentify(time_lose / float(lose)),)
+    )
     print("draw: %d (%s)" % (draw, percentify(draw / games)))
     print("total: %s by timeout" % percentify((time_win + time_lose + draw) / games))
 
@@ -183,16 +181,14 @@ def side_victories(logdir="core_tests"):
 
   games = float(win + lose + draw)
   print("alpha power:", percentify((win + draw / 2.0) / games))
-  print("alpha wins: %d (%s) - %s by time out" % (
-    win,
-    percentify(win / games),
-    percentify(time_win / float(win)),
-  ))
-  print("beta wins: %d (%s) - %s by time out" % (
-    lose,
-    percentify(lose / games),
-    percentify(time_lose / float(lose)),
-  ))
+  print(
+    "alpha wins: %d (%s) - %s by time out"
+    % (win, percentify(win / games), percentify(time_win / float(win)),)
+  )
+  print(
+    "beta wins: %d (%s) - %s by time out"
+    % (lose, percentify(lose / games), percentify(time_lose / float(lose)),)
+  )
   print("draw: %d (%s)" % (draw, percentify(draw / games)))
   print("total: %s by timeout" % percentify((time_win + time_lose) / games))
 
@@ -518,11 +514,10 @@ def strategies(
   sc = [(styles[i], style_count[i], no_dash_style_count[i]) for i in range(len(styles))]
   sc = sorted(sc, key=itemgetter(1), reverse=True)
   for s in sc:
-    print("%s %s (%s)" % (
-      percentify(s[2] / no_dash_total),
-      s[0],
-      percentify(s[1] / float(total)),
-    ))
+    print(
+      "%s %s (%s)"
+      % (percentify(s[2] / no_dash_total), s[0], percentify(s[1] / float(total)),)
+    )
   print("--------------")
   base_count = count.sum(axis=0)
   bc = [(bases[i], base_count[i]) for i in range(len(bases))]
@@ -547,9 +542,13 @@ def strategies(
       for x in range(len(first)):
         for y in range(len(second)):
           cxy = count[x][y]
-          print(first[x], second[y], percentify(
-            cxy / float(first_count[x])
-          ), percentify(cxy / float(second_count[y])), end=' ')
+          print(
+            first[x],
+            second[y],
+            percentify(cxy / float(first_count[x])),
+            percentify(cxy / float(second_count[y])),
+            end=" ",
+          )
           ratio = float(cxy * total) / (first_count[x] * second_count[y])
           if ratio > 1.5:
             print("STRONG - %.2f" % ratio)
@@ -646,20 +645,23 @@ def hitting(name, logdir="core_tests", printing=True):
     for rec in all_recs:
       if rec.name != "Special" and rec.hits > 0:
         beats = float(rec.beats)
-        print("%.2f %s %s %s %s %.1f %.1f | %s %s %s %.1f %.1f" % (
-          rec.damage / beats / ((rec.opp_damage + 0.00001) / beats),
-          rec.name + (" " * (12 - len(rec.name))),
-          percentify(rec.stunned / beats),
-          percentify(rec.misses / beats),
-          percentify(rec.hits / beats),
-          rec.damage / float(rec.hits),
-          rec.damage / beats,
-          percentify(rec.opp_stunned / beats),
-          percentify(rec.opp_misses / beats),
-          percentify(rec.opp_hits / beats),
-          rec.opp_damage / float(rec.opp_hits),
-          rec.opp_damage / beats,
-        ))
+        print(
+          "%.2f %s %s %s %s %.1f %.1f | %s %s %s %.1f %.1f"
+          % (
+            rec.damage / beats / ((rec.opp_damage + 0.00001) / beats),
+            rec.name + (" " * (12 - len(rec.name))),
+            percentify(rec.stunned / beats),
+            percentify(rec.misses / beats),
+            percentify(rec.hits / beats),
+            rec.damage / float(rec.hits),
+            rec.damage / beats,
+            percentify(rec.opp_stunned / beats),
+            percentify(rec.opp_misses / beats),
+            percentify(rec.opp_hits / beats),
+            rec.opp_damage / float(rec.opp_hits),
+            rec.opp_damage / beats,
+          )
+        )
 
 
 class HitWinCorrelationRecord(object):
@@ -718,12 +720,10 @@ def style_win_correlation(name, logdir="core_tests"):
       tie = rec.tie_hits[hits]
       total = float(win + lose + tie)
       if total > 20:
-        print("%d: %s / %s (%d)" % (
-          hits,
-          percentify(win / total),
-          percentify(lose / total),
-          total,
-        ))
+        print(
+          "%d: %s / %s (%d)"
+          % (hits, percentify(win / total), percentify(lose / total), total,)
+        )
 
 
 ##                print "%d: %d / %d (%d)" % (hits,
@@ -755,11 +755,10 @@ def specials(name=None, logdir="core_tests"):
     print(stat.upper(), percentify(sum(s) / float(games)))
     for beat in range(1, 16):
       total += s[beat]
-      print("%d: %s - %s" % (
-        beat,
-        percentify(s[beat] / float(games)),
-        percentify(total / float(games)),
-      ))
+      print(
+        "%d: %s - %s"
+        % (beat, percentify(s[beat] / float(games)), percentify(total / float(games)),)
+      )
 
 
 def anomalies(logdir="core_tests"):
@@ -787,22 +786,28 @@ def anomalies(logdir="core_tests"):
         sb = count[s][b]
         fraction = sb / float(style_count[s])
         if fraction >= 0.35 or fraction <= 0.035:
-          print("%s attached to %s %d of %d times (%s)" % (
-            bases[b],
-            styles[s],
-            sb,
-            style_count[s],
-            percentify(sb / float(style_count[s])),
-          ))
+          print(
+            "%s attached to %s %d of %d times (%s)"
+            % (
+              bases[b],
+              styles[s],
+              sb,
+              style_count[s],
+              percentify(sb / float(style_count[s])),
+            )
+          )
         fraction = sb / float(base_count[b])
         if fraction >= 0.5 or fraction <= 0.05:
-          print("%s attached to %s %d of %d times (%s)" % (
-            styles[s],
-            bases[b],
-            sb,
-            base_count[b],
-            percentify(sb / float(base_count[b])),
-          ))
+          print(
+            "%s attached to %s %d of %d times (%s)"
+            % (
+              styles[s],
+              bases[b],
+              sb,
+              base_count[b],
+              percentify(sb / float(base_count[b])),
+            )
+          )
 
 
 def total_bases(specials=True, player_num=None, base_set="alpha", logdir="core_tests"):
@@ -1172,12 +1177,15 @@ def adjenna_marker_beat(target=1, logdir="core_tests"):
   print("victories:", victories)
   print("petrifications:", petrifications)
   games_with_target = sum(gain_beat) - gain_beat[0]
-  print("victories with at least %d markers: %d/%d (%s)" % (
-    target,
-    victories_with_target,
-    games_with_target,
-    percentify(victories_with_target / float(games_with_target)),
-  ))
+  print(
+    "victories with at least %d markers: %d/%d (%s)"
+    % (
+      target,
+      victories_with_target,
+      games_with_target,
+      percentify(victories_with_target / float(games_with_target)),
+    )
+  )
   for beat, count in enumerate(gain_beat):
     print(beat, count)
 
@@ -1196,16 +1204,24 @@ def adjenna_marker_and_wins(target_beat, logdir="core_tests"):
   print("total games:", total)
   print("or more:")
   for i in range(7):
-    print(i, percentify(sum(games_with_x_markers[i:]) / float(total)), percentify(
-      float(sum(victories_with_x_markers[i:]))
-      / (0.000001 + sum(games_with_x_markers[i:]))
-    ))
+    print(
+      i,
+      percentify(sum(games_with_x_markers[i:]) / float(total)),
+      percentify(
+        float(sum(victories_with_x_markers[i:]))
+        / (0.000001 + sum(games_with_x_markers[i:]))
+      ),
+    )
   print("or less:")
   for i in range(7):
-    print(i, percentify(sum(games_with_x_markers[: i + 1]) / float(total)), percentify(
-      float(sum(victories_with_x_markers[: i + 1]))
-      / (0.000001 + sum(games_with_x_markers[: i + 1]))
-    ))
+    print(
+      i,
+      percentify(sum(games_with_x_markers[: i + 1]) / float(total)),
+      percentify(
+        float(sum(victories_with_x_markers[: i + 1]))
+        / (0.000001 + sum(games_with_x_markers[: i + 1]))
+      ),
+    )
 
 
 def alexian_tokens(logdir="core_tests"):
@@ -1260,10 +1276,10 @@ def alumis_styles(logdir="core_tests"):
   arcane_soak = [b for b in arcane_hits if b.lines_containing("Alumis has 2 soak")]
   print("Arcane beats:", len(arcane))
   print("Arcane hits taken:", len(arcane_hits))
-  print("Arcane soaks: %d (%s)" % (
-    len(arcane_soak),
-    percentify(len(arcane_soak) / float(len(arcane_hits))),
-  ))
+  print(
+    "Arcane soaks: %d (%s)"
+    % (len(arcane_soak), percentify(len(arcane_soak) / float(len(arcane_hits))),)
+  )
   for b in arcane_soak:
     if b not in arcane_hits:
       for line in b.lines:
@@ -1279,14 +1295,14 @@ def alumis_styles(logdir="core_tests"):
     )
   ]
   print("Ghastly beats:", len(ghastly))
-  print("Ghastly power: %d (%s)" % (
-    len(ghastly_power),
-    percentify(len(ghastly_power) / float(len(ghastly))),
-  ))
-  print("Ghastly life loss: %d (%s)" % (
-    len(ghastly_life),
-    percentify(len(ghastly_life) / float(len(ghastly))),
-  ))
+  print(
+    "Ghastly power: %d (%s)"
+    % (len(ghastly_power), percentify(len(ghastly_power) / float(len(ghastly))),)
+  )
+  print(
+    "Ghastly life loss: %d (%s)"
+    % (len(ghastly_life), percentify(len(ghastly_life) / float(len(ghastly))),)
+  )
   tenebrous = [b for b in beats if b.style == "Tenebrous"]
   tenebrous_life = [
     b
@@ -1297,10 +1313,10 @@ def alumis_styles(logdir="core_tests"):
     )
   ]
   print("Tenebrous beats:", len(tenebrous))
-  print("Tenebrous life loss: %d (%s)" % (
-    len(tenebrous_life),
-    percentify(len(tenebrous_life) / float(len(tenebrous))),
-  ))
+  print(
+    "Tenebrous life loss: %d (%s)"
+    % (len(tenebrous_life), percentify(len(tenebrous_life) / float(len(tenebrous))),)
+  )
   sinister = [b for b in beats if b.style == "Sinister"]
   sinister_hits = 0
   sinister_moves = 0
@@ -1317,10 +1333,10 @@ def alumis_styles(logdir="core_tests"):
           break
   print("Sinister beats:", len(sinister))
   print("Sinister hits:", sinister_hits)
-  print("Sinister moves: %d (%s)" % (
-    sinister_moves,
-    percentify(sinister_moves / float(sinister_hits)),
-  ))
+  print(
+    "Sinister moves: %d (%s)"
+    % (sinister_moves, percentify(sinister_moves / float(sinister_hits)),)
+  )
 
 
 def arec_tokens(logdir="core_tests"):
@@ -1385,15 +1401,15 @@ def aria_droids(logdir="core_tests"):
         turret[t] += 1
   print("dampening: %s" % percentify(sum(dampening[:-1]) / n_beats))
   for i in range(7):
-    print(percentify(dampening[i] / n_beats), end=' ')
+    print(percentify(dampening[i] / n_beats), end=" ")
   print()
   print("magnetron: %s" % percentify(sum(magnetron[:-1]) / n_beats))
   for i in range(7):
-    print(percentify(magnetron[i] / n_beats), end=' ')
+    print(percentify(magnetron[i] / n_beats), end=" ")
   print()
   print("turret: %s" % percentify(sum(turret[:-1]) / n_beats))
   for i in range(7):
-    print(percentify(turret[i] / n_beats), end=' ')
+    print(percentify(turret[i] / n_beats), end=" ")
   print()
 
 
@@ -1549,7 +1565,9 @@ def iri_forms(logdir="core_tests"):
   total = float(sum(transforms.values()))
   print("\nTransforms:")
   for form, count in list(transforms.items()):
-    print(form, count, percentify(count / total), percentify(count / float(forms[form])))
+    print(
+      form, count, percentify(count / total), percentify(count / float(forms[form]))
+    )
 
 
 def kajia_insects(logdir="core_tests"):
@@ -1807,9 +1825,13 @@ def mikhail_pairs_with_tokens(logdir="core_tests"):
     for x in range(len(first)):
       for y in range(len(second)):
         cxy = count[x][y]
-        print(first[x], second[y], percentify(cxy / float(first_count[x])), percentify(
-          cxy / float(second_count[y])
-        ), end=' ')
+        print(
+          first[x],
+          second[y],
+          percentify(cxy / float(first_count[x])),
+          percentify(cxy / float(second_count[y])),
+          end=" ",
+        )
         ratio = float(cxy * total) / (first_count[x] * second_count[y])
         if ratio > 1.5:
           print("STRONG - %.2f" % ratio)
@@ -1841,11 +1863,14 @@ def mikhail_tokens(logdir="core_tests"):
   for t in range(4):
     print(t, "tokens:", percentify(tokens[t] / float(total)))
   for b in range(1, 16):
-    print("beat %d: %.1f tokens;  %s ante" % (
-      b,
-      sum([beat_tokens[b][t] * t for t in range(4)]) / float(sum(beat_tokens[b])),
-      percentify(antes[b][1] / float(sum(antes[b]))),
-    ))
+    print(
+      "beat %d: %.1f tokens;  %s ante"
+      % (
+        b,
+        sum([beat_tokens[b][t] * t for t in range(4)]) / float(sum(beat_tokens[b])),
+        percentify(antes[b][1] / float(sum(antes[b]))),
+      )
+    )
 
 
 def oriana_meteor(logdir="core_tests"):
@@ -2007,11 +2032,10 @@ def runika_artifacts(logdir="core_tests"):
   print("activations: %.2f" % sum(activations.values()))
   print("deactivations (no overcharge): %.2f" % (sum(deactivations.values())))
   print("removals: %.2f" % sum(removals.values()))
-  print("net loss: %.2f" % (
-    sum(deactivations.values())
-    + sum(removals.values())
-    - sum(activations.values())
-  ))
+  print(
+    "net loss: %.2f"
+    % (sum(deactivations.values()) + sum(removals.values()) - sum(activations.values()))
+  )
 
 
 def shekhtur_tokens(logdir="core_tests"):
@@ -2088,7 +2112,7 @@ def xenitia_draw(logdir="core_tests"):
 
 def zaamassal_paradigms(logdir="core_tests"):
   for paradigm in ["Pain", "Fluidity", "Haste", "Resilience", "Distortion"]:
-    print(paradigm, end=' ')
+    print(paradigm, end=" ")
     print(text("Zaamassal assumes the Paradigm of %s" % paradigm, "zaamassal", logdir))
 
 
@@ -2125,9 +2149,13 @@ def parse_base_vs_induced_ante(name, logdir="core_tests"):
       for y in range(len(antes)):
         if ante_count[y]:
           cxy = count[x][y]
-          print(all_bases[x], antes[y], percentify(
-            cxy / float(base_count[x])
-          ), percentify(cxy / float(ante_count[y])), end=' ')
+          print(
+            all_bases[x],
+            antes[y],
+            percentify(cxy / float(base_count[x])),
+            percentify(cxy / float(ante_count[y])),
+            end=" ",
+          )
           ratio = float(cxy * total) / (base_count[x] * ante_count[y])
           if ratio > 1.5:
             print("STRONG - %.2f" % ratio)
