@@ -8,33 +8,33 @@ solvers.options["show_progress"] = False
 
 def solve(mat, a0, b0, a1, b1):
   mat = array(mat)
-  print "NO KNOWLEDGE"
+  print("NO KNOWLEDGE")
   (s0, v0) = solve_game_matrix(mat)
-  print "Player 0:"
-  print s0.transpose()
-  print "Value:", v0
+  print("Player 0:")
+  print(s0.transpose())
+  print("Value:", v0)
   (s1, v1) = solve_game_matrix(-mat.transpose())
-  print "player 1:"
-  print s1.transpose()
-  print "Value:", v1
-  print "P0 KNOWS B1 BEFORE CHOOSING B0"
+  print("player 1:")
+  print(s1.transpose())
+  print("Value:", v1)
+  print("P0 KNOWS B1 BEFORE CHOOSING B0")
   (s0, v0) = solve_for_player0_with_b1_known(mat, a0, b0, a1, b1)
-  print "Player 0:"
-  print s0.transpose()
-  print "Value:", v0
+  print("Player 0:")
+  print(s0.transpose())
+  print("Value:", v0)
   (s1, v1) = solve_for_player0_with_b0_known(-mat.transpose(), a1, b1, a0, b0)
-  print "player 1:"
-  print s1.transpose()
-  print "Value:", v1
-  print "P1 KNOWS B0 BEFORE CHOOSING B1"
+  print("player 1:")
+  print(s1.transpose())
+  print("Value:", v1)
+  print("P1 KNOWS B0 BEFORE CHOOSING B1")
   (s0, v0) = solve_for_player0_with_b0_known(mat, a0, b0, a1, b1)
-  print "Player 0:"
-  print s0.transpose()
-  print "Value:", v0
+  print("Player 0:")
+  print(s0.transpose())
+  print("Value:", v0)
   (s1, v1) = solve_for_player0_with_b1_known(-mat.transpose(), a1, b1, a0, b0)
-  print "player 1:"
-  print s1.transpose()
-  print "Value:", v1
+  print("player 1:")
+  print(s1.transpose())
+  print("Value:", v1)
 
 
 def solve_game_matrix(mat):

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 # TO DO
 
@@ -154,12 +154,12 @@ def test(first=None, bases="alpha"):
         continue
     j = i + 1 if i + 1 < len(playable) else 0
     n1 = playable[j]
-    print n0, n1
+    print(n0, n1)
     start_time = time.time()
     game = Game.from_start(n0, n1, bases, bases, default_discards=True)
     game_log, unused_winner = game.play_game()
     end_time = time.time()
-    print "tot time: %d" % (end_time - start_time)
+    print("tot time: %d" % (end_time - start_time))
     log.extend(game_log)
   logfilename = "logs/v1.1_test"
   with open(logfilename, "w") as f:
@@ -170,20 +170,20 @@ def test(first=None, bases="alpha"):
 def play():
   names = sorted([k.capitalize() for k in character_dict])
   while True:
-    print "Select your character: [1-%d]\n" % (len(names) + 1)
+    print("Select your character: [1-%d]\n" % (len(names) + 1))
     ans = menu(names + ["Random"], n_cols=3)
     if ans == len(names):
       ans = random.randrange(len(names))
     human = names[ans]
-    print "You will be playing", human
+    print("You will be playing", human)
     ai_names = [n for n in names if n != human]
-    print "\nSelect AI character: [1-%d]\n" % (len(ai_names) + 1)
+    print("\nSelect AI character: [1-%d]\n" % (len(ai_names) + 1))
     ans = menu(ai_names + ["Random"], n_cols=3)
     if ans == len(ai_names):
       ans = random.randrange(len(ai_names))
     ai = ai_names[ans]
-    print "AI will be playing", ai
-    print "\nWhich set of bases should be used?"
+    print("AI will be playing", ai)
+    print("\nWhich set of bases should be used?")
     ans = menu(
       [
         "Standard bases",
@@ -194,7 +194,7 @@ def play():
     )
     ai_bases = "beta" if ans in (1, 2) else "alpha"
     human_bases = "beta" if ans in (1, 3) else "alpha"
-    print "Default Discards?"
+    print("Default Discards?")
     default_discards = menu(["No", "Yes"])
     game = Game.from_start(
       ai,
@@ -214,9 +214,9 @@ def play():
       human = human + "_beta"
     basename = "logs/" + ai + "(AI)_vs_" + human
     name = save_log(basename, game_log)
-    print "Log saved at: ", name
-    print
-    print "\nAnother game?"
+    print("Log saved at: ", name)
+    print()
+    print("\nAnother game?")
     if not menu(["No", "Yes"]):
       break
 
@@ -254,7 +254,7 @@ def beta_challenge(next_pair=None, last_pair=None, beta0=False, beta1=False):
 # and one as delta.
 def alpha_vs_delta_challenge(first=None):
   n = len(playable)
-  for i in xrange(n):
+  for i in range(n):
     if playable[i] >= first:
       duel(playable[i], playable[(i + 1) % n], 1, "alpha", "delta")
 
@@ -280,13 +280,13 @@ def free_for_all(
           try:
             duel(playable[i], playable[j], repeat, first_beats=first_beats)
           except Exception as e:
-            print "duel: %s vs. %s" % (playable[i], playable[j])
-            print "exception", e
+            print("duel: %s vs. %s" % (playable[i], playable[j]))
+            print("exception", e)
 
 
 def duel(name0, name1, repeat, bases0="alpha", bases1="alpha", first_beats=False):
   victories = [0, 0]
-  print name0, "vs.", name1
+  print(name0, "vs.", name1)
   log = []
   start = time.time()
   for i in range(repeat):
@@ -305,15 +305,15 @@ def duel(name0, name1, repeat, bases0="alpha", bases1="alpha", first_beats=False
       victories[0] += 1
     elif winner == name1:
       victories[1] += 1
-    print winner,
+    print(winner, end=' ')
     sys.stdout.flush()
-  print
-  print victories[0], ":", victories[1]
+  print()
+  print(victories[0], ":", victories[1])
   end = time.time()
   logfilename = "logs/" + name0 + "_" + name1 + "_log.txt"
   time_string = "total_time: %d" % (end - start)
   log.append(time_string)
-  print time_string
+  print(time_string)
   with open(logfilename, "w") as f:
     for g in log:
       f.write(g + "\n")
@@ -322,9 +322,9 @@ def duel(name0, name1, repeat, bases0="alpha", bases1="alpha", first_beats=False
 # runs one beat from file data
 def play_beat(filename="starting states/start.txt"):
   game = Game.from_file(filename)
-  print "Simulating..."
+  print("Simulating...")
   game.simulate_beat()
-  print "Solving..."
+  print("Solving...")
   game.solve()
   game.print_solution()
   return game
@@ -332,9 +332,9 @@ def play_beat(filename="starting states/start.txt"):
 
 def play_start_beat(name0, name1, bases0="alpha", bases1="alpha"):
   game = Game.from_start(name0, name1, bases0, bases1, default_discards=False)
-  print "Simulating..."
+  print("Simulating...")
   game.simulate_beat()
-  print "Solving..."
+  print("Solving...")
   game.solve()
   game.print_solution()
   return game
@@ -358,15 +358,15 @@ def menu(options, n_cols=1):
   col_len = int(math.ceil(len(options) / float(n_cols)))
   max_width = max([len(o) for o in options])
   # displays options with numbers 1..n, in n_cols columns
-  for r in xrange(col_len):
-    for c in xrange(n_cols):
+  for r in range(col_len):
+    for c in range(n_cols):
       i = c * col_len + r
       if i >= len(options):
         break
       option = options[i]
       spaces = " " * (max_width + 5 - len(option) - len(str(i + 1)))
-      print "[%d] %s%s" % (i + 1, option, spaces),
-    print
+      print("[%d] %s%s" % (i + 1, option, spaces), end=' ')
+    print()
   # inputs number in range 1..n
   ans = input_number(len(options) + 1, 1)
   # but returns answer in range 0..n-1
@@ -376,7 +376,7 @@ def menu(options, n_cols=1):
 # input a number between k and n-1
 def input_number(n, k=0):
   while True:
-    s = raw_input("").strip()
+    s = input("").strip()
     if string_is_int(s) and int(s) in range(k, n):
       return int(s)
 
@@ -429,19 +429,19 @@ def ordered(a, b, c):
 # set of all positions between a and b, inclusive
 def pos_range(a, b):
   if b > a:
-    return set(xrange(a, b + 1))
+    return set(range(a, b + 1))
   else:
-    return set(xrange(b, a + 1))
+    return set(range(b, a + 1))
 
 
 def all_mean_priorities():
-  chars = [character(the_game=None, n=0) for character in character_dict.itervalues()]
+  chars = [character(the_game=None, n=0) for character in character_dict.values()]
   chars = sorted(chars, key=attrgetter("mean_priority"), reverse=True)
   for c in chars:
-    print "%.1f  %s" % (c.mean_priority, c.name)
-  print
-  print "Mean: %.1f" % (sum(c.mean_priority for c in chars) / len(chars))
-  print "Median: %.1f" % chars[len(chars) / 2].mean_priority
+    print("%.1f  %s" % (c.mean_priority, c.name))
+  print()
+  print("Mean: %.1f" % (sum(c.mean_priority for c in chars) / len(chars)))
+  print("Median: %.1f" % chars[len(chars) / 2].mean_priority)
 
 
 # Cumulative Gaussian function
@@ -651,8 +651,8 @@ class Game:
       return
     n = len(self.pads[0])
     m = len(self.pads[1])
-    for i in xrange(n):
-      for j in xrange(m):
+    for i in range(n):
+      for j in range(m):
         results = numpy.array(self.results[i][j])
         s0 = self.strats[0][i]
         s1 = self.strats[1][j]
@@ -703,7 +703,7 @@ class Game:
     for line in log:
       self.log.append(line)
       if self.interactive:
-        print line
+        print(line)
     log[:] = []
 
   def logfile_name(self):
@@ -805,9 +805,9 @@ class Game:
   def remove_redundant_finishers(self):
     redundant_finishers = []
     s0 = self.player[0].strats
-    for i in xrange(len(self.results)):
+    for i in range(len(self.results)):
       if isinstance(s0[i][1], Finisher):
-        for ii in xrange(len(self.results)):
+        for ii in range(len(self.results)):
           if isinstance(s0[ii][1], Cancel) and s0[ii][2] == s0[i][2]:
             if [res[0] for res in self.results[i]] == [
               res[0] for res in self.results[ii]
@@ -815,17 +815,17 @@ class Game:
               redundant_finishers.append(i)
               break
     self.results = [
-      self.results[i] for i in xrange(len(self.results)) if i not in redundant_finishers
+      self.results[i] for i in range(len(self.results)) if i not in redundant_finishers
     ]
     self.player[0].strats = [
-      s0[i] for i in xrange(len(s0)) if i not in redundant_finishers
+      s0[i] for i in range(len(s0)) if i not in redundant_finishers
     ]
 
     redundant_finishers = []
     s1 = self.player[1].strats
-    for j in xrange(len(self.results[0])):
+    for j in range(len(self.results[0])):
       if isinstance(s1[j][1], Finisher):
-        for jj in xrange(len(self.results[0])):
+        for jj in range(len(self.results[0])):
           if isinstance(s1[jj][1], Cancel) and s1[jj][2] == s1[j][2]:
             if [row[j][0] for row in self.results] == [
               row[jj][0] for row in self.results
@@ -833,11 +833,11 @@ class Game:
               redundant_finishers.append(j)
               break
     self.results = [
-      [r[j] for j in xrange(len(r)) if j not in redundant_finishers]
+      [r[j] for j in range(len(r)) if j not in redundant_finishers]
       for r in self.results
     ]
     self.player[1].strats = [
-      s1[j] for j in xrange(len(s1)) if j not in redundant_finishers
+      s1[j] for j in range(len(s1)) if j not in redundant_finishers
     ]
 
   def get_pad_subresults(self, results, strats, pad0, pad1):
@@ -950,7 +950,7 @@ class Game:
             opp.discard[0].add(opp.special_action)
 
           # Perform the Pulse.
-          pairs = list(itertools.permutations(xrange(7), 2))
+          pairs = list(itertools.permutations(range(7), 2))
           prompt = "Choose positions after Pulse:"
           options = []
           if pulser.is_user and self.interactive_mode:
@@ -1188,7 +1188,7 @@ class Game:
           row.append(self.player[0].evaluate() - self.player[1].evaluate())
       if row:
         evaluations.append(row)
-    for i in xrange(2):
+    for i in range(2):
       self.player[i].position = real_positions[i]
     # Higher priority chooses first, so evaluated last.
     # In case of tie, player 0 chooses before player 1
@@ -1198,7 +1198,7 @@ class Game:
       minima = [min(row) for row in evaluations]
       value = max(minima)
     else:
-      evaluations = zip(*evaluations)
+      evaluations = list(zip(*evaluations))
       maxima = [max(row) for row in evaluations]
       value = min(maxima)
 
@@ -1252,9 +1252,9 @@ class Game:
     # any further decisions (from a replay) are deleted
     if self.interactive_mode and not self.replay_mode and player.is_user:
       # prompt for decision, and delete any postulated decisions
-      print prompt
+      print(prompt)
       if options is None:
-        print "[0-%d]" % (n_options - 1)
+        print("[0-%d]" % (n_options - 1))
         decision = input_number(n_options)
       else:
         decision = menu(options)
@@ -1320,8 +1320,8 @@ class Game:
     self.pre_clash_results = [
       [[row[:] for row in pad_col] for pad_col in pad_row] for pad_row in self.results
     ]
-    for pad0 in xrange(len(self.strats[0])):
-      for pad1 in xrange(len(self.strats[1])):
+    for pad0 in range(len(self.strats[0])):
+      for pad1 in range(len(self.strats[1])):
         value, mix0, mix1 = self.solve_per_pad(
           self.results[pad0][pad1],
           self.pre_clash_results[pad0][pad1],
@@ -1338,11 +1338,11 @@ class Game:
     self.fix_cancels(results)
     array_results = numpy.array(results)
     (mix0, value0) = solve.solve_game_matrix(array_results)
-    stratmix0 = zip(strats0, list(mix0))
+    stratmix0 = list(zip(strats0, list(mix0)))
     # No need to calculate strategy mix for human player
     if not self.player[1].is_user:
       (mix1, value1) = solve.solve_game_matrix(-array_results.transpose())
-      stratmix1 = zip(strats1, list(mix1))
+      stratmix1 = list(zip(strats1, list(mix1)))
       assert abs(value0 + value1) < 0.01, "Error: value0=%f, value1=%f" % (
         value0,
         value1,
@@ -1376,7 +1376,7 @@ class Game:
     self.initial_restore(self.initial_state)
     s0 = self.player[0].choose_strategy(post_clash)
     if self.interactive and self.cheating == 2:
-      print self.player[0], "plays", self.player[0].get_strategy_name(s0)
+      print(self.player[0], "plays", self.player[0].get_strategy_name(s0))
     s1 = self.player[1].choose_strategy(post_clash)
     if self.interactive:
       self.interactive_state = None
@@ -1458,8 +1458,8 @@ class Game:
       array_results = numpy.array(post_cancel_results)
       (mix0, value0) = solve.solve_game_matrix(array_results)
       (mix1, value1) = solve.solve_game_matrix(-array_results.transpose())
-      stratmix0 = zip(post_cancel_strats0, list(mix0))
-      stratmix1 = zip(post_cancel_strats1, list(mix1))
+      stratmix0 = list(zip(post_cancel_strats0, list(mix0)))
+      stratmix1 = list(zip(post_cancel_strats1, list(mix1)))
       assert abs(value0 + value1) < 0.01, "Error: value0=%f, value1=%f" % (
         value0,
         value1,
@@ -1476,7 +1476,7 @@ class Game:
         report.extend(self.report_solution())
       s0 = self.player[0].choose_strategy(limit_antes=True)
       if self.interactive and self.cheating == 2:
-        print self.player[0], "plays", self.player[0].get_strategy_name(s0)
+        print(self.player[0], "plays", self.player[0].get_strategy_name(s0))
       s1 = self.player[1].choose_strategy(limit_antes=True)
 
       # Simulate beat based on new solutions
@@ -1600,23 +1600,23 @@ class Game:
                 for ii in g0
               ]
             except Exception as e:
-              print "Failure"
-              print "n m i j"
-              print n, m, i, j
-              print ss0[i]
-              print ss1[j]
-              print g0
-              print g1
-              print "p0 clash indices"
+              print("Failure")
+              print("n m i j")
+              print(n, m, i, j)
+              print(ss0[i])
+              print(ss1[j])
+              print(g0)
+              print(g1)
+              print("p0 clash indices")
               for ii in g0:
                 for jj in g1:
-                  print p0.clash_strat_index(ii, jj, i, j),
-                print
-              print "p1 clash indices"
+                  print(p0.clash_strat_index(ii, jj, i, j), end=' ')
+                print()
+              print("p1 clash indices")
               for ii in g0:
                 for jj in g1:
-                  print p1.clash_strat_index(jj, ii, j, i),
-                print
+                  print(p1.clash_strat_index(jj, ii, j, i), end=' ')
+                print()
               raise e
             # and solve it
             results[i][j] = self.sub_solve(subresults)
@@ -1687,32 +1687,32 @@ class Game:
     for i, pad0 in enumerate(self.pads[0]):
       for j, pad1 in enumerate(self.pads[1]):
         if len(self.pads[0]) > 1:
-          print "Pre attack decision: %s" % pad0
+          print("Pre attack decision: %s" % pad0)
         if len(self.pads[1]) > 1:
-          print "Pre attack decision: %s" % pad1
+          print("Pre attack decision: %s" % pad1)
         # for each player
         for p in self.player:
           # keep only positive probs
           if p.name.lower() in extra:
-            p.filtered_indices = range(len(p.mix[i][j]))
+            p.filtered_indices = list(range(len(p.mix[i][j])))
           else:
             p.filtered_indices = [
               k
-              for k in xrange(len(p.mix[i][j]))
+              for k in range(len(p.mix[i][j]))
               if p.mix[i][j][k][1] > 0.0001
               or p.get_strategy_name(p.mix[i][j][k][0]).lower() in extra
             ]
           p.filtered_mix = [p.mix[i][j][k] for k in p.filtered_indices]
           r = random.random()
           total = 0
-          print "\n", p
+          print("\n", p)
           for m in p.filtered_mix:
-            print str(int(100 * m[1] + 0.5)) + "%", p.get_strategy_name(m[0]),
+            print(str(int(100 * m[1] + 0.5)) + "%", p.get_strategy_name(m[0]), end=' ')
             if total + m[1] >= r and total < r:
-              print " ***",
-            print " "
+              print(" ***", end=' ')
+            print(" ")
             total = total + m[1]
-        print "\n" + self.player[0].name + "'s Value:", self.value[i][j], "\n"
+        print("\n" + self.player[0].name + "'s Value:", self.value[i][j], "\n")
         small_mat = numpy.array(
           [
             [self.results[i][j][k][m] for m in self.player[1].filtered_indices]
@@ -1725,8 +1725,8 @@ class Game:
           and self.player[0].name.lower() not in extra
         ):
           small_mat = small_mat.transpose()
-          print "(transposing matrix)"
-        print small_mat.round(2)
+          print("(transposing matrix)")
+        print(small_mat.round(2))
 
   # game value if one player uses given strategy, and other player uses
   # calculated mix
@@ -1749,12 +1749,12 @@ class Game:
       value = 0
       for j in range(len(mix1)):
         value += self.results[0][0][i][j] * mix1[j][1]
-      print value
+      print(value)
     for j in jj:
       value = 0
       for i in range(len(mix0)):
         value += self.results[0][0][i][j] * mix0[i][1]
-      print value
+      print(value)
 
   # for each strategy (of each player), print worst possible case
   def worst_case(self):
@@ -1762,15 +1762,15 @@ class Game:
     n, m = array_results.shape
     worst = array_results.argmin(1)
     for i in range(n):
-      print array_results[i, worst[i]], ":",
-      print self.player[0].get_strategy_name(self.player[0].strats[i]), "--->",
-      print self.player[1].get_strategy_name(self.player[1].strats[worst[i]])
-    print "##################################################"
+      print(array_results[i, worst[i]], ":", end=' ')
+      print(self.player[0].get_strategy_name(self.player[0].strats[i]), "--->", end=' ')
+      print(self.player[1].get_strategy_name(self.player[1].strats[worst[i]]))
+    print("##################################################")
     worst = array_results.argmax(0)
     for j in range(m):
-      print array_results[worst[j], j], ":",
-      print self.player[1].get_strategy_name(self.player[1].strats[j]), "--->",
-      print self.player[0].get_strategy_name(self.player[0].strats[worst[j]])
+      print(array_results[worst[j], j], ":", end=' ')
+      print(self.player[1].get_strategy_name(self.player[1].strats[j]), "--->", end=' ')
+      print(self.player[0].get_strategy_name(self.player[0].strats[worst[j]]))
 
   # run one simulation by strategy names
   # and print reports
@@ -1782,22 +1782,22 @@ class Game:
     self.initial_restore(self.initial_state)
     for p in self.player:
       p.set_preferred_range()
-    print (
+    print((
       "preferred ranges: %.2f - %.2f    [%d]"
       % (
         self.player[0].preferred_range,
         self.player[1].preferred_range,
         self.distance(),
       )
-    )
-    print (
+    ))
+    print((
       "range_evaluation: %.2f - %.2f = %.2f"
       % (
         self.player[0].evaluate_range(),
         self.player[1].evaluate_range(),
         self.player[0].evaluate_range() - self.player[1].evaluate_range(),
       )
-    )
+    ))
     s0 = [
       s
       for s in self.player[0].strats
@@ -1812,14 +1812,14 @@ class Game:
     self.debugging = False
     self.reporting = False
     for s in state.reports:
-      print s
+      print(s)
     return state, forks
 
   # add a string to reports
   def report(self, s):
     if self.interactive_mode:
       if not self.replay_mode:
-        print s
+        print(s)
         self.log.append(s)
     else:
       self.reports.append(s)
@@ -1839,7 +1839,7 @@ class Game:
     b0 = len(set(s[2] for s in ss0))
     b1 = len(set(s[2] for s in ss1))
     if ab0 % b0 != 0 or ab1 % b1 != 0:
-      print "Total strategies not divisible by antes"
+      print("Total strategies not divisible by antes")
       return
     a0 = ab0 / b0
     a1 = ab1 / b1
@@ -1856,17 +1856,17 @@ class Game:
       pair_prob = mix1[b0 * a1 * b1 + a1i]
       if pair_prob > 0.0001:
         for b0i in range(b0):
-          print self.player[1 - first].get_strategy_name(ss1[a1i * b1]),
-          print "vs.",
+          print(self.player[1 - first].get_strategy_name(ss1[a1i * b1]), end=' ')
+          print("vs.", end=' ')
           opposing_ante = self.player[first].get_ante_name(ss0[b0i][2])
-          print ("No Ante" if opposing_ante == "" else opposing_ante)
+          print(("No Ante" if opposing_ante == "" else opposing_ante))
           for b1i in range(b1):
             prob = mix1[b0i * a1 * b1 + a1i * b1 + b1i]
             if prob > 0.0001:
-              print "   ", str(int(100 * prob / pair_prob + 0.5)) + "%",
+              print("   ", str(int(100 * prob / pair_prob + 0.5)) + "%", end=' ')
               my_ante = self.player[1 - first].get_ante_name(ss1[b1i][2])
-              print ("No Ante" if my_ante == "" else my_ante)
-    print
+              print(("No Ante" if my_ante == "" else my_ante))
+    print()
 
     spread = [0.0 for i in range(ab1)]
     for i in range(a1):
@@ -1880,12 +1880,12 @@ class Game:
       mix0, mix1 = mix1, mix0
       value0, value1 = value1, value0
 
-    stratmix0 = zip(ss0, mix0)
-    stratmix1 = zip(ss1, mix1)
+    stratmix0 = list(zip(ss0, mix0))
+    stratmix1 = list(zip(ss1, mix1))
     if abs(value0 + value1) > 0.01:
-      print "ERROR:"
-      print "  value0:", value0
-      print "  value1:", value1
+      print("ERROR:")
+      print("  value0:", value0)
+      print("  value1:", value1)
       raise Exception()
     self.value = value0
     self.player[0].mix = stratmix0
@@ -2009,9 +2009,9 @@ class Character(object):
     self.counters = 0
 
     self.styles_and_bases_set = set(self.styles) | set(self.bases)
-    for i in xrange(5):
+    for i in range(5):
       self.styles[i].order = i
-    for i in xrange(7):
+    for i in range(7):
       self.bases[i].order = i
     # special action card (a style) and bases.
     # (finishers are unique to each character)
@@ -2025,7 +2025,7 @@ class Character(object):
     # discard[0] is for cards played this beat.
     # they will cycle into discard[1] at end of beat.
     # (discard [0] is empty between beats)
-    self.discard = [set() for i in xrange(3)]
+    self.discard = [set() for i in range(3)]
 
     # Create attributes for all card-like objects
     for card in self.all_cards():
@@ -2036,15 +2036,15 @@ class Character(object):
 
   def select_finisher(self):
     if len(self.finishers) == 1:
-      print "Only one Finisher implemented for %s" % self.name
+      print("Only one Finisher implemented for %s" % self.name)
     else:
       if self.is_user:
-        print "Select a Finisher for %s:" % self.name
+        print("Select a Finisher for %s:" % self.name)
         ans = menu([f.name for f in self.finishers])
       else:
         ans = int(random.random() * len(self.finishers))
       self.finishers = [self.finishers[ans]]
-      print "%s selects a Finisher: %s" % (self.name, self.finishers[0].name)
+      print("%s selects a Finisher: %s" % (self.name, self.finishers[0].name))
 
   # Used by Game to add opponent to all your cards/tokens etc.,
   # and by Character to create specifically named attributes for each
@@ -2135,15 +2135,15 @@ class Character(object):
       if self.is_user:
         styles = self.styles[:]
         bases = self.bases[:]
-        print "Discard a style to discard 1:"
+        print("Discard a style to discard 1:")
         s1 = styles[menu([s.name for s in styles])]
         styles.remove(s1)
-        print "Discard a style to discard 2:"
+        print("Discard a style to discard 2:")
         s2 = styles[menu([s.name for s in styles])]
-        print "Discard a base to discard 1:"
+        print("Discard a base to discard 1:")
         b1 = bases[menu([b.name for b in bases])]
         bases.remove(b1)
-        print "Discard a base to discard 2:"
+        print("Discard a base to discard 2:")
         b2 = bases[menu([b.name for b in bases])]
       else:
         s1, b1, s2, b2 = self.choose_initial_discards()
@@ -2303,9 +2303,9 @@ class Character(object):
     bases = sorted(list(set(m[0][1] for m in self.mix)), key=attrgetter("order"))
     # friendly reminder of bases in hand when asking about styles
     if len(styles) > 1:
-      print "(Bases in hand: " + ", ".join(
+      print("(Bases in hand: " + ", ".join(
         b.name for b in bases if not isinstance(b, SpecialBase)
-      ) + ")\n"
+      ) + ")\n")
     style = styles[menu(styles)] if len(styles) > 1 else styles[0]
     if isinstance(style, SpecialAction):
       bases = [b for b in bases if isinstance(b, SpecialBase)]
@@ -2364,7 +2364,7 @@ class Character(object):
       names = [name for name in (opp_own_ante_name, opp_induced_ante_name) if name]
       opp_ante_name = " | ".join(names)
       if opp_ante_name != "":
-        print opp.name + "'s ante: " + opp_ante_name
+        print(opp.name + "'s ante: " + opp_ante_name)
       own_ante = self.input_ante(pair)
       induced_ante = opp.input_induced_ante()
       ante = (own_ante, induced_ante, self.final_pad)
@@ -2741,9 +2741,9 @@ class Character(object):
     pos = self.position
     opp = self.opponent.position
     if opp > pos:
-      return set(xrange(pos + minr, min(7, pos + maxr + 1)))
+      return set(range(pos + minr, min(7, pos + maxr + 1)))
     else:
-      return set(xrange(max(0, pos - maxr), pos - minr + 1))
+      return set(range(max(0, pos - maxr), pos - minr + 1))
 
   def reduce_soak(self, soak):
     for card in self.active_cards:
@@ -3171,13 +3171,13 @@ class Character(object):
 
   def move_to_unoccupied(self, specific_movement_reaction=None):
     self.move_directly(
-      list(set(xrange(7)) - set((self.position, self.opponent.position))),
+      list(set(range(7)) - set((self.position, self.opponent.position))),
       specific_movement_reaction=specific_movement_reaction,
     )
 
   def move_opponent_to_unoccupied(self, specific_movement_reaction=None):
     self.move_opponent_directly(
-      list(set(xrange(7)) - set((self.position, self.opponent.position))),
+      list(set(range(7)) - set((self.position, self.opponent.position))),
       specific_movement_reaction=specific_movement_reaction,
     )
 
@@ -3241,7 +3241,7 @@ class Character(object):
     if direct:
       # Moves are given as destinations, just remove opponent's position.
       # Don't remove own position, because some moves say "may".
-      dests = (set(moves) - set([mover.opponent.position])) & set(xrange(7))
+      dests = (set(moves) - set([mover.opponent.position])) & set(range(7))
     else:
       # convert relative moves to destinations
       dests = self.get_destinations(mover, moves)
@@ -3281,12 +3281,12 @@ class Character(object):
   def get_unobstructed_positions(self, mover_pos, blocked, direct):
     if direct:
       # for direct movement, only directly blocked spaces are obstructed.
-      return set(xrange(7)) - blocked
+      return set(range(7)) - blocked
     else:
       # for normal movement, a position is 'unobstructed' if there
       # are no blocked positions between it and the mover
       return set(
-        pos for pos in xrange(7) if len(pos_range(pos, mover_pos) & blocked) == 0
+        pos for pos in range(7) if len(pos_range(pos, mover_pos) & blocked) == 0
       )
 
   # given player moving/being moved, and set of relative moves,
@@ -3479,7 +3479,7 @@ class Character(object):
     if len(options) == 1:
       return options[0]
     if self.is_user:
-      print "Which base did you use to play your finisher?"
+      print("Which base did you use to play your finisher?")
       ans = menu([o.name for o in options])
       return options[ans]
     else:
@@ -3927,7 +3927,7 @@ class OpponentImmobilizedStatusEffect(StatusEffect):
   value = 3.5
 
   def blocks_opponent_movement(self, initiator, direct):
-    return set(xrange(7))
+    return set(range(7))
 
 
 class OpponentEliminatedStatusEffect(StatusEffect):
@@ -4050,7 +4050,7 @@ class Abarene(Character):
     self.was_token_recovered = state.was_token_recovered
 
   def get_antes(self):
-    combos = [itertools.combinations(self.pool, n) for n in xrange(len(self.pool) + 1)]
+    combos = [itertools.combinations(self.pool, n) for n in range(len(self.pool) + 1)]
     return sum([list(c) for c in combos], [])
 
   def input_ante(self, pair):
@@ -4058,7 +4058,7 @@ class Abarene(Character):
       antes = self.get_antes()
       options = [self.get_ante_name(a) for a in antes]
       options[0] = "None"
-      print "Select tokens to ante:"
+      print("Select tokens to ante:")
       return antes[menu(options)]
     else:
       return []
@@ -4258,19 +4258,19 @@ class Alexian(Character):
     self.damage_soaked = state.damage_soaked
 
   def get_induced_antes(self):
-    return range(len(self.induced_pool) + 1)
+    return list(range(len(self.induced_pool) + 1))
 
   def input_induced_ante(self):
     n = len(self.induced_pool)
     if n > 0:
-      print "Number of Chivalry tokens [0-%d]: " % n
+      print("Number of Chivalry tokens [0-%d]: " % n)
       return input_number(n + 1)
     else:
       return 0
 
   def ante_trigger(self):
     # opponent antes Chivalry tokens according to their chosen strategy
-    for unused in xrange(self.opponent.strat[2][1]):
+    for unused in range(self.opponent.strat[2][1]):
       self.induced_pool.remove(self.chivalry)
       self.opponent.ante.append(self.chivalry)
       if self.game.reporting:
@@ -4488,10 +4488,10 @@ class Arec(Character):
     if self.clone_position is None:
       clone_ante = False
     else:
-      print "Move to clone?"
+      print("Move to clone?")
       clone_ante = bool(menu(["No", "Yes"]))
     if self.pool:
-      print "Select token to ante:"
+      print("Select token to ante:")
       options = [t.name for t in self.pool] + ["None"]
       ans = menu(options)
       token_ante = self.pool[ans] if ans < len(self.pool) else None
@@ -4515,7 +4515,7 @@ class Arec(Character):
     token_name = a[1].name if a[1] else ""
     clone_name = "move to clone" if a[0] else ""
     names = [token_name, clone_name]
-    names = filter(None, names)
+    names = [_f for _f in names if _f]
     return "; ".join(names)
 
   def recover_tokens(self):
@@ -4676,7 +4676,7 @@ class Aria(Character):
     Character.set_starting_setup(self, default_discards, use_special_actions)
     # Choose initial droid
     if self.is_user:
-      print "Choose initial droid:"
+      print("Choose initial droid:")
       ans = menu(self.droids)
       self.droids[ans].position = self.position
     else:
@@ -4789,7 +4789,7 @@ class Aria(Character):
     covered = set()
     for pos in positions:
       covered |= set((pos - 1, pos, pos + 1))
-    covered &= set(xrange(7))
+    covered &= set(range(7))
 
     value += len(positions)
     value += 0.2 * len(covered)
@@ -5541,7 +5541,7 @@ class Clinhyde(Character):
   def input_ante(self, pair):
     inactive = [p for p in self.packs if p not in self.active_packs]
     if inactive:
-      print "Select a stim pack to activate:"
+      print("Select a stim pack to activate:")
       options = [p.name for p in inactive] + ["None"]
       ans = menu(options)
       return inactive[ans] if ans < len(inactive) else None
@@ -5718,7 +5718,7 @@ class Clive(Character):
 
   def input_ante(self, pair):
     if self.module_stack:
-      print "Select a module to activate:"
+      print("Select a module to activate:")
       options = [m.name for m in self.module_stack] + ["None"]
       ans = menu(options)
       return self.module_stack[ans] if ans < len(self.module_stack) else None
@@ -5835,7 +5835,7 @@ class Danny(Character):
 
   def read_my_state(self, lines, board, addendum):
     lines = Character.read_my_state(self, lines, board, addendum)
-    self.monsters = set([i for i in xrange(7) if addendum[0][i] == "m"])
+    self.monsters = set([i for i in range(7) if addendum[0][i] == "m"])
 
   def initial_save(self):
     state = Character.initial_save(self)
@@ -5860,7 +5860,7 @@ class Danny(Character):
     self.fallen_ignore_stunguard = state.fallen_ignore_stunguard
 
   def add_monsters(self, n_monsters, positions):
-    positions &= set(xrange(7))
+    positions &= set(range(7))
     positions -= self.monsters
     n_monsters = min(n_monsters, len(positions))
     if not n_monsters:
@@ -5869,7 +5869,7 @@ class Danny(Character):
     prompt = "Add monster:" if n_monsters == 1 else "Add monsters:"
     options = []
     if self.is_user and self.game.interactive_mode:
-      base_list = [("m" if m in self.monsters else "." for m in xrange(7))]
+      base_list = [("m" if m in self.monsters else "." for m in range(7))]
       for combo in combos:
         tmp_list = base_list[:]
         for m in combo:
@@ -5988,12 +5988,12 @@ class Demitras(Character):
     self.pool = [self.crescendo] * int(lines[0][0])
 
   def get_antes(self):
-    return range(len(self.pool) + 1)
+    return list(range(len(self.pool) + 1))
 
   def input_ante(self, pair):
     n = len(self.pool)
     if n > 0:
-      print "Number of Crescendo tokens [0-%d]: " % n
+      print("Number of Crescendo tokens [0-%d]: " % n)
       return input_number(n + 1)
     else:
       return 0
@@ -6074,12 +6074,12 @@ class Eligor(Character):
     self.pool = [self.vengeance] * int(lines[0][0])
 
   def get_antes(self):
-    return range(len(self.pool) + 1)
+    return list(range(len(self.pool) + 1))
 
   def input_ante(self, pair):
     n = len(self.pool)
     if n > 0:
-      print "Number of Vengeance tokens [0-%d]: " % n
+      print("Number of Vengeance tokens [0-%d]: " % n)
       return input_number(n + 1)
     else:
       return 0
@@ -6163,11 +6163,11 @@ class Eustace(Character):
     self.elementary_range_bonus = state.elementary_range_bonus
 
   def get_antes(self):
-    return range(len(self.pool) + 1)
+    return list(range(len(self.pool) + 1))
 
   def input_ante(self, pair):
     if self.pool:
-      print "Number of Frostflow Tokens to ante [0-%d]: " % len(self.pool)
+      print("Number of Frostflow Tokens to ante [0-%d]: " % len(self.pool))
       return input_number(len(self.pool) + 1)
     else:
       return 0
@@ -6384,7 +6384,7 @@ class Gerard(Character):
     if self.initiation_status_effect in self.active_status_effects:
       hiring_gold += 2
     hiring_combos = []
-    for n_hires in xrange(len(possible_hires) + 1):
+    for n_hires in range(len(possible_hires) + 1):
       combos_n = itertools.combinations(possible_hires, n_hires)
       playable = [c for c in combos_n if sum([h.hiring_cost for h in c]) <= hiring_gold]
       hiring_combos += playable
@@ -6399,7 +6399,7 @@ class Gerard(Character):
       possible_activations = [
         merc for merc in self.mercs_in_play + hiring_combo if merc.activation_cost
       ]
-      for n_activations in xrange(len(possible_activations) + 1):
+      for n_activations in range(len(possible_activations) + 1):
         combos_n = itertools.combinations(possible_activations, n_activations)
         playable = [
           list(c)
@@ -6427,7 +6427,7 @@ class Gerard(Character):
       ]
       if not possible_hires:
         break
-      print "Choose next mercenary to hire:"
+      print("Choose next mercenary to hire:")
       options = [h.name for h in possible_hires]
       options.append("Done hiring")
       ans = menu(options)
@@ -6446,7 +6446,7 @@ class Gerard(Character):
       ]
       if not possible_activations:
         break
-      print "Choose next mercenary to activate:"
+      print("Choose next mercenary to activate:")
       options = [a.name for a in possible_activations]
       options.append("Done activating")
       ans = menu(options)
@@ -6611,7 +6611,7 @@ class Heketch(Character):
       if ans == 0:
         return 0
       else:
-        print "Prefer which side of opponent?"
+        print("Prefer which side of opponent?")
         ans = menu(["Left", "Right"])
         return -1 if ans == 0 else 1
     else:
@@ -6646,7 +6646,7 @@ class Heketch(Character):
 
   def blocks_opponent_movement(self, initiator, direct):
     return (
-      set(xrange(7))
+      set(range(7))
       if self.merciless_immobilized
       else Character.blocks_opponent_movement(self, initiator, direct)
     )
@@ -6740,7 +6740,7 @@ class Hepzibah(Character):
     if self.active_pactbond:
       available_life += 1
     max_ante = min(5, available_life)
-    combos = [itertools.combinations(self.pacts, n) for n in xrange(max_ante + 1)]
+    combos = [itertools.combinations(self.pacts, n) for n in range(max_ante + 1)]
     # Optimization: force ante of active pactbond.
     combos = sum([list(c) for c in combos], [])
     if self.active_pactbond:
@@ -6754,7 +6754,7 @@ class Hepzibah(Character):
     options = [self.get_ante_name(a) for a in antes]
     if not options[0]:
       options[0] = "None"
-    print "Select Dark Pacts to ante:"
+    print("Select Dark Pacts to ante:")
     return antes[menu(options)]
 
   def ante_trigger(self):
@@ -6834,7 +6834,7 @@ class Hikaru(Character):
 
   def input_ante(self, pair):
     if self.pool:
-      print "Select token to ante:"
+      print("Select token to ante:")
       options = [t.name for t in self.pool] + ["None"]
       ans = menu(options)
       return self.pool[ans] if ans < len(self.pool) else None
@@ -6984,7 +6984,7 @@ class Iri(Character):
     return self.forms
 
   def input_ante(self):
-    print "Select your form:"
+    print("Select your form:")
     return self.forms[menu([form.name for form in self.forms])]
 
   def ante_trigger(self):
@@ -7120,7 +7120,7 @@ class Jager(Character):
 
   def input_ante(self, pair):
     if self.signature_pool and pair[0] is not self.special_action:
-      print "Select signature move to play:"
+      print("Select signature move to play:")
       options = [s.name for s in self.signature_pool] + ["None"]
       ans = menu(options)
       return self.signature_pool[ans] if ans < len(self.signature_pool) else None
@@ -7202,9 +7202,9 @@ class Juto(Character):
     me = self.position
     opp = self.opponent.position
     if me > opp:
-      return set(xrange(opp + 1, 7))
+      return set(range(opp + 1, 7))
     else:
-      return set(xrange(opp))
+      return set(range(opp))
 
 
 class Kajia(Character):
@@ -7478,7 +7478,7 @@ class Karin(Character):
 
   # given moves are relative
   def move_jager(self, moves):
-    positions = [pos for pos in xrange(7) if pos - self.jager_position in moves]
+    positions = [pos for pos in range(7) if pos - self.jager_position in moves]
     old_pos = self.jager_position
     prompt = "Move Jager:"
     options = []
@@ -7677,7 +7677,7 @@ class Khadath(Character):
     return set(
       [
         pos
-        for pos in xrange(7)
+        for pos in range(7)
         if ordered(self.opponent.position, self.trap_position, pos)
       ]
     )
@@ -7766,10 +7766,10 @@ class Larimore(Character):
     self.blistering_ignores = state.blistering_ignores
 
   def get_antes(self):
-    return range(4)
+    return list(range(4))
 
   def input_ante(self):
-    print "Number of Firepower counters to recharge [0-3]: "
+    print("Number of Firepower counters to recharge [0-3]: ")
     return input_number(4)
 
   def ante_trigger(self):
@@ -7896,7 +7896,7 @@ class Lesandra(Character):
 
   def input_ante(self, pair):
     if self.active_familiar:
-      print "Ante %s?" % self.active_familiar
+      print("Ante %s?" % self.active_familiar)
       if menu(["No", "Yes"]):
         return self.active_familiar
     return None
@@ -8138,9 +8138,9 @@ class Luc(Character):
     p = len(self.pool)
     if p > 0:
       possible_antes = [a for a in [0, 1, 3, 5] if a <= p]
-      print "Number of Time tokens [" + ",".join(
+      print("Number of Time tokens [" + ",".join(
         [str(a) for a in possible_antes]
-      ) + "]: "
+      ) + "]: ")
       while True:
         ante = input_number(len(self.pool) + 1)
         if ante in possible_antes:
@@ -8486,7 +8486,7 @@ class Mikhail(Character):
 
   def input_ante(self, pair):
     if self.pool:
-      print "Ante Seal token?"
+      print("Ante Seal token?")
       return menu(["No", "Yes"])
     else:
       return 0
@@ -8566,12 +8566,12 @@ class Oriana(Character):
     self.pool = [self.mp] * int(lines[0].split()[0])
 
   def get_antes(self):
-    return range(len(self.pool) + 1)
+    return list(range(len(self.pool) + 1))
 
   def input_ante(self, pair):
     n = len(self.pool)
     if n > 0:
-      print "Number of Magic Point tokens [0-%d]: " % n
+      print("Number of Magic Point tokens [0-%d]: " % n)
       return input_number(n + 1)
     else:
       return 0
@@ -8659,8 +8659,8 @@ class Ottavia(Character):
 
   def input_ante(self, pair):
     priorities = self.all_opponent_priorities
-    print "Guess %s's priority for Target Lock:" % self.opponent
-    print "Possible priorities:", priorities
+    print("Guess %s's priority for Target Lock:" % self.opponent)
+    print("Possible priorities:", priorities)
     mn = min(priorities)
     mx = max(priorities)
     while True:
@@ -8739,9 +8739,9 @@ class Ottavia(Character):
     # based on whether Ottavia's guess actually corresponds to
     # opponent's priority.
     if self.my_number == 0:
-      full_results = [[0] * m for unused in xrange(n)]
-      for i in xrange(n):
-        for j in xrange(m):
+      full_results = [[0] * m for unused in range(n)]
+      for i in range(n):
+        for j in range(m):
           my_strat = full_strats[i][0]
           my_fake_index = full_strats[i][1]
           # Compare my ante to opponent's pre-penalty priority,
@@ -8756,9 +8756,9 @@ class Ottavia(Character):
           fake_i = fake_strats.index(fake_strat)
           full_results[i][j] = fake_results[fake_i][j]
     else:
-      full_results = [[0] * n for unused in xrange(m)]
-      for i in xrange(m):
-        for j in xrange(n):
+      full_results = [[0] * n for unused in range(m)]
+      for i in range(m):
+        for j in range(n):
           my_strat = full_strats[j][0]
           my_fake_index = full_strats[j][1]
           # Compare my ante to opponent's pre-penalty priority,
@@ -8849,19 +8849,19 @@ class Rexan(Character):
     self.malediction_damage_limit = state.malediction_damage_limit
 
   def get_induced_antes(self):
-    return range(len(self.induced_pool) + 1)
+    return list(range(len(self.induced_pool) + 1))
 
   def input_induced_ante(self):
     n = len(self.induced_pool)
     if n > 0:
-      print "Number of Curse tokens [0-%d]: " % n
+      print("Number of Curse tokens [0-%d]: " % n)
       return input_number(n + 1)
     else:
       return 0
 
   def ante_trigger(self):
     # opponent antes Curse tokens according to their chosen strategy
-    for unused in xrange(self.opponent.strat[2][1]):
+    for unused in range(self.opponent.strat[2][1]):
       self.induced_pool.remove(self.curse)
       self.opponent.ante.append(self.curse)
       if self.game.reporting:
@@ -8971,7 +8971,7 @@ class Rukyuk(Character):
 
   def input_ante(self, pair):
     if self.pool:
-      print "Select token to ante:"
+      print("Select token to ante:")
       options = [t.name for t in self.pool] + ["None"]
       ans = menu(options)
       return self.pool[ans] if ans < len(self.pool) else None
@@ -9295,7 +9295,7 @@ class Sarafina(Character):
     if n is None:
       positions = set((0, 6))
     else:
-      positions = set((self.position - n, self.position + n)) & set(xrange(7))
+      positions = set((self.position - n, self.position + n)) & set(range(7))
     if self.projection is not None:
       positions.add(self.projection)
     positions.discard(self.position)
@@ -9324,7 +9324,7 @@ class Sarafina(Character):
     if self.projection is None:
       return False
     else:
-      print "Move to projection?"
+      print("Move to projection?")
       return bool(menu(["No", "Yes"]))
 
   def ante_trigger(self):
@@ -9365,7 +9365,7 @@ class Sarafina(Character):
 
   def blocks_opponent_movement(self, initiator, direct):
     return (
-      set(xrange(7))
+      set(range(7))
       if self.field_immobilzie
       else Character.blocks_opponent_movement(self, initiator, direct)
     )
@@ -9442,7 +9442,7 @@ class Seth(Character):
   def input_ante(self, pair):
     discards = self.opponent.discard[1] | self.opponent.discard[2]
     bases = [b for b in self.opponent.bases if b not in discards]
-    print "Name one of %s's bases:" % self.opponent
+    print("Name one of %s's bases:" % self.opponent)
     options = [b.name for b in bases]
     ans = menu(options)
     return bases[ans]
@@ -9534,9 +9534,9 @@ class Seth(Character):
     # to those pairs, but pick correct/incorrect guess based on whether
     # Seth's guess actually corresponds to the played base
     if self.my_number == 0:
-      full_results = [[0] * m for unused in xrange(n)]
-      for i in xrange(n):
-        for j in xrange(m):
+      full_results = [[0] * m for unused in range(n)]
+      for i in range(n):
+        for j in range(m):
           my_strat = full_strats[i]
           opp_strat = opp_strats[j]
           is_correct = my_strat[2][0] == opp_strat[1]
@@ -9544,9 +9544,9 @@ class Seth(Character):
           fake_i = fake_strats.index(fake_strat)
           full_results[i][j] = fake_results[fake_i][j]
     else:
-      full_results = [[0] * n for unused in xrange(m)]
-      for i in xrange(m):
-        for j in xrange(n):
+      full_results = [[0] * n for unused in range(m)]
+      for i in range(m):
+        for j in range(n):
           my_strat = full_strats[j]
           opp_strat = opp_strats[i]
           is_correct = my_strat[2][0] == opp_strat[1]
@@ -9618,12 +9618,12 @@ class Shekhtur(Character):
 
   def get_antes(self):
     n = len(self.pool)
-    return range(0, n + 1)
+    return list(range(0, n + 1))
 
   def input_ante(self, pair):
     n = len(self.pool)
     if n > 0:
-      print "Number of Malice tokens [0-%d]: " % n
+      print("Number of Malice tokens [0-%d]: " % n)
       return input_number(n + 1)
     else:
       return 0
@@ -9693,7 +9693,7 @@ class Tanis(Character):
         "..." + "".join([puppet.initial for puppet in permutation] + ".")
         for permutation in perms
       ]
-      print "Choose initial puppet positions:"
+      print("Choose initial puppet positions:")
       perm = perms[menu(options)]
       for i, puppet in enumerate(perm):
         puppet.position = i + 3
@@ -9770,7 +9770,7 @@ class Tanis(Character):
     options = self.get_pre_attack_decisions()
     if len(options) == 1:
       return 0
-    print "Choose puppet to possess this beat:"
+    print("Choose puppet to possess this beat:")
     return menu([puppet.name for puppet in options])
 
   def pre_attack_decision_report(self, decision):
@@ -10119,11 +10119,11 @@ class Vanaah(Character):
       self.discard[token_location].add(self.divine_rush)
 
   def get_antes(self):
-    return range(len(self.pool) + 1)
+    return list(range(len(self.pool) + 1))
 
   def input_ante(self, pair):
     if self.pool:
-      print "Ante Divine Rush token?"
+      print("Ante Divine Rush token?")
       return menu(["No", "Yes"])
     else:
       return 0
@@ -10184,7 +10184,7 @@ class Voco(Character):
 
   def read_my_state(self, lines, board, addendum):
     lines = Character.read_my_state(self, lines, board, addendum)
-    self.zombies = set([i for i in xrange(7) if addendum[0][i] == "z"])
+    self.zombies = set([i for i in range(7) if addendum[0][i] == "z"])
 
   def initial_save(self):
     state = Character.initial_save(self)
@@ -10243,7 +10243,7 @@ class Voco(Character):
       combos = list(itertools.combinations(removable_positions, n_removed))
       if self.is_user and self.game.interactive_mode:
         for combo in combos:
-          zs = ["z" if i in combo else "." for i in xrange(7)]
+          zs = ["z" if i in combo else "." for i in range(7)]
           options.append("".join(zs))
       fork_result = self.game.make_fork(len(combos), self, prompt, options)
       self.zombies -= set(combos[fork_result])
@@ -10255,7 +10255,7 @@ class Voco(Character):
   # current version - attacker's space and adjacent spaces
   def soak_positions(self):
     return set((self.opponent.position - 1, self.opponent.position + 1)) & set(
-      xrange(7)
+      range(7)
     )
 
   def get_soak(self):
@@ -10329,13 +10329,13 @@ class Xenitia(Character):
     return min(5, self.life - 1)
 
   def get_antes(self):
-    return range(1 + self.max_draw())
+    return list(range(1 + self.max_draw()))
 
   def input_ante(self, pair):
     md = self.max_draw()
     if md == 0:
       return 0
-    print "Draw how much life? [0-%d]" % md
+    print("Draw how much life? [0-%d]" % md)
     return input_number(md + 1)
 
   def ante_trigger(self):
@@ -10959,7 +10959,7 @@ class HallicrisSnare(Finisher):
   priority = 6
 
   def hit_trigger(self):
-    self.me.pull(range(6), specific_movement_reaction=self.specific_movement_reaction)
+    self.me.pull(list(range(6)), specific_movement_reaction=self.specific_movement_reaction)
 
   def specific_movement_reaction(self, initiator, mover, old_position, direct):
     # Get +1 power per pull
@@ -11062,9 +11062,9 @@ class Crippling(Style):
       return set([])
     opp = self.opponent.position
     if opp < self.me.position:
-      return set(xrange(opp))
+      return set(range(opp))
     else:
-      return set(xrange(opp + 1, 7))
+      return set(range(opp + 1, 7))
 
   def before_trigger(self):
     self.me.advance([1, 2])
@@ -11081,21 +11081,21 @@ class Pestilent(Style):
   priority = 1
 
   def after_trigger(self):
-    self.me.advance(range(4))
+    self.me.advance(list(range(4)))
 
   ordered_after_trigger = True
   # Block switching sides
   def blocks_opponent_movement(self, initiator, direct):
     opp = self.opponent.position
     me = self.me.position
-    return set(xrange(me)) if me < opp else set(xrange(me + 1, 7))
+    return set(range(me)) if me < opp else set(range(me + 1, 7))
 
   def blocks_own_movement(self, initiator):
     if self.opponent.mimics_movement():
       return set()
     opp = self.opponent.position
     me = self.me.position
-    return set(xrange(opp)) if opp < me else set(xrange(opp + 1, 7))
+    return set(range(opp)) if opp < me else set(range(opp + 1, 7))
 
 
 class Dizziness(Token):
@@ -11333,7 +11333,7 @@ class Gestalt(Style):
   preferred_range = 0.5
 
   def blocks_own_movement(self, initiator):
-    return set() if initiator is self.me else set(xrange(7))
+    return set() if initiator is self.me else set(range(7))
 
   def start_trigger(self):
     self.me.advance([0, 1])
@@ -11351,9 +11351,9 @@ class Regal(Style):
     if direct or initiator is self.me or self.game.distance() > 1:
       return set()
     if self.me.position < self.opponent.position:
-      return set(xrange(self.opponent.position + 1, 7))
+      return set(range(self.opponent.position + 1, 7))
     else:
-      return set(xrange(self.opponent.position))
+      return set(range(self.opponent.position))
 
   # Better if opponent has tokens
   def evaluation_bonus(self):
@@ -11373,7 +11373,7 @@ class Stalwart(Style):
   def before_trigger(self):
     # advance up to 3, but don't switch sides
     self.me.advance(
-      range(min(self.game.distance(), 4)),
+      list(range(min(self.game.distance(), 4))),
       specific_movement_reaction=self.specific_movement_reaction,
     )
 
@@ -11403,7 +11403,7 @@ class Steeled(Style):
   # Advance up to 1 space for each damage soaked.
   # Recording soak handled by Alexian.soak_trigger()
   def before_trigger(self):
-    self.me.advance(range(self.me.damage_soaked + 1))
+    self.me.advance(list(range(self.me.damage_soaked + 1)))
 
   ordered_before_trigger = True
 
@@ -11442,7 +11442,7 @@ class UmbralVice(Finisher):
     # TODO: if shadow "got away" earlier (Pulse), this implementation
     # might block an indirect movement getting back to it.
     s = self.me.shadow_position
-    return set(xrange(7)) - set((s - 1, s, s + 1))
+    return set(range(7)) - set((s - 1, s, s + 1))
 
 
 class Dread(Base):
@@ -11593,9 +11593,9 @@ class Tenebrous(Style):
     if direct or shadow in (me, opp):
       return set()
     if shadow > self.opponent.position:
-      return set(xrange(shadow + 1, 7))
+      return set(range(shadow + 1, 7))
     else:
-      return set(xrange(shadow))
+      return set(range(shadow))
 
   def movement_reaction(self, initiator, mover, old_position, direct):
     if mover is self.me:
@@ -11734,7 +11734,7 @@ class Mirrored(Style):
   def end_trigger(self):
     # Fork to decide clone location.
     positions = [
-      i for i in xrange(7) if i not in (self.me.position, self.opponent.position)
+      i for i in range(7) if i not in (self.me.position, self.opponent.position)
     ]
     prompt = "Place clone:"
     options = []
@@ -11871,7 +11871,7 @@ class Reconfiguration(Base):
       )
       droid = droids[ans]
       occupied = (self.me.position, self.opponent.position)
-      positions = [pos for pos in xrange(7) if pos not in occupied]
+      positions = [pos for pos in range(7) if pos not in occupied]
       options = []
       if self.me.is_user and self.game.interactive_mode:
         for pos in positions:
@@ -12096,7 +12096,7 @@ class Spellbreak(Finisher):
     return True
 
   def blocks_own_movement(self, initiator):
-    return set(xrange(7)) if initiator is self.opponent else set()
+    return set(range(7)) if initiator is self.opponent else set()
 
   def before_trigger(self):
     self.me.advance([1])
@@ -12120,7 +12120,7 @@ class Felfire(Finisher):
   priority = 2
 
   def before_trigger(self):
-    self.me.advance(range(4))
+    self.me.advance(list(range(4)))
 
   def after_trigger(self):
     self.me.move_opponent([1])
@@ -12312,7 +12312,7 @@ class SceneShiftBorneo(Base):
     return self.me.switched_sides
 
   def before_trigger(self):
-    self.me.move(xrange(6), specific_movement_reaction=self.specific_movement_reaction)
+    self.me.move(range(6), specific_movement_reaction=self.specific_movement_reaction)
 
   ordered_before_trigger = True
 
@@ -12366,7 +12366,7 @@ class Petulant(Style):
   stunguard = 3
 
   def blocks_own_movement(self, initiator):
-    return set() if initiator is self.me else set(xrange(7))
+    return set() if initiator is self.me else set(range(7))
 
 
 class Slippery(Style):
@@ -12519,7 +12519,7 @@ class Breathless(Style):
     # may move to other side of opponent
     opp = self.opponent.position
     me = self.me.position
-    dests = range(opp) if me > opp else range(opp + 1, 7)
+    dests = list(range(opp)) if me > opp else list(range(opp + 1, 7))
     dests.append(me)
     self.me.move_directly(dests)
 
@@ -12710,7 +12710,7 @@ class Phalanx(Style):
 
   def before_trigger(self):
     if self.opponent.hits_scored:
-      self.me.advance(range(self.me.damage_taken + 1))
+      self.me.advance(list(range(self.me.damage_taken + 1)))
 
   @property
   def ordered_before_trigger(self):
@@ -12749,7 +12749,7 @@ class Bulwark(Style):
   stunguard = 3
 
   def blocks_own_movement(self, initiator):
-    return set() if initiator is self.me else set(xrange(7))
+    return set() if initiator is self.me else set(range(7))
 
   def after_trigger(self):
     self.me.move([0, 1, 2, 3])
@@ -12776,7 +12776,7 @@ class AutumnsAdvance(Finisher):
   priority = 6
 
   def before_trigger(self):
-    self.me.advance(range(7))
+    self.me.advance(list(range(7)))
 
   def hit_trigger(self):
     if self.opponent.position in [0, 6]:
@@ -12794,7 +12794,7 @@ class Tempest(Base):
   preferred_range = 2.5
 
   def start_trigger(self):
-    self.me.advance(range(4))
+    self.me.advance(list(range(4)))
 
   ordered_start_trigger = True
 
@@ -12937,7 +12937,7 @@ class Toxic(Style):
     return 2 if self.me.hylatine in self.me.active_packs else 1
 
   def start_trigger(self):
-    for unused in xrange(len(self.me.active_packs) + 1):
+    for unused in range(len(self.me.active_packs) + 1):
       self.me.advance([1])
 
   ordered_start_trigger = True
@@ -13014,7 +13014,7 @@ class Gravity(Style):
     if self.game.make_fork(
       2, self.me, "Block %s's attempt to move you?" % self.opponent, ["No", "Yes"]
     ):
-      return set(xrange(7))  # block
+      return set(range(7))  # block
     else:
       return set()  # don't block
 
@@ -13182,7 +13182,7 @@ class Megaton(Style):
   stunguard = 2
 
   def hit_trigger(self):
-    self.me.retreat(range(6), max_move=True)
+    self.me.retreat(list(range(6)), max_move=True)
     self.me.push([1])
 
   ordered_hit_trigger = True
@@ -13312,7 +13312,7 @@ class Hellgate(Base):
   ordered_after_trigger = True
 
   def end_trigger(self):
-    self.me.add_monsters(3, set(xrange(7)))
+    self.me.add_monsters(3, set(range(7)))
 
   def evaluation_bonus(self):
     monsters_to_add = max(3, 7 - len(self.me.monsters))
@@ -13326,7 +13326,7 @@ class Monstrous(Style):
 
   def end_trigger(self):
     if self.me.hits_scored:
-      self.me.add_monsters(1, set(xrange(7)))
+      self.me.add_monsters(1, set(range(7)))
 
 
 class Fallen(Style):
@@ -13381,7 +13381,7 @@ class Sinners(Style):
       return
     monsters = sorted(list(self.me.monsters))
     good_combos = []
-    for combo in itertools.combinations(xrange(7), len(self.me.monsters)):
+    for combo in itertools.combinations(range(7), len(self.me.monsters)):
       shifts = [abs(m - c) for m, c in zip(monsters, combo)]
       if max(shifts) <= 1 and sum(shifts) <= 3:
         good_combos.append(combo)
@@ -13389,7 +13389,7 @@ class Sinners(Style):
     options = []
     if self.me.is_user and self.game.interactive_mode:
       for combo in good_combos:
-        tmp_list = ["m" if m in combo else "." for m in xrange(7)]
+        tmp_list = ["m" if m in combo else "." for m in range(7)]
         options.append("".join(tmp_list))
     combo = good_combos[self.game.make_fork(len(good_combos), self.me, prompt, options)]
     self.me.monsters = set(combo)
@@ -13459,7 +13459,7 @@ class Accelerando(Finisher):
     return 0
 
   def before_trigger(self):
-    self.me.advance(range(6), max_move=True)
+    self.me.advance(list(range(6)), max_move=True)
 
   ordered_before_trigger = True
 
@@ -13512,7 +13512,7 @@ class Darkside(Style):
     return self.opponent.attack_range() < 4
 
   def hit_trigger(self):
-    self.me.retreat(range(6))
+    self.me.retreat(list(range(6)))
 
   ordered_hit_trigger = True
 
@@ -13667,7 +13667,7 @@ class Vengeful(Style):
     self.me.recover_tokens(2)
 
   def blocks_own_movement(self, initiator):
-    return set() if initiator is self.me else set(xrange(7))
+    return set() if initiator is self.me else set(range(7))
 
 
 class CounterStyle(Style):
@@ -13682,7 +13682,7 @@ class CounterStyle(Style):
 
   def before_trigger(self):
     if self.me.damage_taken > 0:
-      self.me.advance(range(self.me.damage_taken + 1))
+      self.me.advance(list(range(self.me.damage_taken + 1)))
 
   @property
   def ordered_before_trigger(self):
@@ -13760,12 +13760,12 @@ class BoneBreaker(Finisher):
   priority = 5
 
   def start_trigger(self):
-    self.me.advance(range(6))
+    self.me.advance(list(range(6)))
 
   ordered_start_trigger = True
 
   def hit_trigger(self):
-    self.me.push(range(6))
+    self.me.push(list(range(6)))
 
   ordered_hit_trigger = True
 
@@ -14000,7 +14000,7 @@ class Hooked(Style):
   ordered_start_trigger = True
 
   def damage_trigger(self, damage):
-    self.me.pull(range(damage + 1))
+    self.me.pull(list(range(damage + 1)))
 
   ordered_damage_trigger = True
 
@@ -14259,7 +14259,7 @@ class Critical(Style):
 
 class Assassin(Style):
   def hit_trigger(self):
-    self.me.retreat(range(6))
+    self.me.retreat(list(range(6)))
 
   ordered_hit_trigger = True
 
@@ -14779,7 +14779,7 @@ class BloodHunt(Finisher):
     return self.me.switched_sides
 
   def start_trigger(self):
-    self.me.advance(range(5))
+    self.me.advance(list(range(5)))
 
   def evaluate_setup(self):
     return 0 if self.opponent.position in (0, 6) or self.game.distance() >= 5 else 0.5
@@ -15742,7 +15742,7 @@ class Dual(Style):
     # jager uses relative movement
     relative_moves = [
       pos - self.me.jager_position
-      for pos in xrange(7)
+      for pos in range(7)
       if pos not in (self.me.position, self.opponent.position, self.me.jager_position)
     ]
     self.me.move_jager(relative_moves)
@@ -15889,7 +15889,7 @@ class Exoskeletal(Style):
     if initiator is self.opponent and self.game.make_fork(
       2, self.me, "Block %s's attempt to move you?" % self.opponent, ["No", "Yes"]
     ):
-      return set(xrange(7))  # block
+      return set(range(7))  # block
     else:
       return set()  # don't block
 
@@ -15981,7 +15981,7 @@ class Teleport(Style):
   def end_trigger(self):
     self.me.move_to_unoccupied()
     # move trap anywhere (except current location, I guess)
-    positions = set(xrange(7))
+    positions = set(range(7))
     if self.me.trap_position is not None:
       positions.remove(self.me.trap_position)
     self.me.move_trap(positions)
@@ -16037,7 +16037,7 @@ class Lure(Style):
   preferred_range = 2.5
 
   def hit_trigger(self):
-    self.me.pull(range(self.game.distance()))
+    self.me.pull(list(range(self.game.distance())))
 
   ordered_hit_trigger = True
 
@@ -16086,7 +16086,7 @@ class Might(Base):
     spend = self.me.spend_counters("for +1 power and 1 push each")
     if spend:
       self.me.add_triggered_power_bonus(spend)
-      self.me.push(range(spend + 1), max_move=True)
+      self.me.push(list(range(spend + 1)), max_move=True)
 
 
 class Warmages(Style):
@@ -16462,7 +16462,7 @@ class Lance(Base):
   # block movement into spaces adjacent to me
   def blocks_opponent_movement(self, initiator, direct):
     pos = self.me.position
-    return set([pos + 1, pos - 1]) & set(xrange(7))
+    return set([pos + 1, pos - 1]) & set(range(7))
 
 
 class Venomous(Style):
@@ -16492,7 +16492,7 @@ class Rooted(Style):
     if initiator is self.opponent and self.game.make_fork(
       2, self.me, "Block %s's attempt to move you?" % self.opponent, ["No", "Yes"]
     ):
-      return set(xrange(7))  # block
+      return set(range(7))  # block
     else:
       return set()  # don't block
 
@@ -16637,7 +16637,7 @@ class Memento(Style):
       if self.game.make_fork(
         2, self.me, "Spend 2 Time tokens for an extra attack?", ["No", "Yes"]
       ):
-        for unused in xrange(2):
+        for unused in range(2):
           self.me.spend_token()
         self.me.max_attacks += 1
         if self.game.reporting:
@@ -16654,7 +16654,7 @@ class Fusion(Style):
     push_positions = (
       pos_range(0, opp - 1) if opp < self.me.position else pos_range(opp + 1, 7)
     )
-    self.me.push(range(damage + 1), max_move=True)
+    self.me.push(list(range(damage + 1)), max_move=True)
     # if destination beyond board, and opponent didn't block any
     # spaces behind her, life loss occurs.
     if blow_out and not (self.opponent.mover_block & push_positions):
@@ -16772,7 +16772,7 @@ class Visions(Base):
   preferred_range = 1.5
 
   def before_trigger(self):
-    self.me.advance(range(self.me.disparity + 1))
+    self.me.advance(list(range(self.me.disparity + 1)))
 
   ordered_before_trigger = True
 
@@ -17290,7 +17290,7 @@ class Hallowed(Style):
   ordered_start_trigger = True
 
   def damage_trigger(self, damage):
-    self.me.push(range(damage + 1))
+    self.me.push(list(range(damage + 1)))
 
   ordered_damage_trigger = True
 
@@ -17422,7 +17422,7 @@ class Unstable(Style):
   def hit_trigger(self):
     n_effects = self.me.ante.count(self.me.mp) / 2
     if n_effects:
-      effects = self.effects_names.keys()
+      effects = list(self.effects_names.keys())
       combos = list(itertools.combinations(effects, n_effects))
       options = []
       if self.opponent.is_user and self.game.interactive_mode:
@@ -17570,7 +17570,7 @@ class Snapback(Style):
 
   def blocks_opponent_movement(self, initiator, direct):
     if self.opponent.get_priority() < self.me.get_priority():
-      return set(xrange(7))
+      return set(range(7))
     else:
       return set()
 
@@ -17588,7 +17588,7 @@ class Demolition(Style):
       self.opponent.stun()
 
   def after_trigger(self):
-    self.me.advance(range(5))
+    self.me.advance(list(range(5)))
 
   ordered_after_trigger = True
 
@@ -17627,7 +17627,7 @@ class AntiPersonnel(Style):
 
 class Cybernetic(Style):
   def damage_trigger(self, damage):
-    self.me.move_opponent(range(4))
+    self.me.move_opponent(list(range(4)))
 
   def after_trigger(self):
     self.me.cybernetic_soak = 2
@@ -17686,7 +17686,7 @@ class Malediction(Base):
   def end_trigger(self):
     max_pull = len(self.me.induced_pool)
     if max_pull:
-      self.me.pull(range(max_pull + 1))
+      self.me.pull(list(range(max_pull + 1)))
 
   @property
   def ordered_end_trigger(self):
@@ -17769,7 +17769,7 @@ class Overlords(Style):
     if self.me.base.is_attack and self.me.base.deals_damage:
       power = self.me.get_power()
       self.me.pull(
-        range(power + 1), specific_movement_reaction=self.specific_movement_reaction
+        list(range(power + 1)), specific_movement_reaction=self.specific_movement_reaction
       )
 
   @property
@@ -17808,7 +17808,7 @@ class FullyAutomatic(Finisher):
       extra_attacks = self.game.make_fork(
         len(self.me.pool) + 1, self.me, "Number of tokens to spend for extra attacks?"
       )
-      for unused in xrange(extra_attacks):
+      for unused in range(extra_attacks):
         self.me.spend_token()
       self.me.max_attacks += extra_attacks
       if self.game.reporting and extra_attacks > 0:
@@ -17826,12 +17826,12 @@ class ForceGrenade(Finisher):
   # Blocking ammo effect handled by Rukyuk.get_active_tokens()
   # Not needing a token to hit handled by Rukyuk.can_hit()
   def hit_trigger(self):
-    self.me.push(range(6))
+    self.me.push(list(range(6)))
 
   ordered_hit_trigger = True
 
   def after_trigger(self):
-    self.me.retreat(range(6))
+    self.me.retreat(list(range(6)))
 
   ordered_after_trigger = True
 
@@ -18198,7 +18198,7 @@ class ShieldAmulet(Artifact):
 
   def blocks_own_movement(self, initiator):
     return (
-      set(xrange(7))
+      set(range(7))
       if self is self.me.overcharged_artifact and initiator is self.opponent
       else set()
     )
@@ -18515,7 +18515,7 @@ class Brand(Base):
         self.me,
         "How much life to leech (spend 2 tokens per life point)?",
       )
-      for unused in xrange(2 * leech):
+      for unused in range(2 * leech):
         self.me.spend_token()
       self.opponent.lose_life(leech)
       self.me.gain_life(leech)
@@ -18653,7 +18653,7 @@ class SceneShift(Base):
     return self.me.switched_sides
 
   def before_trigger(self):
-    self.me.advance(range(5))
+    self.me.advance(list(range(5)))
 
   ordered_before_trigger = True
   # Move each puppet up to 3 spaces.
@@ -18662,7 +18662,7 @@ class SceneShift(Base):
     for puppet in self.me.puppets:
       if puppet is not self.me.possessed_puppet:
         old_pos = puppet.position
-        positions = range(max(0, old_pos - 3), min(6, old_pos + 3) + 1)
+        positions = list(range(max(0, old_pos - 3), min(6, old_pos + 3) + 1))
         prompt = "Choose new position for %s:" % puppet
         options = []
         if self.me.is_user and self.game.interactive_mode:
@@ -18788,7 +18788,7 @@ class Storyteller(Style):
 
   def before_trigger(self):
     if self.me.possessed_puppet is self.me.eris:
-      self.me.advance(range(4))
+      self.me.advance(list(range(4)))
 
   @property
   def ordered_before_trigger(self):
@@ -18816,7 +18816,7 @@ class Playful(Style):
   suspend_blocking = False
 
   def end_trigger(self):
-    self.me.move_directly(set(xrange(7)) - set([self.me.position]))
+    self.me.move_directly(set(range(7)) - set([self.me.position]))
 
   ordered_end_trigger = True
 
@@ -18870,7 +18870,7 @@ class Distressed(Style):
     prompt = "Select a puppet to move:"
     options = [p.name for p in puppets]
     puppet = puppets[self.game.make_fork(len(puppets), self.me, prompt, options)]
-    positions = range(7)
+    positions = list(range(7))
     prompt = "Choose new position for %s:", puppet
     options = []
     if self.me.is_user and self.game.interactive_mode:
@@ -18953,7 +18953,7 @@ class GuardianXandjinn(Finisher):
 
   def hit_trigger(self):
     self.opponent.stun()
-    self.me.move_juto(range(7))
+    self.me.move_juto(list(range(7)))
 
   def evaluate_setup(self):
     return 0.5 if self.special_range_hit() else 0
@@ -18993,7 +18993,7 @@ class Whirlpool(Base):
     if self.me.juto_position is not None:
       juto_dests = [
         d
-        for d in xrange(7)
+        for d in range(7)
         if d >= self.me.juto_position - 2 and d <= self.me.juto_position + 2
       ]
       self.me.move_juto(juto_dests)
@@ -19014,7 +19014,7 @@ class Siren(Style):
     if self.me.juto_position is not None:
       juto_dests = [
         d
-        for d in xrange(7)
+        for d in range(7)
         if d >= self.me.juto_position - 2 and d <= self.me.juto_position + 2
       ]
       self.me.move_juto(juto_dests)
@@ -19112,7 +19112,7 @@ class WaveStyle(Style):
     if self.me.juto_position is not None:
       destinations = [
         d
-        for d in xrange(7)
+        for d in range(7)
         if (d - self.me.juto_position) * (self.opponent.position - self.me.position)
         >= 0
       ]
@@ -19152,7 +19152,7 @@ class HandOfDivinity(Finisher):
     return True
 
   def after_trigger(self):
-    self.me.advance(range(6))
+    self.me.advance(list(range(6)))
 
   ordered_after_trigger = True
 
@@ -19311,7 +19311,7 @@ class Shred(Base):
   def hit_trigger(self):
     pos = self.opponent.position
     behind_opponent = (
-      set(xrange(0, pos)) if pos < self.me.position else set(xrange(pos + 1, 7))
+      set(range(0, pos)) if pos < self.me.position else set(range(pos + 1, 7))
     )
     self.me.add_triggered_power_bonus(len(self.me.zombies & behind_opponent))
 
@@ -19324,7 +19324,7 @@ class Shred(Base):
     p = self.me.position
     op = self.opponent.position
     if op in self.me.zombies:
-      behind_range = set(xrange(0, op)) if op < p else set(xrange(op + 1, 7))
+      behind_range = set(range(0, op)) if op < p else set(range(op + 1, 7))
       behind = len(self.me.zombies & behind_range)
       return 0.3 + 0.15 * (behind + self.opponent.expected_soak())
     else:
@@ -19703,7 +19703,7 @@ class Sturdy(ZStyle):
     if initiator is self.opponent and self.game.make_fork(
       2, self.me, "Block %s's attempt to move you?" % self.opponent, ["No", "Yes"]
     ):
-      return set(xrange(7))  # block
+      return set(range(7))  # block
     else:
       return set()  # don't block
 
@@ -19764,7 +19764,7 @@ class Haste(Paradigm):
   def blocks_opponent_movement(self, initiator, direct):
     # if opponent adjacent to me, block everything
     if self.game.distance() == 1:
-      return set(xrange(7))
+      return set(range(7))
     # otherwise, if move is direct, don't block
     if direct:
       return set()

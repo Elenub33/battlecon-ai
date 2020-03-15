@@ -1,5 +1,5 @@
 import numpy
-import solve
+from . import solve
 
 
 def percentify(fraction):
@@ -38,34 +38,34 @@ results = [
 mat = numpy.array(results)
 (mix, value) = solve.solve_game_matrix(mat)
 mix = [percentify(m) for m in mix]
-print "ALL", value
+print("ALL", value)
 for bm in zip(bases, mix):
-  print bm
+  print(bm)
 
 mat = numpy.array([row[:5] for row in results[:5]])
 (mix, value) = solve.solve_game_matrix(mat)
 mix = [percentify(m) for m in mix]
-print "ALPHA", value
+print("ALPHA", value)
 for bm in zip(bases[:5], mix):
-  print bm
+  print(bm)
 
 mat = numpy.array([row[5:] for row in results[5:]])
 (mix, value) = solve.solve_game_matrix(mat)
 mix = [percentify(m) for m in mix]
-print "BETA", value
+print("BETA", value)
 for bm in zip(bases[5:], mix):
-  print bm
+  print(bm)
 
 mat = numpy.array([row[5:] for row in results[:5]])
 (mix, value) = solve.solve_game_matrix(mat)
 mix = [percentify(m) for m in mix]
-print "ALPHA vs BETA", value
+print("ALPHA vs BETA", value)
 for bm in zip(bases[:5], mix):
-  print bm
+  print(bm)
 
 mat = numpy.array([row[:5] for row in results[5:]])
 (mix, value) = solve.solve_game_matrix(mat)
 mix = [percentify(m) for m in mix]
-print "BETA vs ALPHA", value
+print("BETA vs ALPHA", value)
 for bm in zip(bases[5:], mix):
-  print bm
+  print(bm)
