@@ -1309,7 +1309,8 @@ class Game:
     board = ["."] * 7
     for p in self.player:
       if p.position is not None:
-        board[p.position] = p.get_board_symbol()
+        # TODO :: Figure out why p.position is sometimes a float
+        board[int(p.position)] = p.get_board_symbol()
     return "".join(board)
 
   # find minmax for results table
@@ -2738,8 +2739,9 @@ class Character(object):
       return set()
     minr = max(0, self.get_minrange())
     maxr = self.get_maxrange()
-    pos = self.position
-    opp = self.opponent.position
+    # TODO :: Figure out why p.position is sometimes a float
+    pos = int(self.position)
+    opp = int(self.opponent.position)
     if opp > pos:
       return set(range(pos + minr, min(7, pos + maxr + 1)))
     else:
