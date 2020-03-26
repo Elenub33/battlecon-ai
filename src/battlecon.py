@@ -11439,7 +11439,9 @@ class Dread(Base):
   preferred_range = 2  # arbitrary average
 
   def special_range_hit(self):
-    return utils.IsOrdered(self.me.position, self.opponent.position, self.me.shadow_position)
+    return utils.IsOrdered(
+      self.me.position, self.opponent.position, self.me.shadow_position
+    )
 
   def before_trigger(self):
     self.me.pull([1])
@@ -11948,7 +11950,9 @@ class Ionic(Style):
     # Can't pull if no Magnetron, or if Magnetron on opponent.
     if self.me.magnetron.position in [None, self.opponent.position]:
       return
-    if utils.IsOrdered(self.me.position, self.opponent.position, self.me.magnetron.position):
+    if utils.IsOrdered(
+      self.me.position, self.opponent.position, self.me.magnetron.position
+    ):
       self.me.push([1, 0])
     else:
       self.me.pull([0, 1])
@@ -12019,7 +12023,9 @@ class Catalyst(Style):
     discard = self.me.discard
     reconfig = self.me.unique_base not in (discard[1] | discard[2])
     # add value if dampening is between you and opponent
-    value += 0.5 if dampening is not None and utils.IsOrdered(me, dampening, her) else -0.2
+    value += (
+      0.5 if dampening is not None and utils.IsOrdered(me, dampening, her) else -0.2
+    )
     # add value if you're on magnetron
     value += 0.4 if me == self.me.magnetron.position else -0.1
     # add value if dampening outside and you have Reconfiguration
@@ -15526,7 +15532,9 @@ class LunarCross(Finisher):
   def evaluate_setup(self):
     return (
       1
-      if utils.IsOrdered(self.me.jager_position, self.opponent.position, self.me.position)
+      if utils.IsOrdered(
+        self.me.jager_position, self.opponent.position, self.me.position
+      )
       else 0
     )
 
@@ -15646,7 +15654,9 @@ class FullMoon(Style):
   def get_soak(self):
     return (
       2
-      if utils.IsOrdered(self.me.position, self.me.jager_position, self.opponent.position)
+      if utils.IsOrdered(
+        self.me.position, self.me.jager_position, self.opponent.position
+      )
       else 0
     )
 
@@ -15667,7 +15677,9 @@ class FullMoon(Style):
   def get_power_bonus(self):
     return (
       2
-      if utils.IsOrdered(self.me.position, self.opponent.position, self.me.jager_position)
+      if utils.IsOrdered(
+        self.me.position, self.opponent.position, self.me.jager_position
+      )
       else 0
     )
 
@@ -15963,7 +15975,9 @@ class Teleport(Style):
 
   def can_be_hit(self):
     trap = self.me.trap_position
-    return trap is None or not utils.IsOrdered(self.me.position, trap, self.opponent.position)
+    return trap is None or not utils.IsOrdered(
+      self.me.position, trap, self.opponent.position
+    )
 
   def end_trigger(self):
     self.me.move_to_unoccupied()
@@ -18709,7 +18723,9 @@ class Valiant(Style):
   def evaluation_bonus(self):
     return (
       0.4
-      if utils.IsOrdered(self.me.position, self.me.loki.position, self.opponent.position)
+      if utils.IsOrdered(
+        self.me.position, self.me.loki.position, self.opponent.position
+      )
       else -0.1
     )
 
