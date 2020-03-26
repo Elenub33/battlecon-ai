@@ -2643,9 +2643,9 @@ class Character(object):
   def activate_card_triggers(self, trigger_name, params=[]):
     cards = self.active_cards
     trigger = attrgetter(trigger_name)
-    ordered = attrgetter("ordered_" + trigger_name)
-    ordered_cards = [c for c in cards if utils.IsOrdered(c)]
-    other_cards = [c for c in cards if not utils.IsOrdered(c)]
+    orderable = attrgetter("ordered_" + trigger_name)
+    ordered_cards = [c for c in cards if orderable(c)]
+    other_cards = [c for c in cards if not orderable(c)]
     for card in other_cards:
       trigger(card)(*params)
     while ordered_cards:
