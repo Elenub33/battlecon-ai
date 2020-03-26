@@ -60,6 +60,8 @@ import solve
 import sys
 import time
 
+import utils
+
 debug_log = []
 
 # MAIN FUNCTIONS
@@ -399,17 +401,16 @@ def find_end(lines, end):
   return bool(find_end_line(lines, end))
 
 
-# check if given numbers are strongly ordered (either a<b<c, or c<b<a)
-def ordered(a, b, c):
-  return (a - b) * (c - b) < 0
-
-
 # set of all positions between a and b, inclusive
 def pos_range(a, b):
-  if b > a:
-    return set(range(a, b + 1))
-  else:
-    return set(range(b, a + 1))
+  try:
+    if b > a:
+      return set(range(a, b + 1))
+    else:
+      return set(range(b, a + 1))
+  except TypeError as e:
+    e.args = (f"{e.args[0]} (a = {a}, b = {b})",)
+    raise e
 
 
 def all_mean_priorities():
@@ -2655,8 +2656,8 @@ class Character(object):
     cards = self.active_cards
     trigger = attrgetter(trigger_name)
     ordered = attrgetter("ordered_" + trigger_name)
-    ordered_cards = [c for c in cards if ordered(c)]
-    other_cards = [c for c in cards if not ordered(c)]
+    ordered_cards = [c for c in cards if utils.IsOrdered(c)]
+    other_cards = [c for c in cards if not utils.IsOrdered(c)]
     for card in other_cards:
       trigger(card)(*params)
     while ordered_cards:
@@ -5437,7 +5438,7 @@ class Claus(Character):
       # Also, against a mimic, move normally (they retreat as you
       # advance, nothing interesting happens).
       if (
-        not ordered(initial_pos, self.opponent.position, dest)
+        not utils.IsOrdered(initial_pos, self.opponent.position, dest)
         or self.opponent.mimics_movement()
       ):
         self.position = dest
@@ -6209,7 +6210,7 @@ class Eustace(Character):
     Character.movement_reaction(self, initiator, mover, old_position, direct)
     if not direct and mover.opponent.mimics_movement():
       return
-    if ordered(old_position, mover.opponent.position, mover.position):
+    if utils.IsOrdered(old_position, mover.opponent.position, mover.position):
       self.switched_sides = True
 
   # When anteing, max range is same as minrange.
@@ -6503,7 +6504,7 @@ class Gerard(Character):
     Character.movement_reaction(self, initiator, mover, old_position, direct)
     if not direct and mover.opponent.mimics_movement():
       return
-    if ordered(old_position, mover.opponent.position, mover.position):
+    if utils.IsOrdered(old_position, mover.opponent.position, mover.position):
       self.switched_sides = True
 
   gold_value = 0.5
@@ -7131,7 +7132,7 @@ class Jager(Character):
     Character.movement_reaction(self, initiator, mover, old_position, direct)
     if not direct and mover.opponent.mimics_movement():
       return
-    if ordered(old_position, mover.opponent.position, mover.position):
+    if utils.IsOrdered(old_position, mover.opponent.position, mover.position):
       self.switched_sides = True
 
   def evaluate(self):
@@ -7277,7 +7278,7 @@ class Kajia(Character):
   # Give counter when opponent moves and switches sides.
   def movement_reaction(self, initiator, mover, old_position, direct):
     Character.movement_reaction(self, initiator, mover, old_position, direct)
-    if mover is self.opponent and ordered(
+    if mover is self.opponent and utils.IsOrdered(
       self.opponent.position, self.position, old_position
     ):
       self.give_insects(1)
@@ -7664,7 +7665,7 @@ class Khadath(Character):
       [
         pos
         for pos in range(7)
-        if ordered(self.opponent.position, self.trap_position, pos)
+        if utils.IsOrdered(self.opponent.position, self.trap_position, pos)
       ]
     )
 
@@ -9346,7 +9347,7 @@ class Sarafina(Character):
     Character.movement_reaction(self, initiator, mover, old_position, direct)
     if not direct and mover.opponent.mimics_movement():
       return
-    if ordered(old_position, mover.opponent.position, mover.position):
+    if utils.IsOrdered(old_position, mover.opponent.position, mover.position):
       self.switched_sides = True
 
   def blocks_opponent_movement(self, initiator, direct):
@@ -9386,7 +9387,7 @@ class Sarafina(Character):
       ret = 0.2 + 0.1 * abs(d0 - d1)
     # Locus gets extra priority for switching with opponent.
     if self.locus not in self.discard[1] | self.discard[2]:
-      if self.projection is not None and ordered(
+      if self.projection is not None and utils.IsOrdered(
         self.position, self.opponent.position, self.projection
       ):
         ret += 0.2
@@ -9785,7 +9786,7 @@ class Tanis(Character):
     Character.movement_reaction(self, initiator, mover, old_position, direct)
     if not direct and mover.opponent.mimics_movement():
       return
-    if ordered(old_position, mover.opponent.position, mover.position):
+    if utils.IsOrdered(old_position, mover.opponent.position, mover.position):
       self.switched_sides = True
 
   def blocks_priority_bonuses(self):
@@ -9892,7 +9893,7 @@ class Tatsumi(Character):
     self.juto_damage_taken = state.juto_damage_taken
 
   def zone_0(self):
-    return self.juto_position != None and ordered(
+    return self.juto_position != None and utils.IsOrdered(
       self.juto_position, self.position, self.opponent.position
     )
 
@@ -9900,12 +9901,12 @@ class Tatsumi(Character):
     return self.juto_position == self.position
 
   def zone_2(self):
-    return self.juto_position != None and ordered(
+    return self.juto_position != None and utils.IsOrdered(
       self.position, self.juto_position, self.opponent.position
     )
 
   def zone_3(self):
-    # Not using ordered(), because we don't need a strong ordering.
+    # Not using utils.IsOrdered(), because we don't need a strong ordering.
     return (
       self.juto_position != None
       and (self.juto_position - self.opponent.position)
@@ -10586,7 +10587,7 @@ class Dash(Base):
 
   def specific_movement_reaction(self, initiator, mover, old_position, direct):
     if (
-      ordered(old_position, self.opponent.position, self.me.position)
+      utils.IsOrdered(old_position, self.opponent.position, self.me.position)
       and not self.opponent.mimics_movement()
     ):
       self.me.set_triggered_dodge()
@@ -10951,7 +10952,7 @@ class HallicrisSnare(Finisher):
     # Get +1 power per pull
     spaces_pulled = abs(self.opponent.position - old_position)
     # If opponent switched sides, actual advance is one less then distance moved
-    if ordered(old_position, self.me.position, self.opponent.position):
+    if utils.IsOrdered(old_position, self.me.position, self.opponent.position):
       spaces_pulled -= 1
     self.me.add_triggered_power_bonus(spaces_pulled)
 
@@ -11268,7 +11269,7 @@ class HailTheKing(Finisher):
     # Get +1 power per advance.
     spaces_advanced = abs(self.me.position - old_position)
     # If I switched sides, actual advance is one less then distance moved
-    if ordered(old_position, self.opponent.position, self.me.position):
+    if utils.IsOrdered(old_position, self.opponent.position, self.me.position):
       spaces_advanced -= 1
     self.me.add_triggered_power_bonus(spaces_advanced)
 
@@ -11438,7 +11439,7 @@ class Dread(Base):
   preferred_range = 2  # arbitrary average
 
   def special_range_hit(self):
-    return ordered(self.me.position, self.opponent.position, self.me.shadow_position)
+    return utils.IsOrdered(self.me.position, self.opponent.position, self.me.shadow_position)
 
   def before_trigger(self):
     self.me.pull([1])
@@ -11457,7 +11458,7 @@ class Horrific(Style):
     m = self.me.position
     o = self.opponent.position
     s = self.me.shadow_position
-    if ordered(s, o, m):
+    if utils.IsOrdered(s, o, m):
       return 1
     if o == s:
       return 1.5
@@ -11474,7 +11475,7 @@ class Horrific(Style):
     m = self.me.position
     o = self.opponent.position
     s = self.me.shadow_position
-    if ordered(s, o, m):
+    if utils.IsOrdered(s, o, m):
       self.me.push([0, 1])
     elif o != s:
       self.me.push([0, 1])
@@ -11491,7 +11492,7 @@ class Horrific(Style):
     o = self.opponent.position
     s = self.me.shadow_position
     # pushing at start of beat messes with their attack.
-    return ret + 0.1 if ordered(s, o, m) else ret - 0.2
+    return ret + 0.1 if utils.IsOrdered(s, o, m) else ret - 0.2
 
 
 class Ghastly(Style):
@@ -11929,7 +11930,7 @@ class Ionic(Style):
   def get_preferred_range(self):
     if self.me.magnetron.position is None:
       return 0.5
-    if self.opponent.position == self.me.magnetron.position or ordered(
+    if self.opponent.position == self.me.magnetron.position or utils.IsOrdered(
       self.me.position, self.opponent.position, self.me.magnetron.position
     ):
       return 0.5
@@ -11947,7 +11948,7 @@ class Ionic(Style):
     # Can't pull if no Magnetron, or if Magnetron on opponent.
     if self.me.magnetron.position in [None, self.opponent.position]:
       return
-    if ordered(self.me.position, self.opponent.position, self.me.magnetron.position):
+    if utils.IsOrdered(self.me.position, self.opponent.position, self.me.magnetron.position):
       self.me.push([1, 0])
     else:
       self.me.pull([0, 1])
@@ -12002,7 +12003,7 @@ class Catalyst(Style):
   mean_priority = 2
 
   def can_be_hit(self):
-    return self.me.dampening.position is None or not ordered(
+    return self.me.dampening.position is None or not utils.IsOrdered(
       self.me.position, self.me.dampening.position, self.opponent.position
     )
 
@@ -12018,7 +12019,7 @@ class Catalyst(Style):
     discard = self.me.discard
     reconfig = self.me.unique_base not in (discard[1] | discard[2])
     # add value if dampening is between you and opponent
-    value += 0.5 if dampening is not None and ordered(me, dampening, her) else -0.2
+    value += 0.5 if dampening is not None and utils.IsOrdered(me, dampening, her) else -0.2
     # add value if you're on magnetron
     value += 0.4 if me == self.me.magnetron.position else -0.1
     # add value if dampening outside and you have Reconfiguration
@@ -12304,7 +12305,7 @@ class SceneShiftBorneo(Base):
 
   def specific_movement_reaction(self, initiator, mover, old_position, direct):
     if (
-      ordered(old_position, self.opponent.position, self.me.position)
+      utils.IsOrdered(old_position, self.opponent.position, self.me.position)
       and not self.opponent.mimics_movement()
     ):
       self.me.switched_sides = True
@@ -13188,7 +13189,7 @@ class LeapingClive(Style):
     self.me.advance((1, 2, 3))
     spaces_advanced = abs(self.me.position - old_pos)
     # If I switched sides, actual advance is one less then distance moved
-    if ordered(old_pos, self.opponent.position, self.me.position):
+    if utils.IsOrdered(old_pos, self.opponent.position, self.me.position):
       spaces_advanced -= 1
     if spaces_advanced == 3:
       self.me.add_triggered_power_bonus(2)
@@ -13196,7 +13197,7 @@ class LeapingClive(Style):
   ordered_before_trigger = True
 
   def movement_reaction(self, initiator, mover, old_position, direct):
-    if mover is self.me and ordered(
+    if mover is self.me and utils.IsOrdered(
       mover.position, mover.opponent.position, old_position
     ):
       self.me.switched_sides = True
@@ -14184,7 +14185,7 @@ class Merciless(Style):
     if (
       mover == self.opponent
       and not direct
-      and ordered(mover.position, self.me.position, old_pos)
+      and utils.IsOrdered(mover.position, self.me.position, old_pos)
     ):
       self.opponent.lose_life(2)
       self.me.merciless_immobilized = True
@@ -14507,7 +14508,7 @@ class Advancing(Style):
   ordered_start_trigger = True
 
   def specific_movement_reaction(self, initiator, mover, old_position, direct):
-    if ordered(old_position, self.opponent.position, self.me.position):
+    if utils.IsOrdered(old_position, self.opponent.position, self.me.position):
       self.me.add_triggered_power_bonus(1)
 
 
@@ -14657,7 +14658,7 @@ class Comet(Style):
   ordered_before_trigger = True
 
   def specific_movement_reaction(self, initiator, mover, old_position, direct):
-    if ordered(old_position, self.opponent.position, self.me.position):
+    if utils.IsOrdered(old_position, self.opponent.position, self.me.position):
       self.opponent.set_triggered_dodge()
 
   def hit_trigger(self):
@@ -14819,7 +14820,7 @@ class Slicer(Base):
   def specific_movement_reaction(self, initiator, mover, old_position, direct):
     # +1 power if switched sides.
     if (
-      ordered(old_position, self.opponent.position, self.me.position)
+      utils.IsOrdered(old_position, self.opponent.position, self.me.position)
       and not self.opponent.mimics_movement()
     ):
       self.me.add_triggered_power_bonus(1)
@@ -14939,7 +14940,7 @@ class Fanged(Style):
   ordered_before_trigger = True
 
   def specific_movement_reaction(self, initiator, mover, old_position, direct):
-    if ordered(old_position, self.opponent.position, self.me.position):
+    if utils.IsOrdered(old_position, self.opponent.position, self.me.position):
       self.me.add_triggered_power_bonus(1)
 
 
@@ -15514,7 +15515,7 @@ class LunarCross(Finisher):
       self.me.move_directly([self.me.jager_position])
       if self.me.position != old_pos:
         self.me.jager_position = old_pos
-        if ordered(self.me.position, self.opponent.position, old_pos):
+        if utils.IsOrdered(self.me.position, self.opponent.position, old_pos):
           self.me.lunar_swap = True
 
   ordered_before_trigger = True
@@ -15525,7 +15526,7 @@ class LunarCross(Finisher):
   def evaluate_setup(self):
     return (
       1
-      if ordered(self.me.jager_position, self.opponent.position, self.me.position)
+      if utils.IsOrdered(self.me.jager_position, self.opponent.position, self.me.position)
       else 0
     )
 
@@ -15625,10 +15626,10 @@ class Coordinated(Style):
     dist = abs(jager - opp)
     # Blocking is irrelevant when jager behind me, on me, on opponent,
     # or very far from opponent
-    if ordered(opp, me, jager) or jager == me or jager == opp or dist > 2:
+    if utils.IsOrdered(opp, me, jager) or jager == me or jager == opp or dist > 2:
       return -0.5
     # It's best when blocking forward movement
-    elif ordered(opp, jager, me):
+    elif utils.IsOrdered(opp, jager, me):
       return 0.5
     # and less so when blocking backward movement
     else:
@@ -15645,7 +15646,7 @@ class FullMoon(Style):
   def get_soak(self):
     return (
       2
-      if ordered(self.me.position, self.me.jager_position, self.opponent.position)
+      if utils.IsOrdered(self.me.position, self.me.jager_position, self.opponent.position)
       else 0
     )
 
@@ -15666,7 +15667,7 @@ class FullMoon(Style):
   def get_power_bonus(self):
     return (
       2
-      if ordered(self.me.position, self.opponent.position, self.me.jager_position)
+      if utils.IsOrdered(self.me.position, self.opponent.position, self.me.jager_position)
       else 0
     )
 
@@ -15962,7 +15963,7 @@ class Teleport(Style):
 
   def can_be_hit(self):
     trap = self.me.trap_position
-    return trap is None or not ordered(self.me.position, trap, self.opponent.position)
+    return trap is None or not utils.IsOrdered(self.me.position, trap, self.opponent.position)
 
   def end_trigger(self):
     self.me.move_to_unoccupied()
@@ -15976,7 +15977,7 @@ class Teleport(Style):
 
   def evaluation_bonus(self):
     # Teleport is better when trap is between me and opponent
-    if self.me.trap_position is not None and ordered(
+    if self.me.trap_position is not None and utils.IsOrdered(
       self.me.position, self.me.trap_position, self.opponent.position
     ):
       return 0.25
@@ -17767,7 +17768,7 @@ class Overlords(Style):
     # Get -1 power per pull
     spaces_pulled = abs(self.opponent.position - old_position)
     # If opponent switched sides, actual advance is one less then distance moved
-    if ordered(old_position, self.me.position, self.opponent.position):
+    if utils.IsOrdered(old_position, self.me.position, self.opponent.position):
       spaces_pulled -= 1
     self.me.add_triggered_power_bonus(-spaces_pulled)
 
@@ -18282,7 +18283,7 @@ class Locus(SarafinaStyle):
     return (
       0.3
       if self.me.projection is not None
-      and ordered(self.me.position, self.opponent.position, self.me.projection)
+      and utils.IsOrdered(self.me.position, self.opponent.position, self.me.projection)
       else -0.1
     )
 
@@ -18593,7 +18594,7 @@ class Spiral(Style):
     # Get -1 power per advance.
     spaces_advanced = abs(self.me.position - old_position)
     # If I switched sides, actual advance is one less then distance moved
-    if ordered(old_position, self.opponent.position, self.me.position):
+    if utils.IsOrdered(old_position, self.opponent.position, self.me.position):
       spaces_advanced -= 1
     self.me.add_triggered_power_bonus(spaces_advanced)
 
@@ -18685,7 +18686,7 @@ class Valiant(Style):
 
   @property
   def soak(self):
-    if self.me.loki.position is not None and ordered(
+    if self.me.loki.position is not None and utils.IsOrdered(
       self.me.position, self.me.loki.position, self.opponent.position
     ):
       return 3
@@ -18708,7 +18709,7 @@ class Valiant(Style):
   def evaluation_bonus(self):
     return (
       0.4
-      if ordered(self.me.position, self.me.loki.position, self.opponent.position)
+      if utils.IsOrdered(self.me.position, self.me.loki.position, self.opponent.position)
       else -0.1
     )
 
@@ -19783,7 +19784,7 @@ class Resilience(Paradigm):
 
 class Distortion(Paradigm):
   shorthand = "d"
-  values = [0, 0, 0.0, 1.0, 1.0, 0.0, 0]
+  values = [0, 0, 0, 1, 1, 0, 0]
 
   def can_be_hit(self):
     return self.opponent.attack_range() != 4
