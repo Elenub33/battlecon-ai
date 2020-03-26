@@ -1174,7 +1174,7 @@ class Game:
     )
 
   def distance(self):
-    return abs(self.player[0].position - self.player[1].position)
+    return int(abs(self.player[0].position - self.player[1].position))
 
   # Number of beats expected until end of game.
   def expected_beats(self):
