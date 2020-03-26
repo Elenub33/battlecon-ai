@@ -401,18 +401,6 @@ def find_end(lines, end):
   return bool(find_end_line(lines, end))
 
 
-# set of all positions between a and b, inclusive
-def pos_range(a, b):
-  try:
-    if b > a:
-      return set(range(a, b + 1))
-    else:
-      return set(range(b, a + 1))
-  except TypeError as e:
-    e.args = (f"{e.args[0]} (a = {a}, b = {b})",)
-    raise e
-
-
 def all_mean_priorities():
   chars = [character(the_game=None, n=0) for character in character_dict.values()]
   chars = sorted(chars, key=attrgetter("mean_priority"), reverse=True)
@@ -3273,7 +3261,7 @@ class Character(object):
       # for normal movement, a position is 'unobstructed' if there
       # are no blocked positions between it and the mover
       return set(
-        pos for pos in range(7) if len(pos_range(pos, mover_pos) & blocked) == 0
+        pos for pos in range(7) if len(utils.PositionsBetween(pos, mover_pos) & blocked) == 0
       )
 
   # given player moving/being moved, and set of relative moves,
@@ -11022,7 +11010,7 @@ class Barbed(Style):
       if self.game.distance() == 1:
         self.opponent.lose_life(2)
     else:
-      passed = pos_range(opp, old_pos)
+      passed = utils.PositionsBetween(opp, old_pos)
       passed.remove(old_pos)
       me = self.me.position
       if me + 1 in passed:
@@ -16653,7 +16641,7 @@ class Fusion(Style):
     blow_out = self.me.get_destinations(self.opponent, (-damage,)) == set()
     opp = self.opponent.position
     push_positions = (
-      pos_range(0, opp - 1) if opp < self.me.position else pos_range(opp + 1, 7)
+      utils.PositionsBetween(0, opp - 1) if opp < self.me.position else utils.PositionsBetween(opp + 1, 7)
     )
     self.me.push(list(range(damage + 1)), max_move=True)
     # if destination beyond board, and opponent didn't block any
@@ -19065,7 +19053,7 @@ class Riptide(Style):
   # move juto any number of spaces towards tatsumi
   def end_trigger(self):
     if self.me.juto_position is not None:
-      destinations = pos_range(self.me.position, self.me.juto_position)
+      destinations = utils.PositionsBetween(self.me.position, self.me.juto_position)
       self.me.move_juto(destinations)
 
   @property
@@ -19389,7 +19377,7 @@ class Metal(Style):
       else:
         self.me.add_zombies(
           (
-            pos_range(self.me.position, old_position)
+            utils.PositionsBetween(self.me.position, old_position)
             - set([self.me.position, self.opponent.position])
           )
         )
@@ -19407,7 +19395,7 @@ class Hellraising(Style):
   def start_trigger(self):
     self.me.retreat([1])
     self.me.add_zombies(
-      pos_range(self.me.position, self.opponent.position)
+      utils.PositionsBetween(self.me.position, self.opponent.position)
       - set((self.me.position, self.opponent.position))
     )
 
