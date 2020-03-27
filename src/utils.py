@@ -22,3 +22,11 @@ def PositionsBetween(a, b) -> List[int]:
     low, high = min(a, b), max(a, b)
 
   return set(range(low, high+1))
+
+
+def TypesafeRange(*args):
+  """Range, but with all arguments coerced to integers."""
+  typesafe_args = tuple(map(int, args))
+  if typesafe_args != args:
+    log.warning(f'Nontrivial coercion of {args} to Tuple[int]')
+  return range(*typesafe_args)

@@ -2721,9 +2721,9 @@ class Character(object):
     pos = int(self.position)
     opp = int(self.opponent.position)
     if opp > pos:
-      return set(range(pos + minr, min(7, pos + maxr + 1)))
+      return set(utils.TypesafeRange(pos + minr, min(7, pos + maxr + 1)))
     else:
-      return set(range(max(0, pos - maxr), pos - minr + 1))
+      return set(utils.TypesafeRange(max(0, pos - maxr), pos - minr + 1))
 
   def reduce_soak(self, soak):
     for card in self.active_cards:
@@ -7182,9 +7182,9 @@ class Juto(Character):
     me = self.position
     opp = self.opponent.position
     if me > opp:
-      return set(range(opp + 1, 7))
+      return set(utils.TypesafeRange(opp + 1, 7))
     else:
-      return set(range(opp))
+      return set(utils.TypesafeRange(opp))
 
 
 class Kajia(Character):
@@ -11042,9 +11042,9 @@ class Crippling(Style):
       return set([])
     opp = self.opponent.position
     if opp < self.me.position:
-      return set(range(opp))
+      return set(utils.TypesafeRange(opp))
     else:
-      return set(range(opp + 1, 7))
+      return set(utils.TypesafeRange(opp + 1, 7))
 
   def before_trigger(self):
     self.me.advance([1, 2])
@@ -11068,14 +11068,14 @@ class Pestilent(Style):
   def blocks_opponent_movement(self, initiator, direct):
     opp = self.opponent.position
     me = self.me.position
-    return set(range(me)) if me < opp else set(range(me + 1, 7))
+    return set(utils.TypesafeRange(me)) if me < opp else set(utils.TypesafeRange(me + 1, 7))
 
   def blocks_own_movement(self, initiator):
     if self.opponent.mimics_movement():
       return set()
     opp = self.opponent.position
     me = self.me.position
-    return set(range(opp)) if opp < me else set(range(opp + 1, 7))
+    return set(utils.TypesafeRange(opp)) if opp < me else set(utils.TypesafeRange(opp + 1, 7))
 
 
 class Dizziness(Token):
@@ -11331,9 +11331,9 @@ class Regal(Style):
     if direct or initiator is self.me or self.game.distance() > 1:
       return set()
     if self.me.position < self.opponent.position:
-      return set(range(self.opponent.position + 1, 7))
+      return set(utils.TypesafeRange(self.opponent.position + 1, 7))
     else:
-      return set(range(self.opponent.position))
+      return set(utils.TypesafeRange(self.opponent.position))
 
   # Better if opponent has tokens
   def evaluation_bonus(self):
@@ -11353,7 +11353,7 @@ class Stalwart(Style):
   def before_trigger(self):
     # advance up to 3, but don't switch sides
     self.me.advance(
-      list(range(min(self.game.distance(), 4))),
+      list(utils.TypesafeRange(min(self.game.distance(), 4))),
       specific_movement_reaction=self.specific_movement_reaction,
     )
 
@@ -11383,7 +11383,7 @@ class Steeled(Style):
   # Advance up to 1 space for each damage soaked.
   # Recording soak handled by Alexian.soak_trigger()
   def before_trigger(self):
-    self.me.advance(list(range(self.me.damage_soaked + 1)))
+    self.me.advance(list(utils.TypesafeRange(self.me.damage_soaked + 1)))
 
   ordered_before_trigger = True
 
@@ -11575,9 +11575,9 @@ class Tenebrous(Style):
     if direct or shadow in (me, opp):
       return set()
     if shadow > self.opponent.position:
-      return set(range(shadow + 1, 7))
+      return set(utils.TypesafeRange(shadow + 1, 7))
     else:
-      return set(range(shadow))
+      return set(utils.TypesafeRange(shadow))
 
   def movement_reaction(self, initiator, mover, old_position, direct):
     if mover is self.me:
@@ -12505,7 +12505,7 @@ class Breathless(Style):
     # may move to other side of opponent
     opp = self.opponent.position
     me = self.me.position
-    dests = list(range(opp)) if me > opp else list(range(opp + 1, 7))
+    dests = list(utils.TypesafeRange(opp)) if me > opp else list(utils.TypesafeRange(opp + 1, 7))
     dests.append(me)
     self.me.move_directly(dests)
 
@@ -12696,7 +12696,7 @@ class Phalanx(Style):
 
   def before_trigger(self):
     if self.opponent.hits_scored:
-      self.me.advance(list(range(self.me.damage_taken + 1)))
+      self.me.advance(list(utils.TypesafeRange(self.me.damage_taken + 1)))
 
   @property
   def ordered_before_trigger(self):
@@ -13454,7 +13454,7 @@ class Accelerando(Finisher):
       spend = self.game.make_fork(
         len(self.me.pool) + 1, self.me, "Choose number of Crescendo tokens to spend:"
       )
-      for unused in range(spend):
+      for unused in utils.TypesafeRange(spend):
         self.me.spend_token()
       self.me.add_triggered_power_bonus(2 * spend)
 
@@ -13481,7 +13481,7 @@ class Deathblow(Base):
       spend = self.game.make_fork(
         len(self.me.pool) + 1, self.me, "Choose number of Crescendo tokens to spend:"
       )
-      for unused in range(spend):
+      for unused in utils.TypesafeRange(spend):
         self.me.spend_token()
       self.me.add_triggered_power_bonus(2 * spend)
 
