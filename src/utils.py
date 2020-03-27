@@ -1,4 +1,8 @@
+import logging
 from typing import List
+
+
+log = logging.getLogger(__name__)
 
 
 def IsOrdered(a, b, c) -> bool:

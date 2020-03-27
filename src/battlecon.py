@@ -50,6 +50,7 @@
 
 from operator import attrgetter
 import itertools
+import logging
 import math
 import numpy
 import os.path
@@ -61,6 +62,10 @@ import sys
 import time
 
 import utils
+
+
+log = logging.getLogger(__name__)
+
 
 debug_log = []
 

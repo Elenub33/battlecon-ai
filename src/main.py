@@ -1,8 +1,22 @@
 #!/usr/bin/env python3
 
+import logging
 from optparse import OptionParser
 
 import battlecon
+
+
+# Global logging configuration
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.INFO)
+handler = logging.StreamHandler()
+handler.setFormatter(logging.Formatter(
+    '{filename}.{funcName}:{lineno:04d} -{levelname[0]}-> {message}',
+    style='{'))
+root_logger.addHandler(handler)
+
+
+log = logging.getLogger(__name__)
 
 
 def main():
