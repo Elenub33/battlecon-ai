@@ -1179,7 +1179,7 @@ class Game:
     )
 
   def distance(self):
-    return int(abs(self.player[0].position - self.player[1].position))
+    return int(abs(self.player[0].position - self.player[1].position))  # int cast
 
   # Number of beats expected until end of game.
   def expected_beats(self):
@@ -1282,7 +1282,7 @@ class Game:
     for p in self.player:
       if p.position is not None:
         # TODO :: Figure out why p.position is sometimes a float
-        board[int(p.position)] = p.get_board_symbol()
+        board[int(p.position)] = p.get_board_symbol()  # int cast
     return "".join(board)
 
   # find minmax for results table
@@ -2718,8 +2718,8 @@ class Character(object):
     minr = max(0, self.get_minrange())
     maxr = self.get_maxrange()
     # TODO :: Figure out why p.position is sometimes a float
-    pos = int(self.position)
-    opp = int(self.opponent.position)
+    pos = int(self.position)  # int cast
+    opp = int(self.opponent.position)  # int cast
     if opp > pos:
       return set(utils.TypesafeRange(pos + minr, min(7, pos + maxr + 1)))
     else:
@@ -4324,7 +4324,7 @@ class Alumis(Character):
 
   def get_board_addendum(self):
     addendum = ["."] * 7
-    addendum[self.shadow_position] = "s"
+    addendum[int(self.shadow_position)] = "s"  # int cast
     return "".join(addendum)
 
   def initial_save(self):
@@ -4669,7 +4669,7 @@ class Aria(Character):
     for droid in self.droids:
       line = ["."] * 7
       if droid.position is not None:
-        line[droid.position] = droid.initial
+        line[int(droid.position)] = droid.initial  # int cast
       line = "".join(line)
       addendum.append(line)
     return addendum
