@@ -4432,7 +4432,7 @@ class Arec(Character):
     if self.clone_position is None:
       return ""
     addendum = ["."] * 7
-    addendum[self.clone_position] = "c"
+    addendum[int(self.clone_position)] = "c"  # int cast
     return "".join(addendum)
 
   def initial_save(self):
@@ -7448,7 +7448,7 @@ class Karin(Character):
 
   def get_board_addendum(self):
     addendum = ["."] * 7
-    addendum[self.jager_position] = "j"
+    addendum[int(self.jager_position)] = "j"  # int cast
     return "".join(addendum)
 
   def end_trigger(self):
@@ -7632,7 +7632,7 @@ class Khadath(Character):
     if self.trap_position == None:
       return ""
     addendum = ["."] * 7
-    addendum[self.trap_position] = "t"
+    addendum[int(self.trap_position)] = "t"  # int cast
     return "".join(addendum)
 
   def initial_save(self):
@@ -9696,7 +9696,7 @@ class Tanis(Character):
     for puppet in self.puppets:
       if puppet.position is not None:
         line = ["."] * 7
-        line[puppet.position] = puppet.initial
+        line[int(puppet.position)] = puppet.initial  # int cast
         line = "".join(line)
         addendum.append(line)
     return addendum
@@ -9848,7 +9848,7 @@ class Tatsumi(Character):
     if self.juto_position is None:
       return ""
     addendum = ["."] * 7
-    addendum[self.juto_position] = "j"
+    addendum[int(self.juto_position)] = "j"  # int cast
     return "".join(addendum)
 
   def read_my_state(self, lines, board, addendum):
