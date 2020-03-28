@@ -14732,7 +14732,7 @@ class KnightForm(Form):
   def get_stunguard(self):
     return (
       3
-      if (self.me.get_minrange() <= self.game.distance <= self.me.get_maxrange())
+      if (self.me.get_minrange() <= self.game.distance() <= self.me.get_maxrange())
       else 0
     )
 
