@@ -1,3 +1,4 @@
+import itertools
 import logging
 from typing import List
 
@@ -30,3 +31,12 @@ def TypesafeRange(*args):
   if typesafe_args != args:
     log.warning(f'Nontrivial coercion of {args} to Tuple[int]')
   return range(*typesafe_args)
+
+
+def IterChunks(iterable, chunk_size):
+  """Iterate over non-overlapping groups of CHUNK_SIZE elements from ITERABLE."""
+  for _, group in itertools.groupby(enumerate(iterable), lambda pair: pair[0] // chunk_size):
+    items = list(group)
+    while len(items) < chunk_size:
+      items.append(None)
+    yield tuple(items)
