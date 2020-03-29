@@ -127,28 +127,25 @@ playable = [
 
 
 def test(first=None, bases="alpha"):
-  log = []
+  log_content = []
   random.seed(0)
   found_first = not first
-  for i in range(0, len(playable), 2):
-    n0 = playable[i]
+  for p1, p2 in utils.IterChunks(playable, 2, fill=playable[0]):
     if not found_first:
-      if n0 == first:
+      if p1 == first:
         found_first = True
       else:
         continue
-    j = i + 1 if i + 1 < len(playable) else 0
-    n1 = playable[j]
-    print(n0, n1)
+    print(f"{p1} vs {p2}")
     start_time = time.time()
-    game = Game.from_start(n0, n1, bases, bases, default_discards=True)
+    game = Game.from_start(p1, p2, bases, bases, default_discards=True)
     game_log, unused_winner = game.play_game()
     end_time = time.time()
     print("tot time: %d" % (end_time - start_time))
-    log.extend(game_log)
+    log_content.extend(game_log)
   logfilename = "logs/v1.1_test"
   with open(logfilename, "w") as f:
-    for g in log:
+    for g in log_content:
       f.write(g + "\n")
 
 

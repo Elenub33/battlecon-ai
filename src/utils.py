@@ -33,10 +33,14 @@ def TypesafeRange(*args):
   return range(*typesafe_args)
 
 
-def IterChunks(iterable, chunk_size):
-  """Iterate over non-overlapping groups of CHUNK_SIZE elements from ITERABLE."""
+def IterChunks(iterable, chunk_size, fill=None):
+  """Iterate over non-overlapping groups of CHUNK_SIZE elements from ITERABLE.
+
+  If the length of ITERABLE is not evenly divisible by CHUNK_SIZE, fill the
+  remaining slots in the last chunk with FILL.
+  """
   for _, group in itertools.groupby(enumerate(iterable), lambda pair: pair[0] // chunk_size):
-    items = list(group)
+    items = list(pair[1] for pair in group)
     while len(items) < chunk_size:
-      items.append(None)
+      items.append(fill)
     yield tuple(items)
