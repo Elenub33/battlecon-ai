@@ -1391,7 +1391,9 @@ class Character(object):
       # for normal movement, a position is 'unobstructed' if there
       # are no blocked positions between it and the mover
       return set(
-        pos for pos in range(7) if len(utils.PositionsBetween(pos, mover_pos) & blocked) == 0
+        pos
+        for pos in range(7)
+        if len(utils.PositionsBetween(pos, mover_pos) & blocked) == 0
       )
 
   # given player moving/being moved, and set of relative moves,
@@ -2350,7 +2352,7 @@ class Alexian(Character):
     n = len(self.induced_pool)
     if n > 0:
       print("Number of Chivalry tokens [0-%d]: " % n)
-      return utils.ReadNumber(0, n+1)
+      return utils.ReadNumber(0, n + 1)
     else:
       return 0
 
@@ -4080,7 +4082,7 @@ class Demitras(Character):
     n = len(self.pool)
     if n > 0:
       print("Number of Crescendo tokens [0-%d]: " % n)
-      return utils.ReadNumber(0, n+1)
+      return utils.ReadNumber(0, n + 1)
     else:
       return 0
 
@@ -4166,7 +4168,7 @@ class Eligor(Character):
     n = len(self.pool)
     if n > 0:
       print("Number of Vengeance tokens [0-%d]: " % n)
-      return utils.ReadNumber(0, n+1)
+      return utils.ReadNumber(0, n + 1)
     else:
       return 0
 
@@ -6658,7 +6660,7 @@ class Oriana(Character):
     n = len(self.pool)
     if n > 0:
       print("Number of Magic Point tokens [0-%d]: " % n)
-      return utils.ReadNumber(0, n+1)
+      return utils.ReadNumber(0, n + 1)
     else:
       return 0
 
@@ -6750,7 +6752,7 @@ class Ottavia(Character):
     mn = min(priorities)
     mx = max(priorities)
     while True:
-      ans = utils.ReadNumber(mn, mx+1)
+      ans = utils.ReadNumber(mn, mx + 1)
       if ans in priorities:
         return ans
 
@@ -6941,7 +6943,7 @@ class Rexan(Character):
     n = len(self.induced_pool)
     if n > 0:
       print("Number of Curse tokens [0-%d]: " % n)
-      return utils.ReadNumber(0, n+1)
+      return utils.ReadNumber(0, n + 1)
     else:
       return 0
 
@@ -7710,7 +7712,7 @@ class Shekhtur(Character):
     n = len(self.pool)
     if n > 0:
       print("Number of Malice tokens [0-%d]: " % n)
-      return utils.ReadNumber(0, n+1)
+      return utils.ReadNumber(0, n + 1)
     else:
       return 0
 
@@ -8420,7 +8422,7 @@ class Xenitia(Character):
     if md == 0:
       return 0
     print("Draw how much life? [0-%d]" % md)
-    return utils.ReadNumber(0, md+1)
+    return utils.ReadNumber(0, md + 1)
 
   def ante_trigger(self):
     draw = self.strat[2][0]
@@ -9174,14 +9176,20 @@ class Pestilent(Style):
   def blocks_opponent_movement(self, initiator, direct):
     opp = self.opponent.position
     me = self.me.position
-    return set(utils.TypesafeRange(me)) if me < opp else set(utils.TypesafeRange(me + 1, 7))
+    return (
+      set(utils.TypesafeRange(me)) if me < opp else set(utils.TypesafeRange(me + 1, 7))
+    )
 
   def blocks_own_movement(self, initiator):
     if self.opponent.mimics_movement():
       return set()
     opp = self.opponent.position
     me = self.me.position
-    return set(utils.TypesafeRange(opp)) if opp < me else set(utils.TypesafeRange(opp + 1, 7))
+    return (
+      set(utils.TypesafeRange(opp))
+      if opp < me
+      else set(utils.TypesafeRange(opp + 1, 7))
+    )
 
 
 class Dizziness(Token):
@@ -10611,7 +10619,11 @@ class Breathless(Style):
     # may move to other side of opponent
     opp = self.opponent.position
     me = self.me.position
-    dests = list(utils.TypesafeRange(opp)) if me > opp else list(utils.TypesafeRange(opp + 1, 7))
+    dests = (
+      list(utils.TypesafeRange(opp))
+      if me > opp
+      else list(utils.TypesafeRange(opp + 1, 7))
+    )
     dests.append(me)
     self.me.move_directly(dests)
 
@@ -14752,7 +14764,9 @@ class Fusion(Style):
     blow_out = self.me.get_destinations(self.opponent, (-damage,)) == set()
     opp = self.opponent.position
     push_positions = (
-      utils.PositionsBetween(0, opp - 1) if opp < self.me.position else utils.PositionsBetween(opp + 1, 7)
+      utils.PositionsBetween(0, opp - 1)
+      if opp < self.me.position
+      else utils.PositionsBetween(opp + 1, 7)
     )
     self.me.push(list(range(damage + 1)), max_move=True)
     # if destination beyond board, and opponent didn't block any

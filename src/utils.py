@@ -23,14 +23,14 @@ def PositionsBetween(a, b) -> List[int]:
   else:
     low, high = min(a, b), max(a, b)
 
-  return set(range(low, high+1))
+  return set(range(low, high + 1))
 
 
 def TypesafeRange(*args):
   """Range, but with all arguments coerced to integers."""
   typesafe_args = tuple(map(int, args))
   if typesafe_args != args:
-    log.warning(f'Nontrivial coercion of {args} to Tuple[int]')
+    log.warning(f"Nontrivial coercion of {args} to Tuple[int]")
   return range(*typesafe_args)
 
 
@@ -40,7 +40,9 @@ def IterChunks(iterable, chunk_size, fill=None):
   If the length of ITERABLE is not evenly divisible by CHUNK_SIZE, fill the
   remaining slots in the last chunk with FILL.
   """
-  for _, group in itertools.groupby(enumerate(iterable), lambda pair: pair[0] // chunk_size):
+  for _, group in itertools.groupby(
+    enumerate(iterable), lambda pair: pair[0] // chunk_size
+  ):
     items = list(pair[1] for pair in group)
     while len(items) < chunk_size:
       items.append(fill)

@@ -10,9 +10,11 @@ import battlecon
 root_logger = logging.getLogger()
 root_logger.setLevel(logging.INFO)
 handler = logging.StreamHandler()
-handler.setFormatter(logging.Formatter(
-    '{filename}.{funcName}:{lineno:04d} -{levelname[0]}-> {message}',
-    style='{'))
+handler.setFormatter(
+  logging.Formatter(
+    "{filename}.{funcName}:{lineno:04d} -{levelname[0]}-> {message}", style="{"
+  )
+)
 root_logger.addHandler(handler)
 
 

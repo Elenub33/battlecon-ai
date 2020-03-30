@@ -8,9 +8,11 @@ import utils
 root_logger = logging.getLogger()
 root_logger.setLevel(logging.INFO)
 handler = logging.StreamHandler()
-handler.setFormatter(logging.Formatter(
-    '{filename}.{funcName}:{lineno:04d} -{levelname[0]}-> {message}',
-    style='{'))
+handler.setFormatter(
+  logging.Formatter(
+    "{filename}.{funcName}:{lineno:04d} -{levelname[0]}-> {message}", style="{"
+  )
+)
 root_logger.addHandler(handler)
 
 
@@ -30,16 +32,15 @@ class TestIterChunks(unittest.TestCase):
   def test_NoMissingItems(self):
     reconstructed = ""
     for chunk in utils.IterChunks(self.DATA, 4):
-      reconstructed += ''.join(chunk)
+      reconstructed += "".join(chunk)
     self.assertEqual(self.DATA, reconstructed)
 
   def test_FillWithSpecifiedItem(self):
     reconstructed = ""
-    for chunk in utils.IterChunks(self.DATA, 5, fill='X'):
-      reconstructed += ''.join(chunk)
-    self.assertEqual(self.DATA + 'XXXX', reconstructed)
+    for chunk in utils.IterChunks(self.DATA, 5, fill="X"):
+      reconstructed += "".join(chunk)
+    self.assertEqual(self.DATA + "XXXX", reconstructed)
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
   unittest.main()

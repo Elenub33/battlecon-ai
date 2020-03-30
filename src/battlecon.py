@@ -331,6 +331,7 @@ def profile(pfile, n=30):
 
 # input functions
 
+
 def string_is_int(s):
   try:
     int(s)
@@ -372,7 +373,9 @@ def find_end(lines, end):
 
 
 def all_mean_priorities():
-  chars = [character(the_game=None, n=0) for character in fighters.character_dict.values()]
+  chars = [
+    character(the_game=None, n=0) for character in fighters.character_dict.values()
+  ]
   chars = sorted(chars, key=attrgetter("mean_priority"), reverse=True)
   for c in chars:
     print("%.1f  %s" % (c.mean_priority, c.name))
