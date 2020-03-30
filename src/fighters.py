@@ -142,7 +142,7 @@ class Character(object):
     else:
       if self.is_user:
         print("Select a Finisher for %s:" % self.name)
-        ans = menu([f.name for f in self.finishers])
+        ans = utils.MenuPrompt([f.name for f in self.finishers])
       else:
         ans = int(random.random() * len(self.finishers))
       self.finishers = [self.finishers[ans]]
@@ -238,15 +238,15 @@ class Character(object):
         styles = self.styles[:]
         bases = self.bases[:]
         print("Discard a style to discard 1:")
-        s1 = styles[menu([s.name for s in styles])]
+        s1 = styles[utils.MenuPrompt([s.name for s in styles])]
         styles.remove(s1)
         print("Discard a style to discard 2:")
-        s2 = styles[menu([s.name for s in styles])]
+        s2 = styles[utils.MenuPrompt([s.name for s in styles])]
         print("Discard a base to discard 1:")
-        b1 = bases[menu([b.name for b in bases])]
+        b1 = bases[utils.MenuPrompt([b.name for b in bases])]
         bases.remove(b1)
         print("Discard a base to discard 2:")
-        b2 = bases[menu([b.name for b in bases])]
+        b2 = bases[utils.MenuPrompt([b.name for b in bases])]
       else:
         s1, b1, s2, b2 = self.choose_initial_discards()
         b1 = [b for b in self.bases if b.alpha_name == b1.alpha_name][0]
@@ -410,12 +410,12 @@ class Character(object):
         + ", ".join(b.name for b in bases if not isinstance(b, SpecialBase))
         + ")\n"
       )
-    style = styles[menu(styles)] if len(styles) > 1 else styles[0]
+    style = styles[utils.MenuPrompt(styles)] if len(styles) > 1 else styles[0]
     if isinstance(style, SpecialAction):
       bases = [b for b in bases if isinstance(b, SpecialBase)]
     else:
       bases = [b for b in bases if not isinstance(b, SpecialBase)]
-    base = bases[menu(bases)] if len(bases) > 1 else bases[0]
+    base = bases[utils.MenuPrompt(bases)] if len(bases) > 1 else bases[0]
     return (style, base)
 
   def get_antes(self):
@@ -1585,7 +1585,7 @@ class Character(object):
       return options[0]
     if self.is_user:
       print("Which base did you use to play your finisher?")
-      ans = menu([o.name for o in options])
+      ans = utils.MenuPrompt([o.name for o in options])
       return options[ans]
     else:
       # Since ante is already set, it might mess up evaluations.
@@ -2145,7 +2145,7 @@ class Abarene(Character):
       options = [self.get_ante_name(a) for a in antes]
       options[0] = "None"
       print("Select tokens to ante:")
-      return antes[menu(options)]
+      return antes[utils.MenuPrompt(options)]
     else:
       return []
 
@@ -2575,11 +2575,11 @@ class Arec(Character):
       clone_ante = False
     else:
       print("Move to clone?")
-      clone_ante = bool(menu(["No", "Yes"]))
+      clone_ante = bool(utils.MenuPrompt(["No", "Yes"]))
     if self.pool:
       print("Select token to ante:")
       options = [t.name for t in self.pool] + ["None"]
-      ans = menu(options)
+      ans = utils.MenuPrompt(options)
       token_ante = self.pool[ans] if ans < len(self.pool) else None
     else:
       token_ante = None
@@ -2763,7 +2763,7 @@ class Aria(Character):
     # Choose initial droid
     if self.is_user:
       print("Choose initial droid:")
-      ans = menu(self.droids)
+      ans = utils.MenuPrompt(self.droids)
       self.droids[ans].position = self.position
     else:
       self.magnetron.position = self.position
@@ -2953,7 +2953,7 @@ class Baenvier(Character):
   def input_ante(self, pair):
     if self.pool:
       print("Ante a Spell Eater Token?")
-      return menu(["No", "Yes"])
+      return utils.MenuPrompt(["No", "Yes"])
     else:
       return 0
 
@@ -3279,7 +3279,7 @@ class Cadenza(Character):
   def input_ante(self, pair):
     if self.pool:
       print("Ante an Iron Body Token?")
-      return menu(["No", "Yes"])
+      return utils.MenuPrompt(["No", "Yes"])
     else:
       return 0
 
@@ -3629,7 +3629,7 @@ class Clinhyde(Character):
     if inactive:
       print("Select a stim pack to activate:")
       options = [p.name for p in inactive] + ["None"]
-      ans = menu(options)
+      ans = utils.MenuPrompt(options)
       return inactive[ans] if ans < len(inactive) else None
     else:
       return None
@@ -3806,7 +3806,7 @@ class Clive(Character):
     if self.module_stack:
       print("Select a module to activate:")
       options = [m.name for m in self.module_stack] + ["None"]
-      ans = menu(options)
+      ans = utils.MenuPrompt(options)
       return self.module_stack[ans] if ans < len(self.module_stack) else None
     else:
       return None
@@ -4516,7 +4516,7 @@ class Gerard(Character):
       print("Choose next mercenary to hire:")
       options = [h.name for h in possible_hires]
       options.append("Done hiring")
-      ans = menu(options)
+      ans = utils.MenuPrompt(options)
       if ans == len(possible_hires):
         break
       ante[0].append(possible_hires[ans])
@@ -4535,7 +4535,7 @@ class Gerard(Character):
       print("Choose next mercenary to activate:")
       options = [a.name for a in possible_activations]
       options.append("Done activating")
-      ans = menu(options)
+      ans = utils.MenuPrompt(options)
       if ans == len(possible_activations):
         break
       ante[1].append(possible_activations[ans])
@@ -4693,12 +4693,12 @@ class Heketch(Character):
   def input_ante(self, pair):
     if self.pool:
       print("Ante Dark Force token?")
-      ans = menu(["No", "Yes"])
+      ans = utils.MenuPrompt(["No", "Yes"])
       if ans == 0:
         return 0
       else:
         print("Prefer which side of opponent?")
-        ans = menu(["Left", "Right"])
+        ans = utils.MenuPrompt(["Left", "Right"])
         return -1 if ans == 0 else 1
     else:
       return 0
@@ -4841,7 +4841,7 @@ class Hepzibah(Character):
     if not options[0]:
       options[0] = "None"
     print("Select Dark Pacts to ante:")
-    return antes[menu(options)]
+    return antes[utils.MenuPrompt(options)]
 
   def ante_trigger(self):
     self.anted_pacts = self.strat[2][0]
@@ -4922,7 +4922,7 @@ class Hikaru(Character):
     if self.pool:
       print("Select token to ante:")
       options = [t.name for t in self.pool] + ["None"]
-      ans = menu(options)
+      ans = utils.MenuPrompt(options)
       return self.pool[ans] if ans < len(self.pool) else None
     else:
       return None
@@ -5071,7 +5071,7 @@ class Iri(Character):
 
   def input_ante(self):
     print("Select your form:")
-    return self.forms[menu([form.name for form in self.forms])]
+    return self.forms[utils.MenuPrompt([form.name for form in self.forms])]
 
   def ante_trigger(self):
     new_form = self.strat[2][0]
@@ -5208,7 +5208,7 @@ class Jager(Character):
     if self.signature_pool and pair[0] is not self.special_action:
       print("Select signature move to play:")
       options = [s.name for s in self.signature_pool] + ["None"]
-      ans = menu(options)
+      ans = utils.MenuPrompt(options)
       return self.signature_pool[ans] if ans < len(self.signature_pool) else None
     else:
       return None
@@ -5983,7 +5983,7 @@ class Lesandra(Character):
   def input_ante(self, pair):
     if self.active_familiar:
       print("Ante %s?" % self.active_familiar)
-      if menu(["No", "Yes"]):
+      if utils.MenuPrompt(["No", "Yes"]):
         return self.active_familiar
     return None
 
@@ -6573,7 +6573,7 @@ class Mikhail(Character):
   def input_ante(self, pair):
     if self.pool:
       print("Ante Seal token?")
-      return menu(["No", "Yes"])
+      return utils.MenuPrompt(["No", "Yes"])
     else:
       return 0
 
@@ -7059,7 +7059,7 @@ class Rukyuk(Character):
     if self.pool:
       print("Select token to ante:")
       options = [t.name for t in self.pool] + ["None"]
-      ans = menu(options)
+      ans = utils.MenuPrompt(options)
       return self.pool[ans] if ans < len(self.pool) else None
     else:
       return None
@@ -7411,7 +7411,7 @@ class Sarafina(Character):
       return False
     else:
       print("Move to projection?")
-      return bool(menu(["No", "Yes"]))
+      return bool(utils.MenuPrompt(["No", "Yes"]))
 
   def ante_trigger(self):
     if self.ritherwhyte_activated:
@@ -7530,7 +7530,7 @@ class Seth(Character):
     bases = [b for b in self.opponent.bases if b not in discards]
     print("Name one of %s's bases:" % self.opponent)
     options = [b.name for b in bases]
-    ans = menu(options)
+    ans = utils.MenuPrompt(options)
     return bases[ans]
 
   # Handles both simulation strategies (correct/incorrect guess)
@@ -7780,7 +7780,7 @@ class Tanis(Character):
         for permutation in perms
       ]
       print("Choose initial puppet positions:")
-      perm = perms[menu(options)]
+      perm = perms[utils.MenuPrompt(options)]
       for i, puppet in enumerate(perm):
         puppet.position = i + 3
     else:
@@ -7857,7 +7857,7 @@ class Tanis(Character):
     if len(options) == 1:
       return 0
     print("Choose puppet to possess this beat:")
-    return menu([puppet.name for puppet in options])
+    return utils.MenuPrompt([puppet.name for puppet in options])
 
   def pre_attack_decision_report(self, decision):
     return ["Tanis possesses %s" % decision]
@@ -8210,7 +8210,7 @@ class Vanaah(Character):
   def input_ante(self, pair):
     if self.pool:
       print("Ante Divine Rush token?")
-      return menu(["No", "Yes"])
+      return utils.MenuPrompt(["No", "Yes"])
     else:
       return 0
 
@@ -14794,7 +14794,7 @@ class Chrono(Style):
     if self.me.can_spend(1):
       # Can't go past opponent.
       max_advance = abs(self.me.position - self.opponent.position) - 1
-      max_advance = min(max_advance, len(self.me.pool))
+      max_advance = int(min(max_advance, len(self.me.pool)))
       advance = self.game.make_fork(
         max_advance + 1, self.me, "How many Time tokens to spend for advancing?"
       )

@@ -152,21 +152,18 @@ def test(first=None, bases="alpha"):
 def play():
   names = sorted([k.capitalize() for k in fighters.character_dict])
   while True:
-    print("Select your character: [1-%d]\n" % (len(names) + 1))
-    ans = menu(names + ["Random"], n_cols=3)
-    if ans == len(names):
-      ans = random.randrange(len(names))
-    human = names[ans]
-    print("You will be playing", human)
-    ai_names = [n for n in names if n != human]
-    print("\nSelect AI character: [1-%d]\n" % (len(ai_names) + 1))
-    ans = menu(ai_names + ["Random"], n_cols=3)
-    if ans == len(ai_names):
-      ans = random.randrange(len(ai_names))
-    ai = ai_names[ans]
-    print("AI will be playing", ai)
-    print("\nWhich set of bases should be used?")
-    ans = menu(
+    print("Select your character:")
+    idx = utils.MenuPrompt(names + ["Random"], num_columns=3)
+    human = names.pop(idx if idx < len(names) else random.randint(0, len(names) - 1))
+    print(f"You will be playing {human}\n")
+
+    print("Select AI character:")
+    idx = utils.MenuPrompt(names + ["Random"], num_columns=3)
+    ai = names.pop(idx if idx < len(names) else random.randint(0, len(names) - 1))
+    print(f"AI will be playing {ai}\n")
+
+    print("Which set of bases should be used?")
+    idx = utils.MenuPrompt(
       [
         "Standard bases",
         "Beta bases",
@@ -174,10 +171,10 @@ def play():
         "I use beta, AI uses standard",
       ]
     )
-    ai_bases = "beta" if ans in (1, 2) else "alpha"
-    human_bases = "beta" if ans in (1, 3) else "alpha"
+    ai_bases = "beta" if idx in (1, 2) else "alpha"
+    human_bases = "beta" if idx in (1, 3) else "alpha"
     print("Default Discards?")
-    default_discards = menu(["No", "Yes"])
+    default_discards = utils.MenuPrompt(["No", "Yes"])
     game = Game.from_start(
       ai,
       human,
@@ -199,7 +196,7 @@ def play():
     print("Log saved at: ", name)
     print()
     print("\nAnother game?")
-    if not menu(["No", "Yes"]):
+    if not utils.MenuPrompt(["No", "Yes"]):
       break
 
 
@@ -333,27 +330,6 @@ def profile(pfile, n=30):
 
 
 # input functions
-
-# given a list of strings, prints a menu and prompts for a selection
-def menu(options, n_cols=1):
-  options = [str(o) for o in options]
-  col_len = int(math.ceil(len(options) / float(n_cols)))
-  max_width = max([len(o) for o in options])
-  # displays options with numbers 1..n, in n_cols columns
-  for r in range(col_len):
-    for c in range(n_cols):
-      i = c * col_len + r
-      if i >= len(options):
-        break
-      option = options[i]
-      spaces = " " * (max_width + 5 - len(option) - len(str(i + 1)))
-      print("[%d] %s%s" % (i + 1, option, spaces), end=" ")
-    print()
-  # inputs number in range 1..n
-  ans = utils.ReadNumber(0, len(options))
-  # but returns answer in range 0..n-1
-  return ans - 1
-
 
 def string_is_int(s):
   try:
@@ -1213,7 +1189,7 @@ class Game:
         print("[0-%d]" % (n_options - 1))
         decision = utils.ReadNumber(0, n_options)
       else:
-        decision = menu(options)
+        decision = utils.MenuPrompt(options)
       self.fork_decisions = self.fork_decisions[: self.decision_counter]
       self.fork_decisions.append(decision)
       self.decision_counter += 1

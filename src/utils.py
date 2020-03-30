@@ -1,4 +1,5 @@
 import itertools
+import math
 import logging
 from typing import List
 
@@ -68,18 +69,18 @@ def MenuPrompt(options, num_columns=1):
   """Display OPTIONS as a columned menu and solicit a numeric selection.
 
   Returns:
-    The select index (int), and the corresponding element of `options`."""
+    The selected index (int)."""
   numbered_options = [f"[{idx}] {item}" for idx, item in enumerate(options)]
-  column_length = int(math.ceil(len(option) / num_columns))
-  columns = list(enumerate(numbered_options), column_length, fill="")
+  column_length = int(math.ceil(len(options) / num_columns))
+  columns = list(IterChunks(enumerate(numbered_options), column_length, fill=(-1, "")))
   column_width = max(map(len, numbered_options))
 
   for items in itertools.zip_longest(*columns):
-    row = "  ".join(map(lambda text: text.ljust(column_width), items))
-    print(row)
+    row = "  ".join(map(lambda item: item[1].ljust(column_width), items))
+    print("  " + row)
 
   idx = ReadNumber(0, len(options))
-  return idx, options[idx]
+  return idx
 
 
 def ReadNumber(a, b):
