@@ -44,3 +44,57 @@ def IterChunks(iterable, chunk_size, fill=None):
     while len(items) < chunk_size:
       items.append(fill)
     yield tuple(items)
+
+
+# raised at fork points to throw simulation back up to main simulate() method
+class ForkException(Exception):
+  def __init__(self, n_options, player):
+    self.n_options = int(n_options)
+    self.forking_player = player
+
+
+# Raised whenever a player wins, for easy program flow control
+class WinException(Exception):
+  def __init__(self, winner):
+    self.winner = winner
+
+
+# Cumulative Gaussian function
+def phi(x):
+  return 0.5 + 0.5 * math.erf(x / (2 ** 0.5))
+
+
+def MenuPrompt(options, num_columns=1):
+  """Display OPTIONS as a columned menu and solicit a numeric selection.
+
+  Returns:
+    The select index (int), and the corresponding element of `options`."""
+  numbered_options = [f"[{idx}] {item}" for idx, item in enumerate(options)]
+  column_length = int(math.ceil(len(option) / num_columns))
+  columns = list(enumerate(numbered_options), column_length, fill="")
+  column_width = max(map(len, numbered_options))
+
+  for items in itertools.zip_longest(*columns):
+    row = "  ".join(map(lambda text: text.ljust(column_width), items))
+    print(row)
+
+  idx = ReadNumber(0, len(options))
+  return idx, options[idx]
+
+
+def ReadNumber(a, b):
+  """Prompt user for a number N such that A <= N < B.
+
+  Returns:
+    An integer in the range [`a`, `b`)."""
+  while True:
+    response = input(f"[{a}-{b-1}] >> ").strip()
+    try:
+      result = int(response)
+      if result < a or result >= b:
+        print(f"Please enter an integer between {a} and {b-1} inclusive.")
+      else:
+        break
+    except ValueError:
+      print(f"Please enter an integer between {a} and {b-1} inclusive.")
+  return result
