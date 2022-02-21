@@ -3,10 +3,10 @@ from . import solve
 
 
 def percentify(fraction):
-  if fraction > 0.05:
-    return str(int(fraction * 100 + 0.5)) + "%"
-  else:
-    return str(int(fraction * 1000 + 0.5) / 10.0) + "%"
+    if fraction > 0.05:
+        return str(int(fraction * 100 + 0.5)) + "%"
+    else:
+        return str(int(fraction * 1000 + 0.5) / 10.0) + "%"
 
 
 bases = [
@@ -40,32 +40,32 @@ mat = numpy.array(results)
 mix = [percentify(m) for m in mix]
 print("ALL", value)
 for bm in zip(bases, mix):
-  print(bm)
+    print(bm)
 
 mat = numpy.array([row[:5] for row in results[:5]])
 (mix, value) = solve.solve_game_matrix(mat)
 mix = [percentify(m) for m in mix]
 print("ALPHA", value)
 for bm in zip(bases[:5], mix):
-  print(bm)
+    print(bm)
 
 mat = numpy.array([row[5:] for row in results[5:]])
 (mix, value) = solve.solve_game_matrix(mat)
 mix = [percentify(m) for m in mix]
 print("BETA", value)
 for bm in zip(bases[5:], mix):
-  print(bm)
+    print(bm)
 
 mat = numpy.array([row[5:] for row in results[:5]])
 (mix, value) = solve.solve_game_matrix(mat)
 mix = [percentify(m) for m in mix]
 print("ALPHA vs BETA", value)
 for bm in zip(bases[:5], mix):
-  print(bm)
+    print(bm)
 
 mat = numpy.array([row[:5] for row in results[5:]])
 (mix, value) = solve.solve_game_matrix(mat)
 mix = [percentify(m) for m in mix]
 print("BETA vs ALPHA", value)
 for bm in zip(bases[5:], mix):
-  print(bm)
+    print(bm)
