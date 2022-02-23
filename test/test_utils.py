@@ -1,7 +1,20 @@
 import sys, os, unittest
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../src")
 
+import logging
 import utils
+
+
+# Global logging configuration
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.INFO)
+handler = logging.StreamHandler()
+handler.setFormatter(
+  logging.Formatter(
+    "{filename}.{funcName}:{lineno:04d} -{levelname[0]}-> {message}", style="{"
+  )
+)
+root_logger.addHandler(handler)
 
 class TestIterChunks(unittest.TestCase):
 
