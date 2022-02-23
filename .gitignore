@@ -1,5 +1,6 @@
 *.py[cod]
 *.lnk
+battlecon_todo.txt
 
 # C extensions
 *.so
@@ -28,6 +29,7 @@ pip-log.txt
 .tox
 nosetests.xml
 test_results.txt
+test_stdout.txt
 
 
 # Translations

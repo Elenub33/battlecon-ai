@@ -6793,14 +6793,17 @@ class Ottavia(Character):
         # Obtain from results a list of all possible pre-penalty
         # priorities for opponent.
         priorities = [
-          result[1].player_states[self.my_number].opponent_priority_pre_penalty
-          for row in self.game.results
-          for result in row
+            result[1].player_states[self.my_number].opponent_priority_pre_penalty
+            for row in self.game.results
+            for result in row
         ]
-        priorities = sorted(list(set(priorities)))
+        
         # When any player Cancels/Pulses, priority is None
-        if priorities[0] is None:
-            priorities.pop(0)
+        priorities = set(priorities)
+        if None in priorities:
+            priorities.remove(None)
+        priorities = sorted(list(priorities))
+        
 
         fake_strats = self.strats
         opp_strats = self.opponent.strats

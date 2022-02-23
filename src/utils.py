@@ -41,7 +41,7 @@ def IterChunks(iterable, chunk_size, fill=None):
     remaining slots in the last chunk with FILL.
     """
     for _, group in itertools.groupby(
-      enumerate(iterable), lambda pair: pair[0] // chunk_size
+        enumerate(iterable), lambda pair: pair[0] // chunk_size
     ):
         items = list(pair[1] for pair in group)
         while len(items) < chunk_size:
