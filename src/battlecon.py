@@ -399,7 +399,7 @@ class Game:
     CANCEL_1_INDICATOR = -2001.0
     CANCEL_BOTH_INDICATOR = -2002.0
     CANCEL_INDICATORS = set(
-      [CANCEL_0_INDICATOR, CANCEL_1_INDICATOR, CANCEL_BOTH_INDICATOR]
+        [CANCEL_0_INDICATOR, CANCEL_1_INDICATOR, CANCEL_BOTH_INDICATOR]
     )
     # Very good/bad result constant (used to prevent certain strats
     # from being chosen by AI:

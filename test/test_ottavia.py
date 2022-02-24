@@ -17,7 +17,7 @@ class TestOttavia(unittest.TestCase):
     On build 2411827684b and before, this test exposes a bug:
     TypeError: '<' not supported between instances of 'NoneType' and 'int'.
     """
-    def test_EvenlySizedChunks(self):
+    def test_ottaviaVsRexan(self):
         base = "alpha"
         p1 = "ottavia"
         p2 = "rexan"
