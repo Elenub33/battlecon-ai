@@ -63,6 +63,8 @@ import fighters
 import solve
 import utils
 
+from agent_yaron import YaronAgent
+from agent_human import HumanAgent
 
 log = logging.getLogger(__name__)
 
@@ -130,15 +132,17 @@ def test(first=None, bases="alpha"):
     log_content = []
     random.seed(0)
     found_first = not first
-    for p1, p2 in utils.IterChunks(playable, 2, fill=playable[0]):
+    for p1_name, p2_name in utils.IterChunks(playable, 2, fill=playable[0]):
         if not found_first:
-            if p1 == first:
+            if p1_name == first:
                 found_first = True
             else:
                 continue
-        log.info("%s vs %s", p1, p2)
+        log.info("%s vs %s", p1_name, p2_name)
         start_time = time.time()
-        game = Game.from_start(p1, p2, bases, bases, default_discards=True)
+        p1 = YaronAgent(p1_name, bases)
+        p2 = YaronAgent(p2_name, bases)
+        game = Game.from_start(p1, p2, default_discards=True)
         game_log, unused_winner = game.play_game()
         end_time = time.time()
         log.info("total time: %d s", end_time - start_time)
@@ -154,44 +158,45 @@ def play():
     while True:
         print("Select your character:")
         idx = utils.MenuPrompt(names + ["Random"], num_columns=3)
-        human = names.pop(idx if idx < len(names) else random.randint(0, len(names) - 1))
-        print(f"You will be playing {human}\n")
+        human_name = names.pop(idx if idx < len(names) else random.randint(0, len(names) - 1))
+        print(f"You will be playing {human_name}\n")
 
         print("Select AI character:")
         idx = utils.MenuPrompt(names + ["Random"], num_columns=3)
-        ai = names.pop(idx if idx < len(names) else random.randint(0, len(names) - 1))
-        print(f"AI will be playing {ai}\n")
+        ai_name = names.pop(idx if idx < len(names) else random.randint(0, len(names) - 1))
+        print(f"AI will be playing {ai_name}\n")
 
         print("Which set of bases should be used?")
         idx = utils.MenuPrompt(
-          [
-            "Standard bases",
-            "Beta bases",
-            "I use standard, AI uses beta",
-            "I use beta, AI uses standard",
-          ]
+            [
+                "Standard bases",
+                "Beta bases",
+                "I use standard, AI uses beta",
+                "I use beta, AI uses standard",
+            ]
         )
         ai_bases = "beta" if idx in (1, 2) else "alpha"
         human_bases = "beta" if idx in (1, 3) else "alpha"
+        
+        human = HumanAgent(human_name, human_bases)
+        ai = YaronAgent(ai_name, ai_bases)
+        
         print("Default Discards?")
         default_discards = utils.MenuPrompt(["No", "Yes"])
         game = Game.from_start(
-          ai,
-          human,
-          ai_bases,
-          human_bases,
-          default_discards=default_discards,
-          interactive=True,
+            ai,
+            human,
+            default_discards=default_discards
         )
         game.select_finishers()
         game_log, unused_winner = game.play_game()
         if not os.path.exists("logs"):
             os.mkdir("logs")
         if ai_bases == "beta":
-            ai = ai + "_beta"
+            ai_name = ai_name + "_beta"
         if human_bases == "beta":
-            human = human + "_beta"
-        basename = "logs/" + ai + "(AI)_vs_" + human
+            human_name = human_name + "_beta"
+        basename = "logs/" + ai_name + "(AI)_vs_" + human_name
         name = save_log(basename, game_log)
         print("Log saved at: ", name)
         print()
@@ -270,7 +275,7 @@ def duel(name0, name1, repeat, bases0="alpha", bases1="alpha", first_beats=False
     start = time.time()
     for i in range(repeat):
         game = Game.from_start(
-          name0, name1, bases0, bases1, default_discards=False, first_beats=first_beats
+            YaronAgent(name0, bases0), YaronAgent(name0, bases1), default_discards=False, first_beats=first_beats
         )
         game_log, winner = game.play_game()
         log.append("GAME %d\n-------\n" % i)
@@ -310,7 +315,7 @@ def play_beat(filename="starting states/start.txt"):
 
 
 def play_start_beat(name0, name1, bases0="alpha", bases1="alpha"):
-    game = Game.from_start(name0, name1, bases0, bases1, default_discards=False)
+    game = Game.from_start(YaronAgent(name0, bases0), YaronAgent(name1, bases0), default_discards=False)
     print("Simulating...")
     game.simulate_beat()
     print("Solving...")
@@ -438,7 +443,7 @@ class Game:
             bases1 = name1.split()[-2]
             name1 = name1[: -(len(bases1) + 9)]
 
-        game = Game(name0, name1, bases0, bases1)
+        game = Game(YaronAgent(name0, bases0), YaronAgent(name1, bases))
         lines0 = lines[2 : char1_start - 1]
         lines1 = lines[char1_start + 2 : char1_end]
         board = lines[board_start]
@@ -457,12 +462,9 @@ class Game:
 
     @staticmethod
     def from_start(
-      name0,
-      name1,
-      bases0,
-      bases1,
+      agent0,
+      agent1,
       default_discards=True,
-      interactive=False,
       cheating=0,
       first_beats=False,
     ):
@@ -470,22 +472,23 @@ class Game:
             name0, name1: names of characters
             """
         game = Game(
-          name0, name1, bases0, bases1, interactive, cheating, first_beats=first_beats
+            agent0, agent1, cheating, first_beats=first_beats
         )
         game.set_starting_setup(default_discards, use_special_actions=not first_beats)
         game.initialize_simulations()
         return game
 
     def __init__(
-      self, name0, name1, bases0, bases1, interactive=False, cheating=0, first_beats=False
+        self, agent0, agent1, cheating=0, first_beats=False
     ):
 
-        name0 = name0.lower()
-        name1 = name1.lower()
+        agent0.initialize_game(self, 0)
+        agent1.initialize_game(self, 1)
+        
         self.range_weight = 0.3
         # fast clash evaluation - can only be used for one beat checks
         self.clash0 = False
-        self.interactive = interactive
+        self.interactive = agent1.is_human() # TODO: phase out interactive and replace with agent.is_human() or better. - JB
         self.cheating = cheating
         # If first_beats==True, we're checking initial discards,
         # so we only play two beats, and start the game with all cards
@@ -498,9 +501,13 @@ class Game:
         self.replay_mode = False
         self.interactive_counter = None
         self.log = []
+        
+        print("IS HUMAN:", agent0.is_human(), agent1.is_human, self.interactive)
+        
+        # TODO: NEXT STEP, THESE SHOULD BE AGENTS PROBABLY MAYBE - JB
         self.player = [
-          fighters.character_dict[name0](self, 0, bases0),
-          fighters.character_dict[name1](self, 1, bases1, is_user=interactive),
+            agent0.get_fighter(),
+            agent1.get_fighter()
         ]
         for i in range(2):
             self.player[i].opponent = self.player[1 - i]
