@@ -502,8 +502,6 @@ class Game:
         self.interactive_counter = None
         self.log = []
         
-        print("IS HUMAN:", agent0.is_human(), agent1.is_human, self.interactive)
-        
         # TODO: NEXT STEP, THESE SHOULD BE AGENTS PROBABLY MAYBE - JB
         self.player = [
             agent0.get_fighter(),

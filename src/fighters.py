@@ -7653,11 +7653,11 @@ class Shekhtur(Character):
     def __init__(self, the_game, n, base_set="alpha", is_user=False):
         self.unique_base = Brand(the_game, self)
         self.styles = [
-          Unleashed(the_game, self),
-          Combination(the_game, self),
-          Reaver(the_game, self),
-          Jugular(the_game, self),
-          Spiral(the_game, self),
+            Unleashed(the_game, self),
+            Combination(the_game, self),
+            Reaver(the_game, self),
+            Jugular(the_game, self),
+            Spiral(the_game, self),
         ]
         # Soul Breaker isn't fully implemented, so only Coffin Nails is listed
         self.finishers = [CoffinNails(the_game, self)]

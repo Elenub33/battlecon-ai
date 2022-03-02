@@ -10,9 +10,10 @@ class Agent:
     """
     Create the agent object. Note that this is only the first part of setup; the second part occurs during initialize_game.
     """
-    def __init__(self, fighter_name, bases):
+    def __init__(self, fighter_name, bases="alpha"):
         self.game = None
         self.player_number = None
+        self.fighter = None
         self.fighter_name = fighter_name
         self.bases = bases
         
@@ -60,3 +61,11 @@ class Agent:
     """
     def get_player_number(self):
         return self.player_number
+        
+        
+    """
+    ---- Wrappers for fighter methods. ----
+    """
+    # TODO: pull AI and human logic out of the fighters and into the Yaron/Human agents
+    # def evaluate(self):
+    
