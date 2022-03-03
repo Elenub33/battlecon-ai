@@ -15,6 +15,8 @@ class Character(object):
     # Bureaucratic Methods
 
     def __init__(self, the_game, n, base_set="alpha", is_user=False):
+    
+        self.agent = None
         self.game = the_game
         self.my_number = n
         self.is_user = is_user
@@ -177,6 +179,9 @@ class Character(object):
         if self.base_set != "alpha":
             name += " (%s)" % self.base_set
         return name
+
+    def set_agent(self, agent):
+        self.agent = agent
 
     # read character state from list of strings (as written in game log)
     # lines - list of strings for this character's situation report
@@ -448,11 +453,11 @@ class Character(object):
     # are chosen (e.g., Tanis).
     def get_strategies(self):
         return [
-          pair + ((ante, induced_ante, pre_attack_decision),)
-          for pre_attack_decision in self.get_pre_attack_decisions()
-          for pair in self.get_pairs()
-          for ante in self.get_antes()
-          for induced_ante in self.opponent.get_induced_antes()
+            pair + ((ante, induced_ante, pre_attack_decision),)
+            for pre_attack_decision in self.get_pre_attack_decisions()
+            for pair in self.get_pairs()
+            for ante in self.get_antes()
+            for induced_ante in self.opponent.get_induced_antes()
         ]
 
     def input_strategy(self, limit_antes):

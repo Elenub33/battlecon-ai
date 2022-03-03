@@ -30,7 +30,6 @@ class TestGame(unittest.TestCase):
         self.assertEqual(self.agent1.get_game(), self.game, "Unexpected game saved.")
         
         
-    # TODO: test that the game's players (game.player) are the agents, not the fighters
 
 
 if __name__ == "__main__":
