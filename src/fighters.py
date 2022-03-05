@@ -138,6 +138,9 @@ class Character(object):
 
         self.set_mean_priority()
 
+    def get_name(self):
+        return self.name
+
     def select_finisher(self):
         if len(self.finishers) == 1:
             print("Only one Finisher implemented for %s" % self.name)
@@ -985,22 +988,34 @@ class Character(object):
 
     # can't go over 20
     def gain_life(self, gain):
+    
+        gain = round(gain)
+    
         self.life = min(20, self.life + gain)
         if self.game.reporting and gain > 0:
             self.game.report(self.name + " gains %d life (now at %d)" % (gain, self.life))
 
     # can't go under 1
     def lose_life(self, loss):
+        
+        loss = round(loss)
+        
         self.life = max(1, self.life - loss)
         if self.game.reporting and loss > 0:
             self.game.report(self.name + " loses %d life (now at %d)" % (loss, self.life))
 
     # deal damage to opponent
     def deal_damage(self, damage):
+        
+        damage = round(damage)
+        
         self.opponent.take_damage(damage)
 
     # apply damage from attack or other source
     def take_damage(self, damage):
+        
+        damage = round(damage)
+        
         soak = self.opponent.reduce_soak(self.get_soak())
         if self.game.reporting and soak:
             self.game.report("%s has %d soak" % (self, soak))
@@ -1123,7 +1138,7 @@ class Character(object):
     # if character has multiple kinds of tokens, need to override this
     def recover_tokens(self, n):
         old_pool = len(self.pool)
-        self.pool = [self.tokens[0]] * min(self.max_tokens, len(self.pool) + n)
+        self.pool = [self.tokens[0]] * min(self.max_tokens, len(self.pool) + round(n))
         gain = len(self.pool) - old_pool
         if self.game.reporting and gain:
             self.game.report(

@@ -314,13 +314,10 @@ def play_beat(filename="starting states/start.txt"):
     return game
 
 
-def play_start_beat(name0, name1, bases0="alpha", bases1="alpha"):
-    game = Game.from_start(YaronAgent(name0, bases0), YaronAgent(name1, bases0), default_discards=False)
-    print("Simulating...")
-    game.simulate_beat()
-    print("Solving...")
-    game.solve()
-    game.print_solution()
+def play_start_beat(agent0, agent1):
+    game = Game.from_start(agent0, agent1, default_discards=True, first_beats=True)
+    print("FROM_START COMPLETE")
+    game.play_game()
     return game
 
 
@@ -462,18 +459,14 @@ class Game:
 
     @staticmethod
     def from_start(
-      agent0,
-      agent1,
-      default_discards=True,
-      cheating=0,
-      first_beats=False,
+        agent0,
+        agent1,
+        default_discards=True,
+        cheating=0,
+        first_beats=False,
     ):
-        """Create a game in starting position.
-            name0, name1: names of characters
-            """
-        game = Game(
-            agent0, agent1, cheating, first_beats=first_beats
-        )
+        """Create a game in starting position."""
+        game = Game(agent0, agent1, cheating, first_beats=first_beats)
         game.set_starting_setup(default_discards, use_special_actions=not first_beats)
         game.initialize_simulations()
         return game
