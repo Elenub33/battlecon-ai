@@ -16726,7 +16726,7 @@ class Spiral(Style):
         # If I switched sides, actual advance is one less then distance moved
         if utils.IsOrdered(old_position, self.opponent.position, self.me.position):
             spaces_advanced -= 1
-        self.me.add_triggered_power_bonus(spaces_advanced)
+        self.me.add_triggered_power_bonus(- spaces_advanced)
 
 
 class Malice(Token):
