@@ -316,7 +316,6 @@ def play_beat(filename="starting states/start.txt"):
 
 def play_start_beat(agent0, agent1):
     game = Game.from_start(agent0, agent1, default_discards=True, first_beats=True)
-    print("FROM_START COMPLETE")
     game.play_game()
     return game
 

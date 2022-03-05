@@ -482,26 +482,6 @@ class Character(object):
             ante = (own_ante, induced_ante, self.final_pad)
         return pair + (ante,)
 
-    # choose a random strategy according to mix
-    # (or prompt human player for a strategy)
-    def choose_strategy(self, limit_antes=False):
-        if self.is_user:
-            strategy = self.input_strategy(limit_antes)
-        else:
-            # If there's only one option, return it.
-            if len(self.mix) == 1:
-                return self.mix[0][0]
-            r = random.random()
-            total = 0
-            for m in self.mix:
-                total = total + m[1]
-                if total >= r:
-                    strategy = m[0]
-                    break
-        # in case I need to report my ante choice to opponent's input_strategy
-        self.chosen_ante = strategy[2]
-        return strategy
-
     def get_strategy_name(self, s):
         name = s[0].name + " " + s[1].name
         own_ante_name = self.get_ante_name(s[2][0])
