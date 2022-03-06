@@ -182,6 +182,10 @@ class Agent:
         return res
         
         
+    def read_my_state(self, lines, board, addendum):
+        self.get_fighter().read_my_state(lines, board, addendum)
+        
+        
     """
     This is yaron-specific strategy matrix behavior. Feel free to leave this implementation in other subclasss.
     Returns mix and estimated value (or 0 if no estimation was performed).

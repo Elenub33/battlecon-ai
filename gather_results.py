@@ -35,7 +35,7 @@ class GatherResults:
             
             print(GatherResults.format_time(end_time) + ": " + str(winner) + " won.")
             
-            GatherResults.log_results(game, winner, end_time - start_time)
+            GatherResults.log_results(game, i, winner, end_time - start_time)
 
 
     @staticmethod
@@ -44,7 +44,7 @@ class GatherResults:
         
             
     @staticmethod
-    def log_results(game, winner, duration):
+    def log_results(game, round_number, winner, duration):
         
         pathlib.Path(GatherResults.outdir).mkdir(parents=True, exist_ok=True)
         
@@ -53,13 +53,13 @@ class GatherResults:
         f = open(GatherResults.outfile, "a")
         if write_header:
             f.write(GatherResults.get_log_header())
-        f.write("\"{}\",\"{}\",\"{}\"\n".format(str(winner), duration, game.current_beat))
+        f.write("\"{}\",\"{}\",\"{}\",\"{}\"\n".format(round_number, str(winner), duration, game.current_beat))
         f.close()
         
     
     @staticmethod
     def get_log_header():
-        return "\"winner\",\"duration\",\"beats\"\n"
+        return "\"game\",\"winner\",\"duration\",\"beats\"\n"
         
     
 if __name__ == "__main__":

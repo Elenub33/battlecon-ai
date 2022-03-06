@@ -5,12 +5,7 @@ import agent
 A learning AI.
 """
 
-
-# TODO: unit test and add the ability to write weights to and save them from file
-# watch out for using instances as keys
-
-# TODO: Against the Yaron AI, I don't think we actually need to be unpredictable (though remember to include epsilon for random learning chance?)
-# consider eliminating randomness (outside of epsilon) and simply choosing the best strategy
+# TODO: This approach won't work well against a human opponent since it picks the optimal strategy every time. Would need some additional randomness or a fast learning rate to adjust to unpredictable enemies.
 
 class LearningAgent(agent.Agent):
         
@@ -24,11 +19,17 @@ class LearningAgent(agent.Agent):
         
 
     def choose_strategy(self, limit_antes=False):
-        self.update(self.calculate_reward())
+    
+        # learn from everything that's happened since previous choice
+        self.update()
+        
+        # choose what to do next
         if random.random() > self.epsilon:
             strategy = self.get_best_strategy()
         else:
             strategy = self.get_random_strategy()
+        
+        # record and commit to our choice
         self.record_chosen_strategy(strategy)
         return strategy
         
@@ -43,7 +44,7 @@ class LearningAgent(agent.Agent):
             q = self.get_q_value(s)
             if q == best_q:
                 best_s.append(s)
-            else if q > best_q:
+            elif q > best_q:
                 best_s = [s]
                 best_q = q
         if len(best_s) > 0:
@@ -57,7 +58,7 @@ class LearningAgent(agent.Agent):
         self.get_fighter().chosen_ante = strategy[2]
         print("{} chose {}.".format(self.get_name(), strategy))
 
-0
+
     def get_weights(self):
         return self.weights
         
@@ -66,8 +67,13 @@ class LearningAgent(agent.Agent):
         w = self.get_weights()
         if feature in w.keys:
             return w[feature]
-        else
+        else:
             return 0.0
+            
+    def get_health_diff(self):
+        f = self.get_fighter()
+        opp = f.opponent
+        return f.effective_life() - opp.effective_life()
         
         
     """
@@ -77,6 +83,7 @@ class LearningAgent(agent.Agent):
         self.last_strategy_features = self.get_features(strategy)
         self.last_strategy = strategy
         self.last_strategy_q_value = self.get_q_value(strategy)
+        self.last_strategy_health_diff = self.get_health_diff()
         
        
     """
@@ -96,10 +103,12 @@ class LearningAgent(agent.Agent):
     """
     def update(self, reward):
         
-        strategy, prev_q, prev_features = self.recall_strategy()
+        strategy, prev_q, prev_features, last_health_diff = self.recall_strategy()
         
         if strategy == None:
             return
+            
+        reward = self.get_health_diff() - last_health_diff
         
         this_q = self.get_current_state_value()
         diff = self.alpha * ((reward + self.discount * this_q) - prev_q)
@@ -108,11 +117,12 @@ class LearningAgent(agent.Agent):
         for i in prev_features.keys():
             w[i] = w.get_weight(i) + diff * prev_features[i]
 
+
     """
     Determine the value of a particular strategy according to current weights.
     """
     def get_q_value(self, strategy):
-        f = self.get_features(strategy)
+        f = self.get_features(strategy) # TODO: remove this comment. This is where the magic happens; features that make a difference based on strategy are critical. all others are likely the same across all decisions.
         val = 0.0
         for i in f.keys:
             val += self.get_weight(i) * f[i]
@@ -131,19 +141,68 @@ class LearningAgent(agent.Agent):
             value = max(value, self.get_q_value(strategy))
         return value
         
-        
-    """
-    Determine the reward earned since the last update.
-    """
-    def calculate_reward()
-        # TODO: update this w/ health changes since last state
-        return 0.0
     
     """
     Get features based on strategy and current state.
     Start with simple features and expand them as needed.
     """
     def get_features(self, strategy):
-        f = dict()
-        # TODO: add features
-        return f
+    
+        features = dict()
+        
+        self.add_strategy_features(features, strategy) # stun guard, damage, hit confirm etc.
+        self.add_range_features(features, strategy) # player distance, my edge distance, opp edge distance
+        self.add_my_option_features(features, strategy)
+        self.add_opp_option_features(features, strategy)
+        self.add_my_state_option_combo_features(features, strategy)
+        self.add_opp_state_option_combo_features(features, strategy)
+        self.add_strategy_range_combo_features(features, strategy) # strategy combined w/ range features; hitting ranges that are near opponent, etc.
+        
+        # how can we add more features that estimate what the next beat will be like?
+        
+        return features
+        
+        
+    def get_range_from_edge(self, fighter):
+        return min(fighter.position, 6 - fighter.position)
+        
+        
+    def get_range_between_fighters(self):
+        f = self.get_fighter()
+        return abs(f.position - f.opponent.position)
+        
+        
+    def add_strategy_features(self, features, strategy):
+        
+        # booleans for individual elements of strategy and for combination
+        features[self.get_strategy_name(strategy)] = 1.0
+        features["strat_style_" + strategy[0].name] = 1.0
+        features["strat_base_" + strategy[1].name] = 1.0
+        features["strat_ante_" + str(strategy[0][0])] = 1.0
+        
+        # number of tokens anted
+        features["strat_ante"] = strategy[0][0]
+        
+        
+    def add_range_features(self, features, strategy):
+        pass
+        
+        
+    def add_my_option_features(self, features, strategy):
+        pass
+        
+        
+    def add_opp_option_features(self, features, strategy):
+        pass
+        
+        
+    def add_my_state_option_combo_features(self, features, strategy):
+        pass
+        
+        
+    def add_opp_state_option_combo_features(self, features, strategy):
+        pass
+        
+        
+    def add_strategy_range_combo_features(self, features, strategy):
+        pass
