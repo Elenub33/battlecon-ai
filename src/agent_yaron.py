@@ -6,13 +6,6 @@ import solve
 Yaron's original AI.
 """
 class YaronAgent(agent.Agent):
-        
-        
-    def evaluate(self):
-        self.set_preferred_range()
-        res = self.get_fighter().evaluate()
-        # print(self.get_name() + " (YARON) evaluating " + self.get_chosen_strategy_name() + ". Result: " + res)
-        return res
     
 
     # choose a random strategy according to mix

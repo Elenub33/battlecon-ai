@@ -176,16 +176,18 @@ class Agent:
         return self.get_fighter().input_pre_attack_decision_index()
         
         
+    def evaluate(self):
+        self.set_preferred_range()
+        res = self.get_fighter().evaluate()
+        return res
+        
+        
     """
     This is yaron-specific strategy matrix behavior. Feel free to leave this implementation in other subclasss.
     Returns mix and estimated value (or 0 if no estimation was performed).
     """
     def calculate_strategy_mix(self, strats, array_results):
         return [(s, 0) for s in strats], 0
-        
-        
-    def evaluate(self):
-        raise NotImplementedError("evaluate must be implemented by all agent subclasses.")
         
         
     def choose_strategy(self, limit_antes=False):
