@@ -1,10 +1,18 @@
 import random
 import agent
+import solve
 
 """
 Yaron's original AI.
 """
 class YaronAgent(agent.Agent):
+        
+        
+    def evaluate(self):
+        self.set_preferred_range()
+        res = self.get_fighter().evaluate()
+        # print(self.get_name() + " (YARON) evaluating " + self.get_chosen_strategy_name() + ". Result: " + res)
+        return res
     
 
     # choose a random strategy according to mix
@@ -22,4 +30,16 @@ class YaronAgent(agent.Agent):
                 break
         # in case I need to report my ante choice to opponent's input_strategy
         f.chosen_ante = strategy[2]
+        
+        print("")
+        print("{} choosing strategy from {} with r = {}".format(self.get_name(), f.mix, r))
+        print("")
+        print("Chose {}.".format(strategy))
+        print("")
+        
         return strategy
+        
+        
+    def calculate_strategy_mix(self, strats, array_results):
+        mix, value = solve.solve_game_matrix(array_results)
+        return list(zip(strats, list(mix))), value

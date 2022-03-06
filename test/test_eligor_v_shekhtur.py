@@ -9,7 +9,7 @@ class TestEligorVShekhtur(unittest.TestCase):
 
 
     """
-    Plays a full game of battlecon, Eligor vs. Shekhtur.
+    Plays one beat, Eligor vs. Shekhtur.
     """
     def test_eligorVsShekhtur(self):
         agent0 = agent_yaron.YaronAgent("shekhtur")

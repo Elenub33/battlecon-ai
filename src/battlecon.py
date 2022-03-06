@@ -1120,8 +1120,6 @@ class Game:
                 if p0 != p1:
                     self.fighter[0].position = p0
                     self.fighter[1].position = p1
-                    for p in self.player:
-                        p.set_preferred_range()
                     row.append(self.player[0].evaluate() - self.player[1].evaluate())
             if row:
                 evaluations.append(row)
@@ -1269,19 +1267,17 @@ class Game:
         self.fix_clashes(results, pre_clash_results, strats0, strats1)
         self.fix_cancels(results)
         array_results = numpy.array(results)
-        (mix0, value0) = solve.solve_game_matrix(array_results)
-        stratmix0 = list(zip(strats0, list(mix0)))
-        # No need to calculate strategy mix for human player
-        if not self.player[1].is_human():
-            (mix1, value1) = solve.solve_game_matrix(-array_results.transpose())
-            stratmix1 = list(zip(strats1, list(mix1)))
-            assert abs(value0 + value1) < 0.01, "Error: value0=%f, value1=%f" % (
-              value0,
-              value1,
-            )
+        
+        stratmix0, value0 = self.player[0].calculate_strategy_mix(strats0, array_results)
+        stratmix1, value1 = self.player[1].calculate_strategy_mix(strats1, -array_results.transpose())
+        
+        # if p0 does not estimate a state value, flip p1's and use that
+        if value0 == 0:
+            value = - value1
         else:
-            stratmix1 = [(s, 0) for s in strats1]
-        return value0, stratmix0, stratmix1
+            value = value0
+        
+        return value, stratmix0, stratmix1
 
     def make_pre_attack_decision(self):
         # Player 0 makes a decision.
