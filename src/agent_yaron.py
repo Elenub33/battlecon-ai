@@ -24,11 +24,7 @@ class YaronAgent(agent.Agent):
         # in case I need to report my ante choice to opponent's input_strategy
         f.chosen_ante = strategy[2]
         
-        print("")
-        print("{} choosing strategy from {} with r = {}".format(self.get_name(), f.mix, r))
-        print("")
-        print("Chose {}.".format(strategy))
-        print("")
+        print("{} chose {}.".format(self.get_name(), strategy))
         
         return strategy
         
