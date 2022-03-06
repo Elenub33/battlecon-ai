@@ -17,7 +17,7 @@ class TestHumanAgent(unittest.TestCase):
         self.assertTrue(self.human.is_human(), "HumanAgent is not human.")
         
        
-    @unittest.skip("how do we isolate the choose_strategy() method?")
+    @unittest.skip("can we isolate the choose_strategy() method better? this incomplete approach requires parsing a lot of unrelated data")
     def test_choose_strategy(self):
         game = battlecon.Game.from_start(self.ai, self.human, first_beats=True)
         game.play_game()
