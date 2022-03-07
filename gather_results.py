@@ -38,7 +38,7 @@ class GatherResults:
             p1 = YaronAgent("shekhtur")
             p2 = LearningAgent("eligor")
             
-            p1.weights = weights
+            p2.weights = weights
             
             game = Game.from_start(p1, p2, default_discards=True)
             game_log, winner = game.play_game()
@@ -54,7 +54,7 @@ class GatherResults:
             GatherResults.log_strategies(p2, i, GatherResults.eligor_strat_file)
             GatherResults.log_game_log(game_log, i)
             
-            weights = p1.get_weights()
+            weights = p2.get_weights()
 
 
     @staticmethod

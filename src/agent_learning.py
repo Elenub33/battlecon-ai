@@ -169,39 +169,39 @@ class LearningAgent(agent.Agent):
         
         
     def get_range_from_edge(self, fighter):
-        return min(fighter.position, 6 - fighter.position)
+        return round(min(fighter.position, 6 - fighter.position))
         
         
     def get_range_between_fighters(self):
         f = self.get_fighter()
-        return abs(f.position - f.opponent.position)
+        return round(abs(f.position - f.opponent.position))
         
     
     def get_minrange(self, *cards):
-        return sum([(card.minrange if card.minrange != None else 0.0) + card.get_minrange_bonus() for card in cards])
+        return round(sum([(card.minrange if card.minrange != None else 0.0) + card.get_minrange_bonus() for card in cards]))
         
         
     def get_maxrange(self, *cards):
-        return sum([(card.maxrange if card.maxrange != None else 0.0) + card.get_maxrange_bonus() for card in cards])
+        return round(sum([(card.maxrange if card.maxrange != None else 0.0) + card.get_maxrange_bonus() for card in cards]))
         
         
     def get_power(self, *cards):
-        return sum([(card.power if card.power != None else 0.0) + card.get_power_bonus() for card in cards])
+        return round(sum([(card.power if card.power != None else 0.0) + card.get_power_bonus() for card in cards]))
         
         
     def get_priority(self, *cards):
-        return sum([(card.priority if card.priority != None else 0.0) + card.get_priority_bonus() for card in cards])
+        return round(sum([(card.priority if card.priority != None else 0.0) + card.get_priority_bonus() for card in cards]))
         
         
     def get_stunguard(self, *cards):
-        return sum([card.get_stunguard() for card in cards])
+        return round(sum([card.get_stunguard() for card in cards]))
         
         
     def get_soak(self, *cards):
-        return sum([card.get_soak() for card in cards])
+        return round(sum([card.get_soak() for card in cards]))
         
         
-    def add_range_features(self, features, ):
+    def add_range_features(self, features):
     
         # give bools and ranges as possible features
         fighter_range = self.get_range_between_fighters()
