@@ -97,8 +97,8 @@ class TestLearningAgent(unittest.TestCase):
             
             
     def test_can_change_weight(self):
-        agt = self.learning_agent
         f = "my_feature"
+        agt = self.learning_agent
         self.assertEqual(agt.get_weight(f), 0.0)
         agt.set_weight(f, 1.0)
         self.assertEqual(agt.get_weight(f), 1.0)
@@ -107,18 +107,14 @@ class TestLearningAgent(unittest.TestCase):
             
             
     def test_can_save_and_restore_weights(self):
-        agt = self.learning_agent
         f = "my_feature"
-        
+        agt = self.learning_agent
         self.assertEqual(agt.get_weight(f), 0.0)
-        
         agt.set_weight(f, 1.0)
         self.assertEqual(agt.get_weight(f), 1.0)
-        
         w = agt.get_weights()
         agt.clear_weights()
         self.assertEqual(agt.get_weight(f), 0.0)
-        
         agt.set_weights(w)
         self.assertEqual(agt.get_weight(f), 1.0)
         
@@ -126,7 +122,6 @@ class TestLearningAgent(unittest.TestCase):
     def test_can_save_and_restore_weights_using_file(self):
     
         filename = "tmp_test_weights"
-        
         
         try:
             agt = self.learning_agent

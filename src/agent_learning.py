@@ -181,6 +181,7 @@ class LearningAgent(agent.Agent):
     """
     Get features based on strategy and current state.
     Start with simple features and expand them as needed.
+    Warning: to avoid accidentally dominating other features, each feature should be scaled from 0.0 to 1.0.
     """
     def get_features(self, strategy):
     
@@ -235,13 +236,13 @@ class LearningAgent(agent.Agent):
         my_edge_range = self.get_range_from_edge(self.get_fighter())
         opp_edge_range = self.get_range_from_edge(self.get_fighter().opponent)
         
-        features["range"] = fighter_range
+        features["range"] = fighter_range / 6.0
         features["range_equals_" + str(fighter_range)] = 1.0
         
-        features["my_edge_range"] = my_edge_range
+        features["my_edge_range"] = my_edge_range / 3.0
         features["my_edge_range_equals_" + str(my_edge_range)] = 1.0
         
-        features["opp_edge_range"] = opp_edge_range
+        features["opp_edge_range"] = opp_edge_range / 3.0
         features["opp_edge_range_equals_" + str(opp_edge_range)] = 1.0
         
         
@@ -263,23 +264,23 @@ class LearningAgent(agent.Agent):
         features["play_" + base.name] = 1.0
         features["ante_" + str(ante)] = 1.0
         
-        # number of tokens anted
-        features["ante_count"] = ante
+        # percentage of total tokens anted
+        features["ante_count"] = ante / self.get_fighter().max_tokens
         
         min_range = self.get_minrange(style, base)
         max_range = self.get_maxrange(style, base)
         
-        features["strat_minrange"] = min_range
-        features["strat_maxrange"] = max_range
-        features["strat_range_band"] = max_range - min_range
-        features["strat_power"] = self.get_power(style, base)
-        features["strat_priority"] = self.get_priority(style, base)
-        features["strat_stun_guard"] = self.get_stunguard(style, base) + ante * 2
-        features["strat_soak"] = self.get_soak(style, base)
+        features["strat_minrange"] = min_range / 6.0
+        features["strat_maxrange"] = max_range / 6.0
+        features["strat_range_band"] = max_range - min_range / 5.0
+        features["strat_power"] = self.get_power(style, base) / 10.0
+        features["strat_priority"] = self.get_priority(style, base) / 10.0
+        features["strat_stun_guard"] = (self.get_stunguard(style, base) + ante * 2) / 10.0
+        features["strat_soak"] = self.get_soak(style, base) / 5.0
         
         opp_range = self.get_range_between_fighters()
-        features["opponent_too_close"] = min(0, min_range - opp_range)
-        features["opponent_too_far"] = min(0, opp_range - max_range)
+        features["opponent_too_close"] = min(0, min_range - opp_range) / 5.0
+        features["opponent_too_far"] = min(0, opp_range - max_range) / 5.0
         
         
     def add_counterplay_features(self, features, my_strategy):
@@ -343,8 +344,10 @@ class LearningAgent(agent.Agent):
         for card in next_hand:
             features[card.name + "_in_my_next_hand"] = 1.0
             
-        features["my_tokens"] = len(f.pool)
-        features["i_have_special"] = f.special_action_available
+        features["my_tokens"] = len(f.pool) / f.max_tokens
+            
+        if f.special_action_available:
+            features["i_have_special"] = 1.0
         
         
     def add_opp_option_features(self, features):
@@ -361,5 +364,7 @@ class LearningAgent(agent.Agent):
             features[card.name + "_in_opp_disc_2"] = 1.0
             
         
-        features["opp_tokens"] = len(f.pool)
-        features["opp_has_special"] = f.special_action_available
+        features["opp_tokens"] = len(f.pool) / f.max_tokens
+            
+        if f.special_action_available:
+            features["opp_has_special"] = 1.0
