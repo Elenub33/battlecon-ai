@@ -12,9 +12,9 @@ class LearningAgent(agent.Agent):
         
     def __init__(self, fighter_name, bases="alpha"):
         super().__init__(fighter_name, bases)
-        self.epsilon = 0.03 # percent chance to take random action instead of strategic one (for learning purposes)
+        self.epsilon = 0.04 # percent chance to take random action instead of strategic one (for learning purposes)
         self.discount = 0.97 # preference to take action now over later. 0.0 = 100% urgency, 1.0 = 0% urgency.
-        self.alpha = 0.06 # amount to adjust weights when learning new information. 0.0 = no learning, 1.0 = discard all previous knowledge.
+        self.alpha = 0.1 # amount to adjust weights when learning new information. 0.0 = no learning, 1.0 = discard all previous knowledge.
         self.weights = dict()
         
 
@@ -25,15 +25,18 @@ class LearningAgent(agent.Agent):
         
         # choose what to do next
         if random.random() > self.epsilon:
-            print("Acting strategically.")
             strategy, q_val = self.get_best_strategy()
         else:
-            print("Acting randomly.")
+            print("vvvv ACTING RANDOMLY vvvv")
             strategy = self.get_random_strategy()
         
         # record and commit to our choice
         self.record_chosen_strategy(strategy)
         return strategy
+        
+        
+    def conclude_game(self, winner):
+        self.update()
         
         
     def get_random_strategy(self):
@@ -50,17 +53,15 @@ class LearningAgent(agent.Agent):
                 best_s = [s]
                 best_q = q
         if len(best_s) > 0:
-            return random.choice(best_s), best_Q
+            return random.choice(best_s), best_q
         else:
             return None, best_q
         
         
     def record_chosen_strategy(self, strategy):
+        self.log_strategy(strategy)
         self.save_strategy(strategy)
         self.get_fighter().chosen_ante = strategy[2]
-        
-        # TODO: remove print statements, replace with end of game log
-        print("{} chose {}.".format(self.get_name(), strategy))
 
 
     def get_weights(self):
@@ -117,6 +118,8 @@ class LearningAgent(agent.Agent):
             
         reward = self.get_health_diff() - last_strat['health_diff']
         
+        print("REWARD:", reward, "({} to {})\n".format(self.get_fighter().opponent.effective_life(), self.get_fighter().effective_life()))
+        
         this_q = self.get_current_state_value()
         diff = self.alpha * ((reward + self.discount * this_q) - last_strat['q_val'])
         
@@ -125,8 +128,6 @@ class LearningAgent(agent.Agent):
         
         for i in f.keys():
             w[i] = self.get_weight(i) + diff * f[i]
-
-        print("{} learned something about {} by earning reward {}. New weights: {}".format(self.get_name(), self.get_strategy_name(last_strat['strategy']), reward, self.get_weights()))
         
         
     """
@@ -224,7 +225,7 @@ class LearningAgent(agent.Agent):
         ante = strategy[2][0]
         
         # booleans for individual elements of strategy and for combination
-        features["strategy " + self.get_strategy_name(strategy)] = 1.0
+        features["Choose " + self.get_strategy_name(strategy)] = 1.0
         features["strat_style_" + style.name] = 1.0
         features["strat_base_" + base.name] = 1.0
         features["strat_ante_" + str(strategy[2][0])] = 1.0

@@ -16,6 +16,7 @@ class Agent:
         self.fighter = None
         self.fighter_name = fighter_name
         self.bases = bases
+        self.logged_strategies = []
         
     
     """
@@ -67,6 +68,18 @@ class Agent:
     def get_player_number(self):
         return self.player_number
         
+        
+    def log_strategy(self, strategy):
+        print("{} chose {}.".format(self.get_name(), strategy)) # TODO: remove this
+        self.logged_strategies.append(strategy)
+        
+        
+    def get_logged_strategies(self):
+        return self.logged_strategies
+        
+        
+    def conclude_game(self, winner):
+        pass
         
     """
     ------------ Wrappers for fighter behavior. ------------

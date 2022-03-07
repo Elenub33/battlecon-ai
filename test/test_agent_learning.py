@@ -18,7 +18,6 @@ class TestLearningAgent(unittest.TestCase):
     """
     Plays one beat, Eligor vs. Shekhtur.
     """
-    # @unittest.skip("Too long for now.")
     def test_eligor_v_shekhtur(self):
         log, winner = self.game.play_game()
         print("WINNER: {} ({} vs. {})".format(winner, self.yaron_agent.get_fighter().life, self.learning_agent.get_fighter().life))

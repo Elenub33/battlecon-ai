@@ -565,6 +565,8 @@ class Game:
             winner = None
         else:
             winner = self.player[winner].get_name()
+        for p in self.player:
+            p.conclude_game(winner)
         self.dump(log)
         return self.log, winner
 
