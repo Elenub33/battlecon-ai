@@ -587,7 +587,7 @@ class Character(object):
         if self.alt_pair_power is None:
             # "card.power or 0" safeguards against card.power == None.
             card_power = sum(
-              card.power + card.get_power_bonus() for card in self.active_cards
+                card.power + card.get_power_bonus() for card in self.active_cards
             )
         else:
             # When pair power is externally fixed, use it instead

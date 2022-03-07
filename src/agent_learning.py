@@ -14,7 +14,7 @@ class LearningAgent(agent.Agent):
         super().__init__(fighter_name, bases)
         self.epsilon = 0.03 # percent chance to take random action instead of strategic one (for learning purposes)
         self.discount = 0.97 # preference to take action now over later. 0.0 = 100% urgency, 1.0 = 0% urgency.
-        self.alpha = 0.1 # amount to adjust weights when learning new information. 0.0 = no learning, 1.0 = discard all previous knowledge.
+        self.alpha = 0.06 # amount to adjust weights when learning new information. 0.0 = no learning, 1.0 = discard all previous knowledge.
         self.weights = dict()
         
 
@@ -25,8 +25,10 @@ class LearningAgent(agent.Agent):
         
         # choose what to do next
         if random.random() > self.epsilon:
+            print("Acting randomly.")
             strategy = self.get_best_strategy()
         else:
+            print("Acting strategically.")
             strategy = self.get_random_strategy()
         
         # record and commit to our choice
@@ -56,6 +58,8 @@ class LearningAgent(agent.Agent):
     def record_chosen_strategy(self, strategy):
         self.save_strategy(strategy)
         self.get_fighter().chosen_ante = strategy[2]
+        
+        # TODO: remove print statements. replace with end of game log?
         print("{} chose {}.".format(self.get_name(), strategy))
 
 
@@ -117,12 +121,15 @@ class LearningAgent(agent.Agent):
         for i in prev_features.keys():
             w[i] = w.get_weight(i) + diff * prev_features[i]
 
+        print("{} learned. New weights: {}".format(self.get_name(), self.get_weights()))
+        
+        
 
     """
     Determine the value of a particular strategy according to current weights.
     """
     def get_q_value(self, strategy):
-        f = self.get_features(strategy) # TODO: remove this comment. This is where the magic happens; features that make a difference based on strategy are critical. all others are likely the same across all decisions.
+        f = self.get_features(strategy)
         val = 0.0
         for i in f.keys:
             val += self.get_weight(i) * f[i]
@@ -150,15 +157,15 @@ class LearningAgent(agent.Agent):
     
         features = dict()
         
-        self.add_strategy_features(features, strategy) # stun guard, damage, hit confirm etc.
-        self.add_range_features(features, strategy) # player distance, my edge distance, opp edge distance
+        self.add_range_features(features)
+        self.add_strategy_features(features, strategy)
         self.add_my_option_features(features, strategy)
-        self.add_opp_option_features(features, strategy)
-        self.add_my_state_option_combo_features(features, strategy)
-        self.add_opp_state_option_combo_features(features, strategy)
-        self.add_strategy_range_combo_features(features, strategy) # strategy combined w/ range features; hitting ranges that are near opponent, etc.
+        self.add_opp_option_features(features)
         
         # how can we add more features that estimate what the next beat will be like?
+        
+        # is my strategy in range
+        # of opponent attacks in range
         
         return features
         
@@ -171,38 +178,109 @@ class LearningAgent(agent.Agent):
         f = self.get_fighter()
         return abs(f.position - f.opponent.position)
         
+    
+    def get_minrange(self, *cards):
+        return sum([card.minrange + card.get_minrange_bonus() for card in cards])
+        
+        
+    def get_maxrange(self, *cards):
+        return sum([card.maxrange + card.get_maxrange_bonus() for card in cards])
+        
+        
+    def get_power(self, *cards):
+        return sum([card.power + card.get_power_bonus() for card in cards])
+        
+        
+    def get_priority(self, *cards):
+        return sum([card.priority + card.get_priority_bonus() for card in cards])
+        
+        
+    def get_stunguard(self, *cards):
+        return sum([card.get_stunguard() for card in cards])
+        
+        
+    def get_soak(self, *cards):
+        return sum([card.get_soak() for card in cards])
+        
+        
+    def add_range_features(self, features, ):
+    
+        # give bools and ranges as possible features
+        fighter_range = self.get_range_between_fighters()
+        my_edge_range = self.get_range_from_edge(self.get_fighter())
+        opp_edge_range = self.get_range_from_edge(self.get_fighter().opponent)
+        
+        features["range"] = fighter_range
+        features["range_equals_" + str(fighter_range)] = 1.0
+        
+        features["my_edge_range"] = my_edge_range
+        features["my_edge_range_equals_" + str(my_edge_range)] = 1.0
+        
+        features["opp_edge_range"] = opp_edge_range
+        features["opp_edge_range_equals_" + str(opp_edge_range)] = 1.0
+        
         
     def add_strategy_features(self, features, strategy):
         
+        style = strategy[0]
+        base = strategy[1]
+        ante = strategy[0][0]
+        
         # booleans for individual elements of strategy and for combination
         features[self.get_strategy_name(strategy)] = 1.0
-        features["strat_style_" + strategy[0].name] = 1.0
-        features["strat_base_" + strategy[1].name] = 1.0
+        features["strat_style_" + style.name] = 1.0
+        features["strat_base_" + base.name] = 1.0
         features["strat_ante_" + str(strategy[0][0])] = 1.0
         
         # number of tokens anted
-        features["strat_ante"] = strategy[0][0]
+        features["strat_ante"] = ante
         
+        min_range = self.get_minrange(style, base)
+        max_range = self.get_maxrange(style, base)
         
-    def add_range_features(self, features, strategy):
-        pass
+        features["strat_minrange"] = min_range
+        features["strat_maxrange"] = max_range
+        features["strat_range_band"] = max_range - min_range
+        features["strat_power"] = self.get_power(style, base)
+        features["strat_priority"] = self.get_priority(style, base)
+        features["strat_stun_guard"] = self.get_stunguard(style, base) + ante * 2
+        features["strat_soak"] = self.get_soak(style, base)
+        
+        opp_range = self.get_range_between_fighters()
+        features["opponent_too_close"] = min(0, min_range - opp_range)
+        features["opponent_too_far"] = min(0, opp_range - max_range)
         
         
     def add_my_option_features(self, features, strategy):
-        pass
+        
+        f = self.get_fighter()
+        
+        next_hand = self.styles_and_bases_set - (self.discard[1] | strategy[0] | strategy[1])
+        
+        for card in next_hand:
+            features[card.name + "_in_my_hand"] = 1.0
+            
+        # we know what pairs will be in our discards w/ this strategy
+        for card in f.discard[1]:
+            features[card.name + "_will_cycle_to_my_discard_2"] = 1.0
+            
+        features["my_tokens"] = len(f.pool)
+        features["i_have_special"] = f.special_action_available
         
         
-    def add_opp_option_features(self, features, strategy):
-        pass
+    def add_opp_option_features(self, features):
+    
+        f = self.get_fighter().opponent
         
+        hand = f.styles_and_bases_set - (f.discard[1] | f.discard[2])
         
-    def add_my_state_option_combo_features(self, features, strategy):
-        pass
+        for card in hand():
+            features[card.name + "_in_opp_hand"] = 1.0
+        for card in f.discard[1]:
+            features[card.name + "_in_opp_disc_1"] = 1.0
+        for card in f.discard[2]:
+            features[card.name + "_in_opp_disc_2"] = 1.0
+            
         
-        
-    def add_opp_state_option_combo_features(self, features, strategy):
-        pass
-        
-        
-    def add_strategy_range_combo_features(self, features, strategy):
-        pass
+        features["opp_tokens"] = len(f.pool)
+        features["opp_has_special"] = f.special_action_available
