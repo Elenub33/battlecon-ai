@@ -257,14 +257,14 @@ class LearningAgent(agent.Agent):
         
         # booleans for individual elements of strategy and for combination
         features["Strategy " + self.get_strategy_name(strategy)] = 1.0
-        features[pair_name + "_at_range_" + str(range)] = 1.0
-        features[pair_name] = 1.0
+        features["play_" + pair_name + "_at_range_" + str(range)] = 1.0
+        features["play_" + pair_name] = 1.0
         features["play_" + style.name] = 1.0
         features["play_" + base.name] = 1.0
-        features["ante_" + str(strategy[2][0])] = 1.0
+        features["ante_" + str(ante)] = 1.0
         
         # number of tokens anted
-        features["strat_ante"] = ante
+        features["ante_count"] = ante
         
         min_range = self.get_minrange(style, base)
         max_range = self.get_maxrange(style, base)

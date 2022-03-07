@@ -83,7 +83,7 @@ class GatherResults:
     
         GatherResults.log_content(
             GatherResults.match_results_file,
-            '"game","winner","duration","beats","{} HP","{} HP\n'.format(p0.get_name(), p1.get_name()),
+            '"game","winner","duration","beats","{} HP","{} HP"\n'.format(p0.get_name(), p1.get_name()),
             '"{}","{}","{}","{}","{}","{}"\n'.format(
                 round_number,
                 str(winner),
