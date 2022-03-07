@@ -25,10 +25,10 @@ class LearningAgent(agent.Agent):
         
         # choose what to do next
         if random.random() > self.epsilon:
-            print("Acting randomly.")
-            strategy = self.get_best_strategy()
-        else:
             print("Acting strategically.")
+            strategy, q_val = self.get_best_strategy()
+        else:
+            print("Acting randomly.")
             strategy = self.get_random_strategy()
         
         # record and commit to our choice
@@ -50,16 +50,16 @@ class LearningAgent(agent.Agent):
                 best_s = [s]
                 best_q = q
         if len(best_s) > 0:
-            return random.choice(best_s)
+            return random.choice(best_s), best_Q
         else:
-            return None
+            return None, best_q
         
         
     def record_chosen_strategy(self, strategy):
         self.save_strategy(strategy)
         self.get_fighter().chosen_ante = strategy[2]
         
-        # TODO: remove print statements. replace with end of game log?
+        # TODO: remove print statements, replace with end of game log
         print("{} chose {}.".format(self.get_name(), strategy))
 
 
@@ -69,7 +69,7 @@ class LearningAgent(agent.Agent):
         
     def get_weight(self, feature):
         w = self.get_weights()
-        if feature in w.keys:
+        if feature in w.keys():
             return w[feature]
         else:
             return 0.0
@@ -84,54 +84,58 @@ class LearningAgent(agent.Agent):
     Remember details about the chosen strategy for learning later.
     """
     def save_strategy(self, strategy):
-        self.last_strategy_features = self.get_features(strategy)
-        self.last_strategy = strategy
-        self.last_strategy_q_value = self.get_q_value(strategy)
-        self.last_strategy_health_diff = self.get_health_diff()
+        self.last_strat_results = {
+            'strategy': strategy,
+            'features': self.get_features(strategy),
+            'q_val': self.get_q_value(strategy),
+            'health_diff': self.get_health_diff()
+        }
         
        
     """
     Recall details about most recently chosen strategy.
     """
     def recall_strategy(self):
-        if hasattr(self, 'last_strategy'):
-            return self.last_strategy, self.last_strategy_q_value, self.last_strategy_features
+        if hasattr(self, 'last_strat_results'):
+            return self.last_strat_results
         else:
-            return None, None, None
+            return None
         
 
     """
     Learn from the transition that was taken.
     Changes from original algorithm:
     state and nextState cannot be passed in, so they have been bookmarked and calculated as needed.
+    reward is calculated based on the HP difference from last beat instead of being passed in.
     """
-    def update(self, reward):
+    def update(self):
         
-        strategy, prev_q, prev_features, last_health_diff = self.recall_strategy()
+        last_strat = self.recall_strategy()
         
-        if strategy == None:
+        if last_strat == None:
             return
             
-        reward = self.get_health_diff() - last_health_diff
+        reward = self.get_health_diff() - last_strat['health_diff']
         
         this_q = self.get_current_state_value()
-        diff = self.alpha * ((reward + self.discount * this_q) - prev_q)
+        diff = self.alpha * ((reward + self.discount * this_q) - last_strat['q_val'])
         
         w = self.get_weights()
-        for i in prev_features.keys():
-            w[i] = w.get_weight(i) + diff * prev_features[i]
+        f = last_strat['features']
+        
+        for i in f.keys():
+            w[i] = self.get_weight(i) + diff * f[i]
 
-        print("{} learned. New weights: {}".format(self.get_name(), self.get_weights()))
+        print("{} learned something about {} by earning reward {}. New weights: {}".format(self.get_name(), self.get_strategy_name(last_strat['strategy']), reward, self.get_weights()))
         
         
-
     """
     Determine the value of a particular strategy according to current weights.
     """
     def get_q_value(self, strategy):
         f = self.get_features(strategy)
         val = 0.0
-        for i in f.keys:
+        for i in f.keys():
             val += self.get_weight(i) * f[i]
         return val
         
@@ -140,13 +144,10 @@ class LearningAgent(agent.Agent):
     Determine the value of the current state given current weights.
     """
     def get_current_state_value(self):
-        strategies = self.get_fighter().get_strategies()
-        if len(strategies) == 0:
+        strategy, q_val = self.get_best_strategy()
+        if strategy == None:
             return 0.0
-        value = float('-inf')
-        for strategy in strategies:
-            value = max(value, self.get_q_value(strategy))
-        return value
+        return q_val
         
     
     """
@@ -159,13 +160,9 @@ class LearningAgent(agent.Agent):
         
         self.add_range_features(features)
         self.add_strategy_features(features, strategy)
+        self.add_counterplay_features(features, strategy)
         self.add_my_option_features(features, strategy)
         self.add_opp_option_features(features)
-        
-        # how can we add more features that estimate what the next beat will be like?
-        
-        # is my strategy in range
-        # of opponent attacks in range
         
         return features
         
@@ -180,19 +177,19 @@ class LearningAgent(agent.Agent):
         
     
     def get_minrange(self, *cards):
-        return sum([card.minrange + card.get_minrange_bonus() for card in cards])
+        return sum([(card.minrange if card.minrange != None else 0.0) + card.get_minrange_bonus() for card in cards])
         
         
     def get_maxrange(self, *cards):
-        return sum([card.maxrange + card.get_maxrange_bonus() for card in cards])
+        return sum([(card.maxrange if card.maxrange != None else 0.0) + card.get_maxrange_bonus() for card in cards])
         
         
     def get_power(self, *cards):
-        return sum([card.power + card.get_power_bonus() for card in cards])
+        return sum([(card.power if card.power != None else 0.0) + card.get_power_bonus() for card in cards])
         
         
     def get_priority(self, *cards):
-        return sum([card.priority + card.get_priority_bonus() for card in cards])
+        return sum([(card.priority if card.priority != None else 0.0) + card.get_priority_bonus() for card in cards])
         
         
     def get_stunguard(self, *cards):
@@ -224,13 +221,13 @@ class LearningAgent(agent.Agent):
         
         style = strategy[0]
         base = strategy[1]
-        ante = strategy[0][0]
+        ante = strategy[2][0]
         
         # booleans for individual elements of strategy and for combination
-        features[self.get_strategy_name(strategy)] = 1.0
+        features["strategy " + self.get_strategy_name(strategy)] = 1.0
         features["strat_style_" + style.name] = 1.0
         features["strat_base_" + base.name] = 1.0
-        features["strat_ante_" + str(strategy[0][0])] = 1.0
+        features["strat_ante_" + str(strategy[2][0])] = 1.0
         
         # number of tokens anted
         features["strat_ante"] = ante
@@ -251,11 +248,59 @@ class LearningAgent(agent.Agent):
         features["opponent_too_far"] = min(0, opp_range - max_range)
         
         
+    def add_counterplay_features(self, features, my_strategy):
+        
+        my_style = my_strategy[0]
+        my_base = my_strategy[1]
+        my_ante = my_strategy[2][0]
+        
+        my_priority = self.get_priority(my_style, my_base)
+        my_stun_resist = self.get_stunguard(my_style, my_base) + self.get_soak(my_style, my_base)
+        distance = self.get_range_between_fighters()    
+        
+        opp_strategies = self.get_fighter().opponent.get_strategies()
+        
+        faster_opp_strats = 0
+        clashing_opp_strats = 0
+        stunning_opp_strats = 0
+        in_range_opp_strats = 0
+        total_opp_strats = len(opp_strategies)
+        
+        for opp_strategy in opp_strategies:
+        
+            opp_style = opp_strategy[0]
+            opp_base = opp_strategy[1]
+            opp_ante = opp_strategy[2][0]
+            
+            opp_priority = self.get_priority(opp_style, opp_base) + opp_ante
+            opp_power = self.get_power(opp_style, opp_base)
+            opp_minrange = self.get_minrange(opp_style, opp_base)
+            opp_maxrange = self.get_maxrange(opp_style, opp_base)
+            
+            if opp_priority == my_priority:
+                clashing_opp_strats += 1
+            elif opp_priority > my_priority:
+                faster_opp_strats += 1
+            
+            if opp_power > my_stun_resist and opp_priority >= my_priority:
+                stunning_opp_strats += 1
+                
+            if opp_minrange <= distance and opp_maxrange >= distance:
+                in_range_opp_strats += 1
+            
+        features["opponent_likely_to_act_faster"] = faster_opp_strats / total_opp_strats
+        features["opponent_likely_to_stun_before_my_attack"] = faster_opp_strats / total_opp_strats
+        features["opponent_likely_to_be_in_range"] = faster_opp_strats / total_opp_strats
+        
+        
     def add_my_option_features(self, features, strategy):
         
         f = self.get_fighter()
         
-        next_hand = self.styles_and_bases_set - (self.discard[1] | strategy[0] | strategy[1])
+        style = strategy[0]
+        base = strategy[1]
+        
+        next_hand = f.styles_and_bases_set - (f.discard[1] | set([style, base]))
         
         for card in next_hand:
             features[card.name + "_in_my_hand"] = 1.0
@@ -274,7 +319,7 @@ class LearningAgent(agent.Agent):
         
         hand = f.styles_and_bases_set - (f.discard[1] | f.discard[2])
         
-        for card in hand():
+        for card in hand:
             features[card.name + "_in_opp_hand"] = 1.0
         for card in f.discard[1]:
             features[card.name + "_in_opp_disc_1"] = 1.0
