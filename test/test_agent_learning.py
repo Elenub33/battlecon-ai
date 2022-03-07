@@ -18,6 +18,7 @@ class TestLearningAgent(unittest.TestCase):
     """
     Plays one beat, Eligor vs. Shekhtur.
     """
+    @unittest.skip("This test is longish.")
     def test_eligor_v_shekhtur(self):
         log, winner = self.game.play_game()
         print("WINNER: {} ({} vs. {})".format(winner, self.yaron_agent.get_fighter().life, self.learning_agent.get_fighter().life))
@@ -93,6 +94,63 @@ class TestLearningAgent(unittest.TestCase):
             f.position = f_pos
             o.position = o_pos
             self.assertEqual(agt.get_range_between_fighters(), rg, "Unexpected opponent range returned for positions {} and {}.".format(f_pos, o_pos))
+            
+            
+    def test_can_change_weight(self):
+        agt = self.learning_agent
+        f = "my_feature"
+        self.assertEqual(agt.get_weight(f), 0.0)
+        agt.set_weight(f, 1.0)
+        self.assertEqual(agt.get_weight(f), 1.0)
+        agt.clear_weights()
+        self.assertEqual(agt.get_weight(f), 0.0)
+            
+            
+    def test_can_save_and_restore_weights(self):
+        agt = self.learning_agent
+        f = "my_feature"
+        
+        self.assertEqual(agt.get_weight(f), 0.0)
+        
+        agt.set_weight(f, 1.0)
+        self.assertEqual(agt.get_weight(f), 1.0)
+        
+        w = agt.get_weights()
+        agt.clear_weights()
+        self.assertEqual(agt.get_weight(f), 0.0)
+        
+        agt.set_weights(w)
+        self.assertEqual(agt.get_weight(f), 1.0)
+        
+        
+    def test_can_save_and_restore_weights_using_file(self):
+    
+        filename = "tmp_test_weights"
+        
+        
+        try:
+            agt = self.learning_agent
+            
+            f = "my_feature"
+            
+            self.assertEqual(agt.get_weight(f), 0.0)
+            
+            agt.set_weight(f, 1.0)
+            self.assertEqual(agt.get_weight(f), 1.0)
+            
+            agt.save_weights(filename)
+            agt.clear_weights()
+            self.assertEqual(agt.get_weight(f), 0.0)
+            
+            agt.load_weights(filename)
+            self.assertEqual(agt.get_weight(f), 1.0)
+            
+            os.remove(filename)
+            
+        except Exception as e:
+            if os.path.exists(filename):
+                os.remove(filename)
+            raise e
     
 
 if __name__ == "__main__":

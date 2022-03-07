@@ -1,4 +1,4 @@
-import random
+import random, json
 import agent
 
 """
@@ -15,7 +15,7 @@ class LearningAgent(agent.Agent):
         self.epsilon = 0.04 # percent chance to take random action instead of strategic one (for learning purposes)
         self.discount = 0.97 # preference to take action now over later. 0.0 = 100% urgency, 1.0 = 0% urgency.
         self.alpha = 0.1 # amount to adjust weights when learning new information. 0.0 = no learning, 1.0 = discard all previous knowledge.
-        self.weights = dict()
+        self.clear_weights()
         
 
     def choose_strategy(self, limit_antes=False):
@@ -66,6 +66,18 @@ class LearningAgent(agent.Agent):
 
     def get_weights(self):
         return self.weights
+
+
+    def set_weights(self, weights):
+        self.weights = weights
+        
+    
+    def clear_weights(self):
+        self.weights = dict()
+    
+        
+    def set_weight(self, feature, weight):
+        self.weights[feature] = weight
         
         
     def get_weight(self, feature):
@@ -74,6 +86,21 @@ class LearningAgent(agent.Agent):
             return w[feature]
         else:
             return 0.0
+
+
+    def save_weights(self, filename):
+        w = self.get_weights()
+        f = open(filename, "w")
+        f.write(json.dumps(w))
+        f.close()
+
+
+    def load_weights(self, filename):
+        f = open(filename, "r")
+        w = json.loads(f.read())
+        f.close()
+        self.set_weights(w)
+
             
     def get_health_diff(self):
         f = self.get_fighter()
@@ -127,7 +154,7 @@ class LearningAgent(agent.Agent):
         f = last_strat['features']
         
         for i in f.keys():
-            w[i] = self.get_weight(i) + diff * f[i]
+            self.set_weight(i, self.get_weight(i) + diff * f[i])
         
         
     """
@@ -224,11 +251,17 @@ class LearningAgent(agent.Agent):
         base = strategy[1]
         ante = strategy[2][0]
         
+        pair_name = style.name + base.name
+        
+        range = self.get_range_between_fighters()
+        
         # booleans for individual elements of strategy and for combination
-        features["Choose " + self.get_strategy_name(strategy)] = 1.0
-        features["strat_style_" + style.name] = 1.0
-        features["strat_base_" + base.name] = 1.0
-        features["strat_ante_" + str(strategy[2][0])] = 1.0
+        features["Strategy " + self.get_strategy_name(strategy)] = 1.0
+        features[pair_name + "_at_range_" + str(range)] = 1.0
+        features[pair_name] = 1.0
+        features["play_" + style.name] = 1.0
+        features["play_" + base.name] = 1.0
+        features["ante_" + str(strategy[2][0])] = 1.0
         
         # number of tokens anted
         features["strat_ante"] = ante
@@ -257,7 +290,11 @@ class LearningAgent(agent.Agent):
         
         my_priority = self.get_priority(my_style, my_base)
         my_stun_resist = self.get_stunguard(my_style, my_base) + self.get_soak(my_style, my_base)
-        distance = self.get_range_between_fighters()    
+        distance = self.get_range_between_fighters()
+        
+        opp_pairs = self.get_fighter().opponent.get_pairs()
+        for opp_style, opp_base in opp_pairs:
+            features[my_style.name + my_base.name + "_when_" + opp_style.name + opp_base.name + "_available"] = 1.0
         
         opp_strategies = self.get_fighter().opponent.get_strategies()
         
@@ -304,11 +341,7 @@ class LearningAgent(agent.Agent):
         next_hand = f.styles_and_bases_set - (f.discard[1] | set([style, base]))
         
         for card in next_hand:
-            features[card.name + "_in_my_hand"] = 1.0
-            
-        # we know what pairs will be in our discards w/ this strategy
-        for card in f.discard[1]:
-            features[card.name + "_will_cycle_to_my_discard_2"] = 1.0
+            features[card.name + "_in_my_next_hand"] = 1.0
             
         features["my_tokens"] = len(f.pool)
         features["i_have_special"] = f.special_action_available

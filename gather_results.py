@@ -18,6 +18,7 @@ class GatherResults:
     log_file_base = outdir + "/game_log_"
     eligor_strat_file = outdir + "/eligor_strategies.csv"
     shekhtur_strat_file = outdir + "/shekhtur_strategies.csv"
+    weights_file = outdir + "/eligor_bot_weights.json"
     
     
     def __init__(self, iterations):
@@ -26,11 +27,7 @@ class GatherResults:
     
     def go(self):
     
-        weights = dict()
-    
         for i in range(1, self.iterations + 1):
-        
-            # TODO: save/load weights in a file instead of a local variable
         
             start_time = time.time()
             print(GatherResults.format_time(start_time) + ": starting duel " + str(i))
@@ -38,7 +35,9 @@ class GatherResults:
             p1 = YaronAgent("shekhtur")
             p2 = LearningAgent("eligor")
             
-            p2.weights = weights
+            if os.path.exists(GatherResults.weights_file):
+                print("Using weights from " + GatherResults.weights_file)
+                p2.load_weights(GatherResults.weights_file)
             
             game = Game.from_start(p1, p2, default_discards=True)
             game_log, winner = game.play_game()
@@ -47,14 +46,14 @@ class GatherResults:
             
             print(GatherResults.format_time(end_time) + ": " + str(winner) + " won.")
             
+            p2.save_weights(GatherResults.weights_file)
+            
             GatherResults.make_output_dir()
             GatherResults.log_match_results(game, i, winner, end_time - start_time)
             GatherResults.log_learning(p2)
             GatherResults.log_strategies(p1, i, GatherResults.shekhtur_strat_file)
             GatherResults.log_strategies(p2, i, GatherResults.eligor_strat_file)
             GatherResults.log_game_log(game_log, i)
-            
-            weights = p2.get_weights()
 
 
     @staticmethod
