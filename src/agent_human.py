@@ -16,4 +16,6 @@ class HumanAgent(agent.Agent):
         strategy = f.input_strategy(limit_antes)
         # in case I need to report my ante choice to opponent's input_strategy
         f.chosen_ante = strategy[2]
+        
+        self.log_strategy(strategy)
         return strategy

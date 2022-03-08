@@ -543,7 +543,10 @@ class Game:
             self.reporting = False
             self.simulate_beat()
             self.log_unbeatable_strategies(log)
+            print("Solving matrix... ", end="")
+            start_time = time.time()
             self.solve()
+            print("done. ({}s)".format(time.time() - start_time))
             self.reporting = True
             log.extend(self.make_pre_attack_decision() + [""])
             if self.interactive:
@@ -565,6 +568,8 @@ class Game:
             winner = None
         else:
             winner = self.player[winner].get_name()
+        for p in self.player:
+            p.conclude_game(winner)
         self.dump(log)
         return self.log, winner
 

@@ -1,6 +1,5 @@
-import random
-import agent
-import solve
+import random, time
+import agent, solve
 
 """
 Yaron's original AI.
@@ -10,9 +9,15 @@ class YaronAgent(agent.Agent):
 
     # choose a random strategy according to mix
     def choose_strategy(self, limit_antes=False):
-        # If there's only one option, return it.
+    
         f = self.get_fighter()
+        
+        print("{} is thinking ({} options)... ".format(self.get_name(), len(f.mix)), end="")
+        start_time = time.time()
+    
+        # If there's only one option, return it.
         if len(f.mix) == 1:
+            print("chose {} ({}s).".format(self.get_strategy_name(f.mix[0][0]), time.time() - start_time))
             return f.mix[0][0]
         r = random.random()
         total = 0
@@ -24,8 +29,8 @@ class YaronAgent(agent.Agent):
         # in case I need to report my ante choice to opponent's input_strategy
         f.chosen_ante = strategy[2]
         
-        print("{} chose {}.".format(self.get_name(), strategy))
-        
+        print("chose {} ({}s).".format(self.get_strategy_name(strategy), time.time() - start_time))
+        self.log_strategy(strategy)
         return strategy
         
         
