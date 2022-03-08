@@ -1,4 +1,4 @@
-import random, json
+import random, json, time
 import agent
 
 """
@@ -13,8 +13,8 @@ class LearningAgent(agent.Agent):
     def __init__(self, fighter_name, bases="alpha"):
         super().__init__(fighter_name, bases)
         self.epsilon = 0.04 # percent chance to take random action instead of strategic one (for learning purposes)
-        self.discount = 0.97 # preference to take action now over later. 0.0 = 100% urgency, 1.0 = 0% urgency.
-        self.alpha = 0.1 # amount to adjust weights when learning new information. 0.0 = no learning, 1.0 = discard all previous knowledge.
+        self.discount = 1.0 # preference to take action now over later. 0.0 = 100% urgency, 1.0 = 0% urgency.
+        self.alpha = 0.01 # amount to adjust weights when learning new information.
         self.clear_weights()
         
 
@@ -22,6 +22,9 @@ class LearningAgent(agent.Agent):
     
         # learn from everything that's happened since previous choice
         self.update()
+        
+        print("{} is thinking ({} options)... ".format(self.get_name(), len(self.get_fighter().mix)), end="")
+        start_time = time.time()
         
         # choose what to do next
         if random.random() > self.epsilon:
@@ -31,6 +34,7 @@ class LearningAgent(agent.Agent):
             strategy = self.get_random_strategy()
         
         # record and commit to our choice
+        print("chose {} ({}s).".format(self.get_strategy_name(strategy), time.time() - start_time))
         self.record_chosen_strategy(strategy)
         return strategy
         
@@ -40,12 +44,12 @@ class LearningAgent(agent.Agent):
         
         
     def get_random_strategy(self):
-        return random.choice(self.get_fighter().get_strategies())
+        return random.choice(self.get_available_strategies())
         
         
     def get_best_strategy(self):
         best_s, best_q = [], float('-inf')
-        for s in self.get_fighter().get_strategies():
+        for s in self.get_available_strategies():
             q = self.get_q_value(s)
             if q == best_q:
                 best_s.append(s)
@@ -56,6 +60,10 @@ class LearningAgent(agent.Agent):
             return random.choice(best_s), best_q
         else:
             return None, best_q
+        
+        
+    def get_available_strategies(self):
+        return [m[0] for m in self.get_fighter().mix]
         
         
     def record_chosen_strategy(self, strategy):
@@ -145,10 +153,10 @@ class LearningAgent(agent.Agent):
             
         reward = self.get_health_diff() - last_strat['health_diff']
         
-        print("REWARD:", reward, "({} to {})\n".format(self.get_fighter().opponent.effective_life(), self.get_fighter().effective_life()))
-        
         this_q = self.get_current_state_value()
         diff = self.alpha * ((reward + self.discount * this_q) - last_strat['q_val'])
+        
+        print("REWARD: {} ({} to {}), Q VALUE {} -> {} (diff {})\n".format(reward, self.get_fighter().opponent.effective_life(), self.get_fighter().effective_life(), last_strat['q_val'], this_q, diff))
         
         w = self.get_weights()
         f = last_strat['features']
@@ -190,8 +198,8 @@ class LearningAgent(agent.Agent):
         self.add_range_features(features)
         self.add_strategy_features(features, strategy)
         self.add_counterplay_features(features, strategy)
-        self.add_my_option_features(features, strategy)
-        self.add_opp_option_features(features)
+        self.add_my_state_features(features, strategy)
+        self.add_opp_state_features(features)
         
         return features
         
@@ -332,7 +340,7 @@ class LearningAgent(agent.Agent):
         features["opponent_likely_to_be_in_range"] = faster_opp_strats / total_opp_strats
         
         
-    def add_my_option_features(self, features, strategy):
+    def add_my_state_features(self, features, strategy):
         
         f = self.get_fighter()
         
@@ -348,9 +356,11 @@ class LearningAgent(agent.Agent):
             
         if f.special_action_available:
             features["i_have_special"] = 1.0
+            
+        features["my_damage_taken"] = (20.0 - f.effective_life()) / 20.0
         
         
-    def add_opp_option_features(self, features):
+    def add_opp_state_features(self, features):
     
         f = self.get_fighter().opponent
         
@@ -368,3 +378,5 @@ class LearningAgent(agent.Agent):
             
         if f.special_action_available:
             features["opp_has_special"] = 1.0
+            
+        features["opp_damage_taken"] = (20.0 - f.effective_life()) / 20.0

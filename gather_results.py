@@ -27,8 +27,15 @@ class GatherResults:
     
     def go(self):
     
-        for i in range(1, self.iterations + 1):
-        
+        i = 0
+        iterations = self.iterations
+    
+        while iterations > 0:
+            
+            i += 1
+            if GatherResults.log_exists_for_game(i):
+                continue
+            
             start_time = time.time()
             print(GatherResults.format_time(start_time) + ": starting duel " + str(i))
             
@@ -46,14 +53,15 @@ class GatherResults:
             
             print(GatherResults.format_time(end_time) + ": " + str(winner) + " won.")
             
-            p2.save_weights(GatherResults.weights_file)
-            
             GatherResults.make_output_dir()
+            p2.save_weights(GatherResults.weights_file)
             GatherResults.log_match_results(game, i, winner, end_time - start_time)
             GatherResults.log_learning(p2)
             GatherResults.log_strategies(p1, i, GatherResults.shekhtur_strat_file)
             GatherResults.log_strategies(p2, i, GatherResults.eligor_strat_file)
             GatherResults.log_game_log(game_log, i)
+            
+            iterations -= 1
 
 
     @staticmethod
@@ -66,10 +74,19 @@ class GatherResults:
         pathlib.Path(GatherResults.outdir).mkdir(parents=True, exist_ok=True)
         
         
+    def game_log_file_name(game_num):
+        return GatherResults.log_file_base + str(game_num) + ".log"
+        
+        
+    @staticmethod
+    def log_exists_for_game(game_num):
+        return os.path.exists(GatherResults.game_log_file_name(game_num))
+        
+        
     @staticmethod
     def log_game_log(game_log, game_num):
         GatherResults.log_content(
-            GatherResults.log_file_base + str(game_num) + ".log",
+            GatherResults.game_log_file_name(game_num),
             "",
             "\n".join(game_log)
         )

@@ -70,7 +70,6 @@ class Agent:
         
         
     def log_strategy(self, strategy):
-        print("{} chose {}.".format(self.get_name(), strategy)) # TODO: remove this
         self.logged_strategies.append(strategy)
         
         
