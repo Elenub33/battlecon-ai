@@ -63,6 +63,8 @@ import fighters
 import solve
 import utils
 
+from agent_yaron import YaronAgent
+from agent_human import HumanAgent
 
 log = logging.getLogger(__name__)
 
@@ -130,15 +132,17 @@ def test(first=None, bases="alpha"):
     log_content = []
     random.seed(0)
     found_first = not first
-    for p1, p2 in utils.IterChunks(playable, 2, fill=playable[0]):
+    for p1_name, p2_name in utils.IterChunks(playable, 2, fill=playable[0]):
         if not found_first:
-            if p1 == first:
+            if p1_name == first:
                 found_first = True
             else:
                 continue
-        log.info("%s vs %s", p1, p2)
+        log.info("%s vs %s", p1_name, p2_name)
         start_time = time.time()
-        game = Game.from_start(p1, p2, bases, bases, default_discards=True)
+        p1 = YaronAgent(p1_name, bases)
+        p2 = YaronAgent(p2_name, bases)
+        game = Game.from_start(p1, p2, default_discards=True)
         game_log, unused_winner = game.play_game()
         end_time = time.time()
         log.info("total time: %d s", end_time - start_time)
@@ -154,44 +158,45 @@ def play():
     while True:
         print("Select your character:")
         idx = utils.MenuPrompt(names + ["Random"], num_columns=3)
-        human = names.pop(idx if idx < len(names) else random.randint(0, len(names) - 1))
-        print(f"You will be playing {human}\n")
+        human_name = names.pop(idx if idx < len(names) else random.randint(0, len(names) - 1))
+        print(f"You will be playing {human_name}\n")
 
         print("Select AI character:")
         idx = utils.MenuPrompt(names + ["Random"], num_columns=3)
-        ai = names.pop(idx if idx < len(names) else random.randint(0, len(names) - 1))
-        print(f"AI will be playing {ai}\n")
+        ai_name = names.pop(idx if idx < len(names) else random.randint(0, len(names) - 1))
+        print(f"AI will be playing {ai_name}\n")
 
         print("Which set of bases should be used?")
         idx = utils.MenuPrompt(
-          [
-            "Standard bases",
-            "Beta bases",
-            "I use standard, AI uses beta",
-            "I use beta, AI uses standard",
-          ]
+            [
+                "Standard bases",
+                "Beta bases",
+                "I use standard, AI uses beta",
+                "I use beta, AI uses standard",
+            ]
         )
         ai_bases = "beta" if idx in (1, 2) else "alpha"
         human_bases = "beta" if idx in (1, 3) else "alpha"
+        
+        human = HumanAgent(human_name, human_bases)
+        ai = YaronAgent(ai_name, ai_bases)
+        
         print("Default Discards?")
         default_discards = utils.MenuPrompt(["No", "Yes"])
         game = Game.from_start(
-          ai,
-          human,
-          ai_bases,
-          human_bases,
-          default_discards=default_discards,
-          interactive=True,
+            ai,
+            human,
+            default_discards=default_discards
         )
         game.select_finishers()
         game_log, unused_winner = game.play_game()
         if not os.path.exists("logs"):
             os.mkdir("logs")
         if ai_bases == "beta":
-            ai = ai + "_beta"
+            ai_name = ai_name + "_beta"
         if human_bases == "beta":
-            human = human + "_beta"
-        basename = "logs/" + ai + "(AI)_vs_" + human
+            human_name = human_name + "_beta"
+        basename = "logs/" + ai_name + "(AI)_vs_" + human_name
         name = save_log(basename, game_log)
         print("Log saved at: ", name)
         print()
@@ -270,7 +275,7 @@ def duel(name0, name1, repeat, bases0="alpha", bases1="alpha", first_beats=False
     start = time.time()
     for i in range(repeat):
         game = Game.from_start(
-          name0, name1, bases0, bases1, default_discards=False, first_beats=first_beats
+            YaronAgent(name0, bases0), YaronAgent(name0, bases1), default_discards=False, first_beats=first_beats
         )
         game_log, winner = game.play_game()
         log.append("GAME %d\n-------\n" % i)
@@ -309,13 +314,9 @@ def play_beat(filename="starting states/start.txt"):
     return game
 
 
-def play_start_beat(name0, name1, bases0="alpha", bases1="alpha"):
-    game = Game.from_start(name0, name1, bases0, bases1, default_discards=False)
-    print("Simulating...")
-    game.simulate_beat()
-    print("Solving...")
-    game.solve()
-    game.print_solution()
+def play_start_beat(agent0, agent1):
+    game = Game.from_start(agent0, agent1, default_discards=True, first_beats=True)
+    game.play_game()
     return game
 
 
@@ -399,7 +400,7 @@ class Game:
     CANCEL_1_INDICATOR = -2001.0
     CANCEL_BOTH_INDICATOR = -2002.0
     CANCEL_INDICATORS = set(
-      [CANCEL_0_INDICATOR, CANCEL_1_INDICATOR, CANCEL_BOTH_INDICATOR]
+        [CANCEL_0_INDICATOR, CANCEL_1_INDICATOR, CANCEL_BOTH_INDICATOR]
     )
     # Very good/bad result constant (used to prevent certain strats
     # from being chosen by AI:
@@ -438,7 +439,7 @@ class Game:
             bases1 = name1.split()[-2]
             name1 = name1[: -(len(bases1) + 9)]
 
-        game = Game(name0, name1, bases0, bases1)
+        game = Game(YaronAgent(name0, bases0), YaronAgent(name1, bases))
         lines0 = lines[2 : char1_start - 1]
         lines1 = lines[char1_start + 2 : char1_end]
         board = lines[board_start]
@@ -457,35 +458,29 @@ class Game:
 
     @staticmethod
     def from_start(
-      name0,
-      name1,
-      bases0,
-      bases1,
-      default_discards=True,
-      interactive=False,
-      cheating=0,
-      first_beats=False,
+        agent0,
+        agent1,
+        default_discards=True,
+        cheating=0,
+        first_beats=False,
     ):
-        """Create a game in starting position.
-            name0, name1: names of characters
-            """
-        game = Game(
-          name0, name1, bases0, bases1, interactive, cheating, first_beats=first_beats
-        )
+        """Create a game in starting position."""
+        game = Game(agent0, agent1, cheating, first_beats=first_beats)
         game.set_starting_setup(default_discards, use_special_actions=not first_beats)
         game.initialize_simulations()
         return game
 
     def __init__(
-      self, name0, name1, bases0, bases1, interactive=False, cheating=0, first_beats=False
+        self, agent0, agent1, cheating=0, first_beats=False
     ):
 
-        name0 = name0.lower()
-        name1 = name1.lower()
+        agent0.initialize_game(self, 0)
+        agent1.initialize_game(self, 1)
+        
         self.range_weight = 0.3
         # fast clash evaluation - can only be used for one beat checks
         self.clash0 = False
-        self.interactive = interactive
+        self.interactive = agent1.is_human()
         self.cheating = cheating
         # If first_beats==True, we're checking initial discards,
         # so we only play two beats, and start the game with all cards
@@ -498,23 +493,25 @@ class Game:
         self.replay_mode = False
         self.interactive_counter = None
         self.log = []
+        
         self.player = [
-          fighters.character_dict[name0](self, 0, bases0),
-          fighters.character_dict[name1](self, 1, bases1, is_user=interactive),
+            agent0,
+            agent1
+        ]
+        self.fighter = [
+            agent0.get_fighter(),
+            agent1.get_fighter()
         ]
         for i in range(2):
-            self.player[i].opponent = self.player[1 - i]
-            for card in self.player[i].all_cards():
-                card.opponent = self.player[1 - i]
-        for p in self.player:
-            p.set_mean_priority_effects()
+            self.player[i].set_opponent(self.player[1 - i])
+            self.fighter[i].set_mean_priority_effects()
         self.debugging = False
         self.reporting = False
 
     # sets default state for current characters
     def set_starting_setup(self, default_discards, use_special_actions):
-        for p in self.player:
-            p.set_starting_setup(default_discards, use_special_actions)
+        for f in self.fighter:
+            f.set_starting_setup(default_discards, use_special_actions)
 
     def select_finishers(self):
         for p in self.player:
@@ -529,11 +526,11 @@ class Game:
 
     # Play a game from current situation to conclusion
     def play_game(self):
-        full_names = [p.name_with_base_set() for p in self.player]
+        full_names = [f.name_with_base_set() for f in self.fighter]
         log = ["\n" + " vs. ".join(full_names)]
-        for p in self.player:
+        for f in self.fighter:
             log.append(
-              "Chosen finisher for %s: " % p.name + ", ".join(o.name for o in p.finishers)
+              "Chosen finisher for %s: " % f.name + ", ".join(o.name for o in f.finishers)
             )
         # Loop over beats:
         while True:
@@ -567,14 +564,14 @@ class Game:
         if winner == 0.5 or winner is None:
             winner = None
         else:
-            winner = self.player[winner].name
+            winner = self.player[winner].get_name()
         self.dump(log)
         return self.log, winner
 
     def situation_report(self):
         report = []
-        for p in self.player:
-            report.extend(p.situation_report())
+        for f in self.fighter:
+            report.extend(f.situation_report())
             report.append("")
         report.extend(self.get_board())
         return report
@@ -603,13 +600,13 @@ class Game:
                     for k in range(len(row_values)):
                         if row_values[k] > 0:
                             if n > 1:
-                                log.append("Given %s by %s" % (self.pads[0][i], self.player[0]))
+                                log.append("Given %s by %s" % (self.pads[0][i], self.player[0].get_fighter()))
                             if m > 1:
-                                log.append("Given %s by %s" % (self.pads[1][j], self.player[1]))
+                                log.append("Given %s by %s" % (self.pads[1][j], self.player[1].get_fighter()))
                             log.append(
                               "Unbeatable strategy for %s: %s: %.2f"
                               % (
-                                self.player[0].name,
+                                self.player[0].get_name(),
                                 self.player[0].get_strategy_name(s0[regular_0[k]]),
                                 row_values[k],
                               )
@@ -626,7 +623,7 @@ class Game:
                             log.append(
                               "Unbeatable strategy for %s: %s: %.2f"
                               % (
-                                self.player[1].name,
+                                self.player[1].get_name(),
                                 self.player[1].get_strategy_name(s1[regular_1[k]]),
                                 col_values[k],
                               )
@@ -642,7 +639,7 @@ class Game:
         log[:] = []
 
     def logfile_name(self):
-        return "%s_%s" % (self.player[0].logfile_name(), self.player[1].logfile_name())
+        return "%s_%s" % (self.fighter[0].logfile_name(), self.fighter[1].logfile_name())
 
     # makes snapshot of game state (pre strategy selection)
     def initial_save(self):
@@ -694,11 +691,11 @@ class Game:
     def simulate_beat(self):
         # get lists of strategies from both players
         for p in self.player:
-            p.strats = p.get_strategies()
+            p.get_fighter().strats = p.get_all_possible_strategies()
         # run simulations, create result table
         self.results = [
-          [self.simulate(s0, s1) for s1 in self.player[1].strats]
-          for s0 in self.player[0].strats
+            [self.simulate(s0, s1) for s1 in self.player[1].get_fighter().strats]
+            for s0 in self.player[0].get_fighter().strats
         ]
 
         self.initial_restore(self.initial_state)
@@ -709,8 +706,8 @@ class Game:
 
         # Usually this does nothing, but some characters might need to
         # fix the result tables and strategies (e.g. Seth, Ottavia).
-        for p in self.player:
-            p.post_simulation_processing()
+        for f in self.fighter:
+            f.post_simulation_processing()
 
         # Once we're done with special processing, we can discard
         # the full final state of each simulation, and keep just
@@ -723,23 +720,23 @@ class Game:
         self.strats = [[], []]
         for i, p in enumerate(self.player):
             # group player strategies by pre attack decision.
-            for pad, pad_strats in itertools.groupby(p.strats, lambda s: s[2][2]):
+            for pad, pad_strats in itertools.groupby(p.get_fighter().strats, lambda s: s[2][2]):
                 self.pads[i].append(pad)
                 self.strats[i].append(list(pad_strats))
         # split results into subtables according to pads:
         self.results = [
-          [
-            self.get_pad_subresults(
-              self.results, [p.strats for p in self.player], pad0, pad1
-            )
-            for pad1 in self.pads[1]
-          ]
-          for pad0 in self.pads[0]
+            [
+                self.get_pad_subresults(
+                    self.results, [p.get_fighter().strats for p in self.player], pad0, pad1
+                )
+                for pad1 in self.pads[1]
+            ]
+            for pad0 in self.pads[0]
         ]
 
     def remove_redundant_finishers(self):
         redundant_finishers = []
-        s0 = self.player[0].strats
+        s0 = self.player[0].get_fighter().strats
         for i in range(len(self.results)):
             if isinstance(s0[i][1], fighters.Finisher):
                 for ii in range(len(self.results)):
@@ -750,14 +747,14 @@ class Game:
                             redundant_finishers.append(i)
                             break
         self.results = [
-          self.results[i] for i in range(len(self.results)) if i not in redundant_finishers
+            self.results[i] for i in range(len(self.results)) if i not in redundant_finishers
         ]
-        self.player[0].strats = [
-          s0[i] for i in range(len(s0)) if i not in redundant_finishers
+        self.player[0].get_fighter().strats = [
+            s0[i] for i in range(len(s0)) if i not in redundant_finishers
         ]
 
         redundant_finishers = []
-        s1 = self.player[1].strats
+        s1 = self.player[1].get_fighter().strats
         for j in range(len(self.results[0])):
             if isinstance(s1[j][1], fighters.Finisher):
                 for jj in range(len(self.results[0])):
@@ -768,11 +765,11 @@ class Game:
                             redundant_finishers.append(j)
                             break
         self.results = [
-          [r[j] for j in range(len(r)) if j not in redundant_finishers]
-          for r in self.results
+            [r[j] for j in range(len(r)) if j not in redundant_finishers]
+            for r in self.results
         ]
-        self.player[1].strats = [
-          s1[j] for j in range(len(s1)) if j not in redundant_finishers
+        self.player[1].get_fighter().strats = [
+            s1[j] for j in range(len(s1)) if j not in redundant_finishers
         ]
 
     def get_pad_subresults(self, results, strats, pad0, pad1):
@@ -792,8 +789,8 @@ class Game:
             # restore situation to initial pre-strategy state
             self.initial_restore(self.initial_state)
 
-            self.player[0].strat = s0
-            self.player[1].strat = s1
+            self.player[0].set_chosen_strategy(s0)
+            self.player[1].set_chosen_strategy(s1)
 
             # resets basic beat information to start of beat state
             self.reset()
@@ -801,42 +798,44 @@ class Game:
             if self.reporting:
                 self.report("")
                 for p in self.player:
-                    self.report(p.name + ": " + p.get_strategy_name(p.strat))
+                    self.report(p.get_name() + ": " + p.get_chosen_strategy_name())
                 self.report("")
 
-            for p in self.player:
-                p.pre_attack_decision_effects()
+            for f in self.fighter:
+                f.pre_attack_decision_effects()
 
             # Put attack pairs in discard.
             for p in self.player:
-                p.style = p.strat[0]
-                p.base = p.strat[1]
-                if not isinstance(p.style, fighters.SpecialAction):
+                strat = p.get_chosen_strategy()
+                f = p.get_fighter()
+                f.style = strat[0]
+                f.base = strat[1]
+                if not isinstance(f.style, fighters.SpecialAction):
                     # Adding to existing set,
                     # because Vanaah's token might already be there.
-                    p.discard[0] |= set([p.style, p.base])
+                    f.discard[0] |= set([f.style, f.base])
 
-            for p in self.player:
-                p.ante_trigger()
+            for f in self.fighter:
+                f.ante_trigger()
 
             # Attack pairs are now active.
-            for p in self.player:
-                p.set_active_cards()
+            for f in self.fighter:
+                f.set_active_cards()
 
             # Special Actions
 
             # fighters.Finishers devolve into fighters.Cancels above 7 life
             # or if failing to meet their specific conditions
-            for p in self.player:
-                if isinstance(p.base, fighters.Finisher) and p.base.devolves_into_cancel():
-                    p.base = p.cancel
+            for f in self.fighter:
+                if isinstance(f.base, fighters.Finisher) and f.base.devolves_into_cancel():
+                    f.base = f.cancel
 
             # fighters.Cancel - return an appropriate cancel indicator
             # (depending on who cancelled).
             # This will be solved retroactively.
             # Check that there's no Pulse that trumps the fighters.Cancel.
-            cancel = [p.base is p.cancel for p in self.player]
-            pulse = [p.base is p.pulse for p in self.player]
+            cancel = [f.base is f.cancel for f in self.fighter]
+            pulse = [f.base is f.pulse for f in self.fighter]
             # A double Pulse devolves to a double fighters.Cancel.
             if all(pulse):
                 final_state = self.full_save(None)
@@ -858,12 +857,12 @@ class Game:
 
             # Stage 0 includes: pulse check, reveal trigger, clash check.
             if state.stage <= 0:
-                pulsing_players = [p for p in self.player if p.base is p.pulse]
+                pulsing_fighters = [f for f in self.fighter if f.base is f.pulse]
                 # With one pulse - fork to decide new player positions.
                 # Not using execute_move, because Pulse negates any blocking
                 # or reaction effects (including status effects from last beat).
-                if len(pulsing_players) == 1:
-                    pulser = pulsing_players[0]
+                if len(pulsing_fighters) == 1:
+                    pulser = pulsing_fighters[0]
                     opp = pulser.opponent
                     # If opponent used fighters.Cancel/fighters.Finisher, we have them
                     # retroactively choose which base activated it.
@@ -872,7 +871,7 @@ class Game:
                     if opp.style is opp.special_action:
                         if opp.base is opp.cancel:
                             options = opp.cancel_generators.copy()
-                            if any(f.devolves_into_cancel() for f in opp.finishers):
+                            if any(finisher.devolves_into_cancel() for finisher in opp.finishers):
                                 options |= opp.finisher_generators
                         else:
                             options = opp.finisher_generators.copy()
@@ -888,7 +887,7 @@ class Game:
                     pairs = list(itertools.permutations(range(7), 2))
                     prompt = "Choose positions after Pulse:"
                     options = []
-                    if pulser.is_user and self.interactive_mode:
+                    if pulser.agent.is_human() and self.interactive_mode:
                         current_pair = (self.player[0].position, self.player[1].position)
                         for pair in pairs:
                             (self.player[0].position, self.player[1].position) = pair
@@ -902,18 +901,18 @@ class Game:
                         for s in self.get_board():
                             self.report(s)
                     # Skip directly to cycle and evaluation phase.
-                    if pulsing_players:
+                    if pulsing_fighters:
                         self.stop_the_clock = True
                         return self.cycle_and_evaluate()
 
-                for p in self.player:
-                    p.reveal_trigger()
+                for f in self.fighter:
+                    f.reveal_trigger()
 
                 # clash_priority is fraction
                 # that represents autowinning/losing clashes
-                priority = [p.get_priority() for p in self.player]
+                priority = [f.get_priority() for f in self.fighter]
                 clash_priority = [
-                  priority[i] + p.clash_priority() for i, p in enumerate(self.player)
+                    priority[i] + f.clash_priority() for i, f in enumerate(self.fighter)
                 ]
 
                 if self.reporting:
@@ -922,16 +921,16 @@ class Game:
                 if clash_priority[0] > clash_priority[1]:
                     self.active = self.player[0]
                     if self.reporting:
-                        self.report(self.active.name + " is active")
+                        self.report(self.active.get_name() + " is active")
                 elif clash_priority[1] > clash_priority[0]:
                     self.active = self.player[1]
                     if self.reporting:
-                        self.report(self.active.name + " is active")
+                        self.report(self.active.get_name() + " is active")
                 # priority tie
                 else:
                     # Two clashing finishers turn into cancels.
-                    if isinstance(self.player[0].base, fighters.Finisher) and isinstance(
-                      self.player[1].base, fighters.Finisher
+                    if isinstance(self.fighter[0].base, fighters.Finisher) and isinstance(
+                      self.fighter[1].base, fighters.Finisher
                     ):
                         final_state = self.full_save(None)
                         return self.CANCEL_BOTH_INDICATOR, final_state, self.fork_decisions[:]
@@ -947,13 +946,13 @@ class Game:
 
             # start triggers
             if state.stage <= 1:
-                for p in self.players_in_order():
-                    p.start_trigger()
+                for f in self.fighters_in_order():
+                    f.start_trigger()
                 state = self.full_save(2)
 
             # player activations
             if state.stage <= 2:
-                active = self.active
+                active = self.active.get_fighter()
                 # check if attack needs to be re-executed
                 while active.attacks_executed < active.max_attacks:
                     if active.is_stunned():
@@ -962,7 +961,7 @@ class Game:
                     active.attacks_executed += 1
                 state = self.full_save(3)
             if state.stage <= 3:
-                reactive = self.active.opponent
+                reactive = self.active.opponent.get_fighter()
                 # check if attack needs to be re-executed
                 while reactive.attacks_executed < reactive.max_attacks:
                     if reactive.is_stunned():
@@ -972,11 +971,11 @@ class Game:
                 state = self.full_save(4)
 
             # end triggers and evaluation
-            for p in self.players_in_order():
-                p.end_trigger()
+            for f in self.fighters_in_order():
+                f.end_trigger()
 
-            for p in self.player:
-                p.unique_ability_end_trigger()
+            for f in self.fighter:
+                f.unique_ability_end_trigger()
 
             return self.cycle_and_evaluate()
 
@@ -1000,9 +999,9 @@ class Game:
             ##            print "fork decisions:", fork_decisions
             for option in range(fork.n_options):
                 self.fork_decisions = fork_decisions + [option]
-                results.append(self.simulate(self.player[0].strat, self.player[1].strat, state))
+                results.append(self.simulate(self.player[0].get_chosen_strategy(), self.player[1].get_chosen_strategy(), state))
             values = [r[0] for r in results]
-            val = max(values) if fork.forking_player.my_number == 0 else min(values)
+            val = max(values) if fork.forking_player.get_player_number() == 0 else min(values)
             i = values.index(val)
             return results[i]
 
@@ -1014,7 +1013,7 @@ class Game:
                 if w == 0.5:
                     self.report("THE GAME IS TIED!")
                 else:
-                    self.report(self.player[w].name.upper() + " WINS!")
+                    self.report(self.player[w].get_name().upper() + " WINS!")
             if w == 0.5:
                 value = 0
             else:
@@ -1027,39 +1026,42 @@ class Game:
             return [self.player[0], self.player[1]]
         else:
             return [self.player[1], self.player[0]]
+            
+    def fighters_in_order(self):
+        return [p.get_fighter() for p in self.players_in_order()]
 
     # activation for one player
-    def activate(self, p):
-        p.before_trigger()
-        if p.is_attacking():
-            if p.can_hit() and p.opponent.can_be_hit() and not p.opponent.replace_hit():
+    def activate(self, f):
+        f.before_trigger()
+        if f.is_attacking():
+            if f.can_hit() and f.opponent.can_be_hit() and not f.opponent.replace_hit():
                 if self.reporting:
-                    self.report(p.name + " hits")
-                p.hit_trigger()
-                p.opponent.take_a_hit_trigger()
+                    self.report(f.agent.get_name() + " hits")
+                f.hit_trigger()
+                f.opponent.take_a_hit_trigger()
                 # hits_scored is set after triggers, so that triggers can check
                 # if this is first hit this beat
-                p.hits_scored += 1
-                if p.base.deals_damage:
-                    p.deal_damage(p.get_power())
+                f.hits_scored += 1
+                if f.base.deals_damage:
+                    f.deal_damage(f.get_power())
             else:
                 if self.reporting:
-                    self.report(p.name + " misses")
-        p.opponent.after_trigger_for_opponent()
-        p.after_trigger()
+                    self.report(f.agent.get_name() + " misses")
+        f.opponent.after_trigger_for_opponent()
+        f.after_trigger()
 
     def cycle_and_evaluate(self):
-        for p in self.player:
-            p.cycle()
+        for f in self.fighter:
+            f.cycle()
 
         # If 15 beats have been played, raise WinException
         if self.current_beat == 15 and not self.stop_the_clock:
             if self.reporting:
                 self.report("Game goes to time")
-            for p in self.player:
-                if p.wins_on_timeout():
-                    raise utils.WinException(p.my_number)
-            diff = self.player[0].life - self.player[1].life
+            for f in self.fighter:
+                if f.wins_on_timeout():
+                    raise utils.WinException(f.my_number)
+            diff = self.fighter[0].life - self.fighter[1].life
             if diff > 0:
                 raise utils.WinException(0)
             elif diff < 0:
@@ -1072,26 +1074,26 @@ class Game:
         if self.debugging:
             for p in self.player:
                 self.report(
-                  p.name
+                  p.get_name()
                   + "'s life: "
-                  + str(self.initial_state.player_states[p.my_number].life)
+                  + str(self.initial_state.player_states[p.get_player_number()].life)
                   + " -> "
-                  + str(p.life)
+                  + str(p.get_fighter().life)
                 )
             self.report(
-              "preferred ranges: %.2f - %.2f    [%d]"
-              % (
-                self.player[0].preferred_range,
-                self.player[1].preferred_range,
-                self.distance(),
-              )
+                "preferred ranges: %.2f - %.2f    [%d]"
+                % (
+                    self.player[0].get_preferred_range(),
+                    self.player[1].get_preferred_range(),
+                    self.distance(),
+                )
             )
             self.report(
               "range_evaluation: %.2f - %.2f = %.2f"
               % (
-                self.player[0].evaluate_range(),
-                self.player[1].evaluate_range(),
-                self.player[0].evaluate_range() - self.player[1].evaluate_range(),
+                self.fighter[0].evaluate_range(),
+                self.fighter[1].evaluate_range(),
+                self.fighter[0].evaluate_range() - self.fighter[1].evaluate_range(),
               )
             )
             self.report(
@@ -1107,19 +1109,17 @@ class Game:
         # Some characters (Tanis, Sarafina, Arec with clone)
         # can end the beat in a "superposition" of different positions.
         # We need to evaluate every possibility.
-        real_positions = [p.position for p in self.player]
-        positions = [p.get_superposed_positions() for p in self.player]
+        real_positions = [f.position for f in self.fighter]
+        positions = [f.get_superposed_positions() for f in self.fighter]
         # This is the order in which they'll collapse the superposition.
-        priorities = [p.get_superposition_priority() for p in self.player]
+        priorities = [f.get_superposition_priority() for f in self.fighter]
         evaluations = []
         for p0 in positions[0]:
             row = []
             for p1 in positions[1]:
                 if p0 != p1:
-                    self.player[0].position = p0
-                    self.player[1].position = p1
-                    for p in self.player:
-                        p.set_preferred_range()
+                    self.fighter[0].position = p0
+                    self.fighter[1].position = p1
                     row.append(self.player[0].evaluate() - self.player[1].evaluate())
             if row:
                 evaluations.append(row)
@@ -1127,8 +1127,7 @@ class Game:
             self.player[i].position = real_positions[i]
         # Higher priority chooses first, so evaluated last.
         # In case of tie, player 0 chooses before player 1
-        # (it's arbitrary,
-        #  but that's how it will happen during the ante phase)
+        # (it's arbitrary, but that's how it will happen during the ante phase)
         if priorities[0] >= priorities[1]:
             minima = [min(row) for row in evaluations]
             value = max(minima)
@@ -1138,11 +1137,11 @@ class Game:
             value = min(maxima)
 
         return value + (
-          self.player[0].evaluate_superposition() - self.player[1].evaluate_superposition()
+            self.player[0].evaluate_superposition() - self.player[1].evaluate_superposition()
         )
 
     def distance(self):
-        return int(abs(self.player[0].position - self.player[1].position))  # int cast
+        return int(abs(self.fighter[0].position - self.fighter[1].position))  # int cast
 
     # Number of beats expected until end of game.
     def expected_beats(self):
@@ -1150,7 +1149,7 @@ class Game:
         # (like Byron's), but not alternate counting of opponent's life
         # (like Adjenna's).
         return min(
-          0.5 * min([p.effective_life() for p in self.player]), 15 - self.current_beat
+          0.5 * min([f.effective_life() for f in self.fighter]), 15 - self.current_beat
         )
 
     # check for a fork
@@ -1162,30 +1161,25 @@ class Game:
     # choice = when this is not None, this is a "fake" fork, in which
     #       the AI will always pick the given choice.
     #       human player will be prompted normally
-    def make_fork(self, n_options, player, prompt, options=None, choice=None):
+    def make_fork(self, n_options, fighter, prompt, options=None, choice=None):
         # if no options, it's a bug.
         assert n_options > 0, "Fork with 0 options"
         # if just 1 option, no fork needed
         if n_options == 1:
             return 0
-        ##        if self.debugging:
-        ##            print "FORK"
-        ##            print player.name + ": %d options;" %n_options,
-        ##            print "   decisions:", self.fork_decisions, "   counter:", self.decision_counter, "    interactive:", self.interactive_counter
-        ##            print "interactive mode:", self.interactive_mode, "        replay mode:", self.replay_mode
 
-        # If the character who makes the decision is controled by the opponent,
+        # If the character who makes the decision is controlled by the opponent,
         # let the opponent make the decision
-        controlled = player.opponent.controls_opponent()
+        controlled = fighter.opponent.controls_opponent()
         if controlled:
-            player = player.opponent
+            fighter = fighter.opponent
             prompt = "Make this decision for opponent:\n" + prompt
 
         # when a game against a human player is in active progress
         # the player is prompted to make a decision,
         # which is added to the list
         # any further decisions (from a replay) are deleted
-        if self.interactive_mode and not self.replay_mode and player.is_user:
+        if self.interactive_mode and not self.replay_mode and fighter.agent.is_human():
             # prompt for decision, and delete any postulated decisions
             print(prompt)
             if options is None:
@@ -1228,12 +1222,12 @@ class Game:
             # in interactive mode, saving the current state for next sim
             # and switching to thinking mode are handled by the except block
             else:
-                raise utils.ForkException(n_options, player)
+                raise utils.ForkException(n_options, fighter.agent)
 
     def get_board(self):
         addenda = []
-        for p in self.player:
-            a = p.get_board_addendum()
+        for f in self.fighter:
+            a = f.get_board_addendum()
             if a:
                 if isinstance(a, str):
                     a = [a]
@@ -1242,17 +1236,17 @@ class Game:
 
     def get_basic_board(self):
         board = ["."] * 7
-        for p in self.player:
-            if p.position is not None:
-                # TODO :: Figure out why p.position is sometimes a float
-                board[int(p.position)] = p.get_board_symbol()  # int cast
+        for f in self.fighter:
+            if f.position is not None:
+                # TODO :: Figure out why f.position is sometimes a float
+                board[int(f.position)] = f.get_board_symbol()
         return "".join(board)
 
     # find minmax for results table
     def solve(self):
         self.value = [[None] * len(self.strats[1]) for s in self.strats[0]]
-        for p in self.player:
-            p.mix = [[None] * len(self.strats[1]) for s in self.strats[0]]
+        for f in self.fighter:
+            f.mix = [[None] * len(self.strats[1]) for s in self.strats[0]]
         self.pre_clash_results = [
           [[row[:] for row in pad_col] for pad_col in pad_row] for pad_row in self.results
         ]
@@ -1265,27 +1259,25 @@ class Game:
                   self.strats[1][pad1],
                 )
                 self.value[pad0][pad1] = value
-                self.player[0].mix[pad0][pad1] = mix0
-                self.player[1].mix[pad0][pad1] = mix1
+                self.fighter[0].mix[pad0][pad1] = mix0
+                self.fighter[1].mix[pad0][pad1] = mix1
 
     # Find minmax for one results table (for given set of pads).
     def solve_per_pad(self, results, pre_clash_results, strats0, strats1):
         self.fix_clashes(results, pre_clash_results, strats0, strats1)
         self.fix_cancels(results)
         array_results = numpy.array(results)
-        (mix0, value0) = solve.solve_game_matrix(array_results)
-        stratmix0 = list(zip(strats0, list(mix0)))
-        # No need to calculate strategy mix for human player
-        if not self.player[1].is_user:
-            (mix1, value1) = solve.solve_game_matrix(-array_results.transpose())
-            stratmix1 = list(zip(strats1, list(mix1)))
-            assert abs(value0 + value1) < 0.01, "Error: value0=%f, value1=%f" % (
-              value0,
-              value1,
-            )
+        
+        stratmix0, value0 = self.player[0].calculate_strategy_mix(strats0, array_results)
+        stratmix1, value1 = self.player[1].calculate_strategy_mix(strats1, -array_results.transpose())
+        
+        # if p0 does not estimate a state value, flip p1's and use that
+        if value0 == 0:
+            value = - value1
         else:
-            stratmix1 = [(s, 0) for s in strats1]
-        return value0, stratmix0, stratmix1
+            value = value0
+        
+        return value, stratmix0, stratmix1
 
     def make_pre_attack_decision(self):
         # Player 0 makes a decision.
@@ -1300,11 +1292,11 @@ class Game:
         self.value = self.value[d0][d1]
         self.results = self.results[d0][d1]
         self.pre_clash_results = self.pre_clash_results[d0][d1]
-        for p in self.player:
-            p.mix = p.mix[d0][d1]
-        self.player[0].final_pad = self.pads[0][d0]
-        self.player[1].final_pad = self.pads[1][d1]
-        return self.player[0].pre_attack_decision_report(self.pads[0][d0]) + self.player[
+        for f in self.fighter:
+            f.mix = f.mix[d0][d1]
+        self.fighter[0].final_pad = self.pads[0][d0]
+        self.fighter[1].final_pad = self.pads[1][d1]
+        return self.fighter[0].pre_attack_decision_report(self.pads[0][d0]) + self.fighter[
           1
         ].pre_attack_decision_report(self.pads[1][d1])
 
@@ -1328,8 +1320,8 @@ class Game:
             value, final_state, unused_forks = self.simulate(s0, s1)
         report = final_state.reports
 
-        ss0 = [m[0] for m in self.player[0].mix]
-        ss1 = [m[0] for m in self.player[1].mix]
+        ss0 = [m[0] for m in self.fighter[0].mix]
+        ss1 = [m[0] for m in self.fighter[1].mix]
 
         # Solve cancels
         if value in self.CANCEL_INDICATORS:
@@ -1360,21 +1352,21 @@ class Game:
             # Anyone who used a special action (for cancel or finisher)
             # loses the action:
             if isinstance(s0[0], fighters.SpecialAction):
-                self.player[0].special_action_available = False
+                self.fighter[0].special_action_available = False
             if isinstance(s1[0], fighters.SpecialAction):
-                self.player[1].special_action_available = False
+                self.fighter[1].special_action_available = False
             # In a double cancel, both players put special action
             # in discard.
             if value == self.CANCEL_BOTH_INDICATOR:
-                for p in self.player:
-                    p.discard[1].add(p.special_action)
+                for f in self.fighter:
+                    f.discard[1].add(f.special_action)
             # In a single cancel, opponent puts pair in discard.
             else:
                 s01 = (s0, s1)
                 opponent = self.player[0] if self.CANCEL_1_INDICATOR else self.player[1]
-                opp_strat = s01[opponent.my_number]
+                opp_strat = s01[opponent.get_player_number()]
                 # Discard style, which may be special action.
-                opponent.discard[1].add(opp_strat[0])
+                opponent.get_fighter().discard[1].add(opp_strat[0])
                 # Discard base.  If using a finisher, decide which
                 # base it was.
                 if isinstance(opp_strat[0], fighters.SpecialAction):
@@ -1382,7 +1374,7 @@ class Game:
                     base = opponent.choose_finisher_base_retroactively()
                 else:
                     base = opp_strat[1]
-                opponent.discard[1].add(base)
+                opponent.get_fighter().discard[1].add(base)
 
             self.initial_state = self.initial_save()
             # Re-simulate available strategies with updated situation.
@@ -1401,8 +1393,8 @@ class Game:
               value1,
             )
             value = value0
-            self.player[0].mix = stratmix0
-            self.player[1].mix = stratmix1
+            self.fighter[0].mix = stratmix0
+            self.fighter[1].mix = stratmix1
             # Both players choose new strategies
             if self.interactive:
                 self.dump(report)
@@ -1452,20 +1444,20 @@ class Game:
         # but some of them (Voco) require Forks, so I can't
         # have them outside of simulate(), anyway)
         if min(len(g0), len(g1)) == 0:
-            for p in self.player:
-                p.cycle()
+            for f in self.fighter:
+                f.cycle()
             state = self.full_save(None)
             report.append("\nout of bases - cycling")
             return state, report
         # make sub matrix of remaining results
         i = ss0.index(s0)
         j = ss1.index(s1)
-        p0 = self.player[0]
-        p1 = self.player[1]
+        f0 = self.fighter[0]
+        f1 = self.fighter[1]
         self.results = [
           [
-            self.pre_clash_results[p0.clash_strat_index(ii, jj, i, j)][
-              p1.clash_strat_index(jj, ii, j, i)
+            self.pre_clash_results[f0.clash_strat_index(ii, jj, i, j)][
+                f1.clash_strat_index(jj, ii, j, i)
             ]
             for jj in g1
           ]
@@ -1473,11 +1465,11 @@ class Game:
         ]
         self.pre_clash_results = [row[:] for row in self.results]
         # make vectors of remaining strategies
-        self.strats[0] = self.player[0].fix_strategies_post_clash([ss0[i] for i in g0], s1)
-        self.strats[1] = self.player[1].fix_strategies_post_clash([ss1[j] for j in g1], s0)
+        self.strats[0] = self.fighter[0].fix_strategies_post_clash([ss0[i] for i in g0], s1)
+        self.strats[1] = self.fighter[1].fix_strategies_post_clash([ss1[j] for j in g1], s0)
         # solve clash
-        value, self.player[0].mix, self.player[1].mix = self.solve_per_pad(
-          self.results, self.pre_clash_results, self.strats[0], self.strats[1]
+        value, self.fighter[0].mix, self.fighter[1].mix = self.solve_per_pad(
+            self.results, self.pre_clash_results, self.strats[0], self.strats[1]
         )
         # Run this function recursively with post-clash strategies only.
         if self.interactive:
@@ -1523,8 +1515,8 @@ class Game:
                           and ss1[jj][1] != ss1[j][1]
                         ]
                         # make sub matrix of those results
-                        p0 = self.player[0]
-                        p1 = self.player[1]
+                        p0 = self.fighter[0]
+                        p1 = self.fighter[1]
                         try:
                             subresults = [
                               [
@@ -1605,8 +1597,8 @@ class Game:
     def report_solution(self):
         report = []
         for p in self.player:
-            report.append(p.name + ":")
-            for m in p.mix:
+            report.append(p.get_name() + ":")
+            for m in p.get_fighter().mix:
                 if m[1] > 0.0001:
                     report.append(str(int(100 * m[1] + 0.5)) + "% " + p.get_strategy_name(m[0]))
             report.append("")
@@ -1628,37 +1620,38 @@ class Game:
                     print("Pre attack decision: %s" % pad1)
                 # for each player
                 for p in self.player:
+                    f = p.get_fighter()
                     # keep only positive probs
-                    if p.name.lower() in extra:
-                        p.filtered_indices = list(range(len(p.mix[i][j])))
+                    if p.get_name().lower() in extra:
+                        f.filtered_indices = list(range(len(f.mix[i][j])))
                     else:
-                        p.filtered_indices = [
+                        f.filtered_indices = [
                           k
-                          for k in range(len(p.mix[i][j]))
-                          if p.mix[i][j][k][1] > 0.0001
-                          or p.get_strategy_name(p.mix[i][j][k][0]).lower() in extra
+                          for k in range(len(f.mix[i][j]))
+                          if f.mix[i][j][k][1] > 0.0001
+                          or f.get_strategy_name(f.mix[i][j][k][0]).lower() in extra
                         ]
-                    p.filtered_mix = [p.mix[i][j][k] for k in p.filtered_indices]
+                    f.filtered_mix = [f.mix[i][j][k] for k in f.filtered_indices]
                     r = random.random()
                     total = 0
                     print("\n", p)
-                    for m in p.filtered_mix:
-                        print(str(int(100 * m[1] + 0.5)) + "%", p.get_strategy_name(m[0]), end=" ")
+                    for m in f.filtered_mix:
+                        print(str(int(100 * m[1] + 0.5)) + "%", f.get_strategy_name(m[0]), end=" ")
                         if total + m[1] >= r and total < r:
                             print(" ***", end=" ")
                         print(" ")
                         total = total + m[1]
-                print("\n" + self.player[0].name + "'s Value:", self.value[i][j], "\n")
+                print("\n" + self.player[0].get_name() + "'s Value:", self.value[i][j], "\n")
                 small_mat = numpy.array(
                   [
-                    [self.results[i][j][k][m] for m in self.player[1].filtered_indices]
-                    for k in self.player[0].filtered_indices
+                    [self.results[i][j][k][m] for m in self.player[1].get_fighter().filtered_indices]
+                    for k in self.player[0].get_fighter().filtered_indices
                   ]
                 )
                 # if all player 1 strategies displayed, transpose for ease of reading
                 if (
-                  self.player[1].name.lower() in extra
-                  and self.player[0].name.lower() not in extra
+                  self.player[1].get_name().lower() in extra
+                  and self.player[0].get_name().lower() not in extra
                 ):
                     small_mat = small_mat.transpose()
                     print("(transposing matrix)")
@@ -1669,17 +1662,17 @@ class Game:
     # Assumes no pre-attack decisions (so no Tanis)
     def vs_mix(self, name):
         name = name.lower()
-        mix0 = self.player[0].mix[0][0]
-        mix1 = self.player[1].mix[0][0]
+        mix0 = self.fighter[0].mix[0][0]
+        mix1 = self.fighter[1].mix[0][0]
         ii = [
           i
           for i in range(len(mix0))
-          if self.player[0].get_strategy_name(mix0[i][0]).lower() == name
+          if self.fighter[0].get_strategy_name(mix0[i][0]).lower() == name
         ]
         jj = [
           j
           for j in range(len(mix1))
-          if self.player[1].get_strategy_name(mix1[j][0]).lower() == name
+          if self.fighter[1].get_strategy_name(mix1[j][0]).lower() == name
         ]
         for i in ii:
             value = 0
@@ -1699,14 +1692,14 @@ class Game:
         worst = array_results.argmin(1)
         for i in range(n):
             print(array_results[i, worst[i]], ":", end=" ")
-            print(self.player[0].get_strategy_name(self.player[0].strats[i]), "--->", end=" ")
-            print(self.player[1].get_strategy_name(self.player[1].strats[worst[i]]))
+            print(self.fighter[0].get_strategy_name(self.fighter[0].strats[i]), "--->", end=" ")
+            print(self.fighter[1].get_strategy_name(self.fighter[1].strats[worst[i]]))
         print("##################################################")
         worst = array_results.argmax(0)
         for j in range(m):
             print(array_results[worst[j], j], ":", end=" ")
-            print(self.player[1].get_strategy_name(self.player[1].strats[j]), "--->", end=" ")
-            print(self.player[0].get_strategy_name(self.player[0].strats[worst[j]]))
+            print(self.fighter[1].get_strategy_name(self.fighter[1].strats[j]), "--->", end=" ")
+            print(self.fighter[0].get_strategy_name(self.fighter[0].strats[worst[j]]))
 
     # run one simulation by strategy names
     # and print reports
@@ -1722,8 +1715,8 @@ class Game:
           (
             "preferred ranges: %.2f - %.2f    [%d]"
             % (
-              self.player[0].preferred_range,
-              self.player[1].preferred_range,
+              self.fighter[0].preferred_range,
+              self.fighter[1].preferred_range,
               self.distance(),
             )
           )
@@ -1740,13 +1733,13 @@ class Game:
         )
         s0 = [
           s
-          for s in self.player[0].strats
-          if self.player[0].get_strategy_name(s).lower() == name0
+          for s in self.fighter[0].strats
+          if self.fighter[0].get_strategy_name(s).lower() == name0
         ]
         s1 = [
           s
-          for s in self.player[1].strats
-          if self.player[1].get_strategy_name(s).lower() == name1
+          for s in self.fighter[1].strats
+          if self.fighter[1].get_strategy_name(s).lower() == name1
         ]
         unused_value, state, forks = self.simulate(s0[0], s1[0])
         self.debugging = False
@@ -1766,8 +1759,8 @@ class Game:
 
     # re-solve matrix assuming that one player antes first
     def first_ante(self, first):
-        ss0 = self.player[0].strats
-        ss1 = self.player[1].strats
+        ss0 = self.fighter[0].strats
+        ss1 = self.fighter[1].strats
         array_results = numpy.array(self.results)
         # assumes first anteer is player 0
         # if not, reverse everything now, then put it back at the end
@@ -1796,15 +1789,15 @@ class Game:
             pair_prob = mix1[b0 * a1 * b1 + a1i]
             if pair_prob > 0.0001:
                 for b0i in range(b0):
-                    print(self.player[1 - first].get_strategy_name(ss1[a1i * b1]), end=" ")
+                    print(self.fighter[1 - first].get_strategy_name(ss1[a1i * b1]), end=" ")
                     print("vs.", end=" ")
-                    opposing_ante = self.player[first].get_ante_name(ss0[b0i][2])
+                    opposing_ante = self.fighter[first].get_ante_name(ss0[b0i][2])
                     print(("No Ante" if opposing_ante == "" else opposing_ante))
                     for b1i in range(b1):
                         prob = mix1[b0i * a1 * b1 + a1i * b1 + b1i]
                         if prob > 0.0001:
                             print("   ", str(int(100 * prob / pair_prob + 0.5)) + "%", end=" ")
-                            my_ante = self.player[1 - first].get_ante_name(ss1[b1i][2])
+                            my_ante = self.fighter[1 - first].get_ante_name(ss1[b1i][2])
                             print(("No Ante" if my_ante == "" else my_ante))
         print()
 
@@ -1828,16 +1821,16 @@ class Game:
             print("  value1:", value1)
             raise Exception()
         self.value = value0
-        self.player[0].mix = stratmix0
-        self.player[1].mix = stratmix1
+        self.fighter[0].mix = stratmix0
+        self.fighter[1].mix = stratmix1
 
         self.print_solution()
 
     def prepare_next_beat(self):
         if not self.stop_the_clock:
             self.current_beat += 1
-        for p in self.player:
-            p.prepare_next_beat()
+        for f in self.fighter:
+            f.prepare_next_beat()
 
 
 class GameState(object):

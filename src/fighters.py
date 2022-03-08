@@ -15,6 +15,8 @@ class Character(object):
     # Bureaucratic Methods
 
     def __init__(self, the_game, n, base_set="alpha", is_user=False):
+    
+        self.agent = None
         self.game = the_game
         self.my_number = n
         self.is_user = is_user
@@ -136,6 +138,9 @@ class Character(object):
 
         self.set_mean_priority()
 
+    def get_name(self):
+        return self.name
+
     def select_finisher(self):
         if len(self.finishers) == 1:
             print("Only one Finisher implemented for %s" % self.name)
@@ -177,6 +182,9 @@ class Character(object):
         if self.base_set != "alpha":
             name += " (%s)" % self.base_set
         return name
+
+    def set_agent(self, agent):
+        self.agent = agent
 
     # read character state from list of strings (as written in game log)
     # lines - list of strings for this character's situation report
@@ -448,11 +456,11 @@ class Character(object):
     # are chosen (e.g., Tanis).
     def get_strategies(self):
         return [
-          pair + ((ante, induced_ante, pre_attack_decision),)
-          for pre_attack_decision in self.get_pre_attack_decisions()
-          for pair in self.get_pairs()
-          for ante in self.get_antes()
-          for induced_ante in self.opponent.get_induced_antes()
+            pair + ((ante, induced_ante, pre_attack_decision),)
+            for pre_attack_decision in self.get_pre_attack_decisions()
+            for pair in self.get_pairs()
+            for ante in self.get_antes()
+            for induced_ante in self.opponent.get_induced_antes()
         ]
 
     def input_strategy(self, limit_antes):
@@ -473,26 +481,6 @@ class Character(object):
             induced_ante = opp.input_induced_ante()
             ante = (own_ante, induced_ante, self.final_pad)
         return pair + (ante,)
-
-    # choose a random strategy according to mix
-    # (or prompt human player for a strategy)
-    def choose_strategy(self, limit_antes=False):
-        if self.is_user:
-            strategy = self.input_strategy(limit_antes)
-        else:
-            # If there's only one option, return it.
-            if len(self.mix) == 1:
-                return self.mix[0][0]
-            r = random.random()
-            total = 0
-            for m in self.mix:
-                total = total + m[1]
-                if total >= r:
-                    strategy = m[0]
-                    break
-        # in case I need to report my ante choice to opponent's input_strategy
-        self.chosen_ante = strategy[2]
-        return strategy
 
     def get_strategy_name(self, s):
         name = s[0].name + " " + s[1].name
@@ -599,7 +587,7 @@ class Character(object):
         if self.alt_pair_power is None:
             # "card.power or 0" safeguards against card.power == None.
             card_power = sum(
-              card.power + card.get_power_bonus() for card in self.active_cards
+                card.power + card.get_power_bonus() for card in self.active_cards
             )
         else:
             # When pair power is externally fixed, use it instead
@@ -980,22 +968,34 @@ class Character(object):
 
     # can't go over 20
     def gain_life(self, gain):
+    
+        gain = round(gain)
+    
         self.life = min(20, self.life + gain)
         if self.game.reporting and gain > 0:
             self.game.report(self.name + " gains %d life (now at %d)" % (gain, self.life))
 
     # can't go under 1
     def lose_life(self, loss):
+        
+        loss = round(loss)
+        
         self.life = max(1, self.life - loss)
         if self.game.reporting and loss > 0:
             self.game.report(self.name + " loses %d life (now at %d)" % (loss, self.life))
 
     # deal damage to opponent
     def deal_damage(self, damage):
+        
+        damage = round(damage)
+        
         self.opponent.take_damage(damage)
 
     # apply damage from attack or other source
     def take_damage(self, damage):
+        
+        damage = round(damage)
+        
         soak = self.opponent.reduce_soak(self.get_soak())
         if self.game.reporting and soak:
             self.game.report("%s has %d soak" % (self, soak))
@@ -1118,7 +1118,7 @@ class Character(object):
     # if character has multiple kinds of tokens, need to override this
     def recover_tokens(self, n):
         old_pool = len(self.pool)
-        self.pool = [self.tokens[0]] * min(self.max_tokens, len(self.pool) + n)
+        self.pool = [self.tokens[0]] * min(self.max_tokens, len(self.pool) + round(n))
         gain = len(self.pool) - old_pool
         if self.game.reporting and gain:
             self.game.report(
@@ -6793,14 +6793,17 @@ class Ottavia(Character):
         # Obtain from results a list of all possible pre-penalty
         # priorities for opponent.
         priorities = [
-          result[1].player_states[self.my_number].opponent_priority_pre_penalty
-          for row in self.game.results
-          for result in row
+            result[1].player_states[self.my_number].opponent_priority_pre_penalty
+            for row in self.game.results
+            for result in row
         ]
-        priorities = sorted(list(set(priorities)))
+        
         # When any player Cancels/Pulses, priority is None
-        if priorities[0] is None:
-            priorities.pop(0)
+        priorities = set(priorities)
+        if None in priorities:
+            priorities.remove(None)
+        priorities = sorted(list(priorities))
+        
 
         fake_strats = self.strats
         opp_strats = self.opponent.strats
@@ -7650,11 +7653,11 @@ class Shekhtur(Character):
     def __init__(self, the_game, n, base_set="alpha", is_user=False):
         self.unique_base = Brand(the_game, self)
         self.styles = [
-          Unleashed(the_game, self),
-          Combination(the_game, self),
-          Reaver(the_game, self),
-          Jugular(the_game, self),
-          Spiral(the_game, self),
+            Unleashed(the_game, self),
+            Combination(the_game, self),
+            Reaver(the_game, self),
+            Jugular(the_game, self),
+            Spiral(the_game, self),
         ]
         # Soul Breaker isn't fully implemented, so only Coffin Nails is listed
         self.finishers = [CoffinNails(the_game, self)]
@@ -16723,7 +16726,7 @@ class Spiral(Style):
         # If I switched sides, actual advance is one less then distance moved
         if utils.IsOrdered(old_position, self.opponent.position, self.me.position):
             spaces_advanced -= 1
-        self.me.add_triggered_power_bonus(spaces_advanced)
+        self.me.add_triggered_power_bonus(- spaces_advanced)
 
 
 class Malice(Token):
@@ -17932,54 +17935,54 @@ class Distortion(Paradigm):
 
 # Character name => corresponding class
 character_dict = {
-  "abarene": Abarene,
-  "adjenna": Adjenna,
-  "alexian": Alexian,
-  "alumis": Alumis,
-  "arec": Arec,
-  "aria": Aria,
-  "baenvier": Baenvier,
-  "borneo": Borneo,
-  "byron": Byron,
-  "cadenza": Cadenza,
-  "cesar": Cesar,
-  "claus": Claus,
-  "clinhyde": Clinhyde,
-  "danny": Danny,
-  "demitras": Demitras,
-  "eligor": Eligor,
-  "eustace": Eustace,
-  "gerard": Gerard,
-  "heketch": Heketch,
-  "hikaru": Hikaru,
-  "iri": Iri,
-  "jager": Jager,
-  "juto": Juto,
-  "kallistar": Kallistar,
-  "karin": Karin,
-  "kehrolyn": Kehrolyn,
-  "kajia": Kajia,
-  "khadath": Khadath,
-  "larimore": Larimore,
-  "lesandra": Lesandra,
-  "lixis": Lixis,
-  "luc": Luc,
-  "lymn": Lymn,
-  "magdelina": Magdelina,
-  "marmelee": Marmelee,
-  "mikhail": Mikhail,
-  "oriana": Oriana,
-  "ottavia": Ottavia,
-  "rexan": Rexan,
-  "rukyuk": Rukyuk,
-  "runika": Runika,
-  "sarafina": Sarafina,
-  "seth": Seth,
-  "shekhtur": Shekhtur,
-  "tanis": Tanis,
-  "tatsumi": Tatsumi,
-  "vanaah": Vanaah,
-  "voco": Voco,
-  "xenitia": Xenitia,
-  "zaamassal": Zaamassal,
+    "abarene": Abarene,
+    "adjenna": Adjenna,
+    "alexian": Alexian,
+    "alumis": Alumis,
+    "arec": Arec,
+    "aria": Aria,
+    "baenvier": Baenvier,
+    "borneo": Borneo,
+    "byron": Byron,
+    "cadenza": Cadenza,
+    "cesar": Cesar,
+    "claus": Claus,
+    "clinhyde": Clinhyde,
+    "danny": Danny,
+    "demitras": Demitras,
+    "eligor": Eligor,
+    "eustace": Eustace,
+    "gerard": Gerard,
+    "heketch": Heketch,
+    "hikaru": Hikaru,
+    "iri": Iri,
+    "jager": Jager,
+    "juto": Juto,
+    "kallistar": Kallistar,
+    "karin": Karin,
+    "kehrolyn": Kehrolyn,
+    "kajia": Kajia,
+    "khadath": Khadath,
+    "larimore": Larimore,
+    "lesandra": Lesandra,
+    "lixis": Lixis,
+    "luc": Luc,
+    "lymn": Lymn,
+    "magdelina": Magdelina,
+    "marmelee": Marmelee,
+    "mikhail": Mikhail,
+    "oriana": Oriana,
+    "ottavia": Ottavia,
+    "rexan": Rexan,
+    "rukyuk": Rukyuk,
+    "runika": Runika,
+    "sarafina": Sarafina,
+    "seth": Seth,
+    "shekhtur": Shekhtur,
+    "tanis": Tanis,
+    "tatsumi": Tatsumi,
+    "vanaah": Vanaah,
+    "voco": Voco,
+    "xenitia": Xenitia,
+    "zaamassal": Zaamassal,
 }
