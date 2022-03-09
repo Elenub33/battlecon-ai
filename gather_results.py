@@ -114,7 +114,6 @@ class GatherResults:
         
     @staticmethod
     def log_learning(agent):
-        # TODO: write a script to turn this into a list by adding brackets and parse into csv for processing
         GatherResults.log_content(
             GatherResults.training_file,
             "",
