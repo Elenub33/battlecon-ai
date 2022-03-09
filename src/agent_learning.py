@@ -44,12 +44,12 @@ class LearningAgent(agent.Agent):
         
         
     def get_random_strategy(self):
-        return random.choice(self.get_available_strategies())
+        return random.choice(self.get_available_strategies(self.get_fighter()))
         
         
     def get_best_strategy(self):
         best_s, best_q = [], float('-inf')
-        for s in self.get_available_strategies():
+        for s in self.get_available_strategies(self.get_fighter()):
             q = self.get_q_value(s)
             if q == best_q:
                 best_s.append(s)
@@ -62,8 +62,8 @@ class LearningAgent(agent.Agent):
             return None, best_q
         
         
-    def get_available_strategies(self):
-        return [m[0] for m in self.get_fighter().mix]
+    def get_available_strategies(self, fighter):
+        return [m[0] for m in fighter.mix]
         
         
     def record_chosen_strategy(self, strategy):
@@ -79,7 +79,7 @@ class LearningAgent(agent.Agent):
     def set_weights(self, weights):
         self.weights = weights
         
-    
+        
     def clear_weights(self):
         self.weights = dict()
     
@@ -240,18 +240,20 @@ class LearningAgent(agent.Agent):
     def add_range_features(self, features):
     
         # give bools and ranges as possible features
-        fighter_range = self.get_range_between_fighters()
-        my_edge_range = self.get_range_from_edge(self.get_fighter())
-        opp_edge_range = self.get_range_from_edge(self.get_fighter().opponent)
+        # fighter_range = self.get_range_between_fighters()
+        # my_edge_range = self.get_range_from_edge(self.get_fighter())
+        # opp_edge_range = self.get_range_from_edge(self.get_fighter().opponent)
         
-        features["range"] = fighter_range / 6.0
-        features["range_equals_" + str(fighter_range)] = 1.0
+        # features["range"] = fighter_range / 6.0
+        # features["range_equals_" + str(fighter_range)] = 1.0
         
-        features["my_edge_range"] = my_edge_range / 3.0
-        features["my_edge_range_equals_" + str(my_edge_range)] = 1.0
+        # features["my_edge_range"] = my_edge_range / 3.0
+        # features["my_edge_range_equals_" + str(my_edge_range)] = 1.0
         
-        features["opp_edge_range"] = opp_edge_range / 3.0
-        features["opp_edge_range_equals_" + str(opp_edge_range)] = 1.0
+        # features["opp_edge_range"] = opp_edge_range / 3.0
+        # features["opp_edge_range_equals_" + str(opp_edge_range)] = 1.0
+        
+        pass
         
         
     def add_strategy_features(self, features, strategy):
@@ -266,29 +268,29 @@ class LearningAgent(agent.Agent):
         
         # booleans for individual elements of strategy and for combination
         features["Strategy " + self.get_strategy_name(strategy)] = 1.0
-        features["play_" + pair_name + "_at_range_" + str(range)] = 1.0
-        features["play_" + pair_name] = 1.0
-        features["play_" + style.name] = 1.0
-        features["play_" + base.name] = 1.0
-        features["ante_" + str(ante)] = 1.0
+        features["Play " + pair_name + " at Range " + str(range)] = 1.0
+        features["Play " + pair_name + " at Distance " + str(self.get_range_from_edge(self.get_fighter())) + " from edge"] = 1.0
+        features["Play " + pair_name] = 1.0
+        features["Play " + style.name] = 1.0
+        features["Play " + base.name] = 1.0
+        features["Ante " + str(ante)] = 1.0
         
         # percentage of total tokens anted
-        features["ante_count"] = ante / self.get_fighter().max_tokens
+        # features["ante_count"] = ante / self.get_fighter().max_tokens
         
         min_range = self.get_minrange(style, base)
         max_range = self.get_maxrange(style, base)
         
-        features["strat_minrange"] = min_range / 6.0
-        features["strat_maxrange"] = max_range / 6.0
-        features["strat_range_band"] = max_range - min_range / 5.0
-        features["strat_power"] = self.get_power(style, base) / 10.0
-        features["strat_priority"] = self.get_priority(style, base) / 10.0
-        features["strat_stun_guard"] = (self.get_stunguard(style, base) + ante * 2) / 10.0
-        features["strat_soak"] = self.get_soak(style, base) / 5.0
+        # features["strat_minrange"] = min_range / 6.0
+        # features["strat_maxrange"] = max_range / 6.0
+        # features["strat_range_band"] = max_range - min_range / 5.0
+        # features["strat_power"] = self.get_power(style, base) / 10.0
+        # features["strat_priority"] = self.get_priority(style, base) / 10.0
+        # features["strat_stun_guard"] = (self.get_stunguard(style, base) + ante * 2) / 10.0
+        # features["strat_soak"] = self.get_soak(style, base) / 5.0
         
-        opp_range = self.get_range_between_fighters()
-        features["opponent_too_close"] = min(0, min_range - opp_range) / 5.0
-        features["opponent_too_far"] = min(0, opp_range - max_range) / 5.0
+        features["Opponent Too Close to Hit"] = min(0, min_range - range) / 5.0
+        features["Opponent Too Far to Hit"] = min(0, range - max_range) / 5.0
         
         
     def add_counterplay_features(self, features, my_strategy):
@@ -301,9 +303,8 @@ class LearningAgent(agent.Agent):
         my_stun_resist = self.get_stunguard(my_style, my_base) + self.get_soak(my_style, my_base)
         distance = self.get_range_between_fighters()
         
-        opp_pairs = self.get_fighter().opponent.get_pairs()
-        for opp_style, opp_base in opp_pairs:
-            features[my_style.name + my_base.name + "_when_" + opp_style.name + opp_base.name + "_available"] = 1.0
+        for opp_style, opp_base, opp_ante in self.get_available_strategies(self.get_fighter().opponent):
+            features[my_style.name + my_base.name + " when " + opp_style.name + opp_base.name + " Available"] = 1.0
         
         opp_strategies = self.get_fighter().opponent.get_strategies()
         
@@ -321,8 +322,6 @@ class LearningAgent(agent.Agent):
             
             opp_priority = self.get_priority(opp_style, opp_base) + opp_ante
             opp_power = self.get_power(opp_style, opp_base)
-            opp_minrange = self.get_minrange(opp_style, opp_base)
-            opp_maxrange = self.get_maxrange(opp_style, opp_base)
             
             if opp_priority == my_priority:
                 clashing_opp_strats += 1
@@ -332,51 +331,47 @@ class LearningAgent(agent.Agent):
             if opp_power > my_stun_resist and opp_priority >= my_priority:
                 stunning_opp_strats += 1
                 
-            if opp_minrange <= distance and opp_maxrange >= distance:
-                in_range_opp_strats += 1
-            
-        features["opponent_likely_to_act_faster"] = faster_opp_strats / total_opp_strats
-        features["opponent_likely_to_stun_before_my_attack"] = faster_opp_strats / total_opp_strats
-        features["opponent_likely_to_be_in_range"] = faster_opp_strats / total_opp_strats
+        features["Opponent Can Go Faster"] = faster_opp_strats / total_opp_strats
+        features["Opponent Can Stun Me"] = stunning_opp_strats / total_opp_strats
         
         
     def add_my_state_features(self, features, strategy):
         
         f = self.get_fighter()
         
-        style = strategy[0]
-        base = strategy[1]
+        # style = strategy[0]
+        # base = strategy[1]
         
-        next_hand = f.styles_and_bases_set - (f.discard[1] | set([style, base]))
+        # next_hand = f.styles_and_bases_set - (f.discard[1] | set([style, base]))
         
-        for card in next_hand:
-            features[card.name + "_in_my_next_hand"] = 1.0
+        # for card in next_hand:
+            # features[card.name + "_in_my_next_hand"] = 1.0
             
-        features["my_tokens"] = len(f.pool) / f.max_tokens
+        # features["my_tokens"] = len(f.pool) / f.max_tokens
             
         if f.special_action_available:
-            features["i_have_special"] = 1.0
+            features["My Special Available"] = 1.0
             
-        features["my_damage_taken"] = (20.0 - f.effective_life()) / 20.0
+        features["My HP"] = f.effective_life() / 20.0
         
         
     def add_opp_state_features(self, features):
     
         f = self.get_fighter().opponent
         
-        hand = f.styles_and_bases_set - (f.discard[1] | f.discard[2])
+        # hand = f.styles_and_bases_set - (f.discard[1] | f.discard[2])
         
-        for card in hand:
-            features[card.name + "_in_opp_hand"] = 1.0
-        for card in f.discard[1]:
-            features[card.name + "_in_opp_disc_1"] = 1.0
-        for card in f.discard[2]:
-            features[card.name + "_in_opp_disc_2"] = 1.0
+        # for card in hand:
+            # features[card.name + "_in_opp_hand"] = 1.0
+        # for card in f.discard[1]:
+            # features[card.name + "_in_opp_disc_1"] = 1.0
+        # for card in f.discard[2]:
+            # features[card.name + "_in_opp_disc_2"] = 1.0
             
         
         features["opp_tokens"] = len(f.pool) / f.max_tokens
             
-        if f.special_action_available:
-            features["opp_has_special"] = 1.0
+        # if f.special_action_available:
+            # features["opp_has_special"] = 1.0
             
-        features["opp_damage_taken"] = (20.0 - f.effective_life()) / 20.0
+        features["Opp HP"] = f.effective_life() / 20.0

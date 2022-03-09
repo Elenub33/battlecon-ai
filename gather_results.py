@@ -1,4 +1,4 @@
-import sys, os, time, pathlib, argparse
+import sys, os, time, pathlib, argparse, json
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/src")
 
 from src.agent_yaron import YaronAgent
@@ -114,11 +114,11 @@ class GatherResults:
         
     @staticmethod
     def log_learning(agent):
-        # TODO: csv-ify learning
+        # TODO: write a script to turn this into a list by adding brackets and parse into csv for processing
         GatherResults.log_content(
             GatherResults.training_file,
             "",
-            str(agent.get_weights()) + "\n"
+            str(json.dumps(agent.get_weights())) + ",\n"
         )
         
         
