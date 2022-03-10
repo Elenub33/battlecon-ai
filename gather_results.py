@@ -12,7 +12,7 @@ Outer class for CSE 573 data gathering: run Eligor v. Shekhtur and output the wi
 class GatherResults:
 
     
-    outdir = "results/v2"
+    outdir = "results/v3"
     match_results_file = outdir + "/match_results.csv"
     training_file = outdir + "/raw_training_results.txt"
     log_file_base = outdir + "/game_log_"
