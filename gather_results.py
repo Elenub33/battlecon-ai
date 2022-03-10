@@ -1,4 +1,4 @@
-import sys, os, time, pathlib, argparse
+import sys, os, time, pathlib, argparse, json
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/src")
 
 from src.agent_yaron import YaronAgent
@@ -12,9 +12,9 @@ Outer class for CSE 573 data gathering: run Eligor v. Shekhtur and output the wi
 class GatherResults:
 
     
-    outdir = "results"
-    match_results_file = outdir + "/cse_573_match_results.csv"
-    training_file = outdir + "/cse_573_training.txt"
+    outdir = "results/v2"
+    match_results_file = outdir + "/match_results.csv"
+    training_file = outdir + "/raw_training_results.txt"
     log_file_base = outdir + "/game_log_"
     eligor_strat_file = outdir + "/eligor_strategies.csv"
     shekhtur_strat_file = outdir + "/shekhtur_strategies.csv"
@@ -114,11 +114,10 @@ class GatherResults:
         
     @staticmethod
     def log_learning(agent):
-        # TODO: csv-ify learning
         GatherResults.log_content(
             GatherResults.training_file,
             "",
-            str(agent.get_weights()) + "\n"
+            str(json.dumps(agent.get_weights())) + ",\n"
         )
         
         
