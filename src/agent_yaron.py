@@ -30,7 +30,7 @@ class YaronAgent(agent.Agent):
         f.chosen_ante = strategy[2]
         
         print("chose {} ({}s).".format(self.get_strategy_name(strategy), time.time() - start_time))
-        self.log_strategy(strategy)
+        
         return strategy
         
         
