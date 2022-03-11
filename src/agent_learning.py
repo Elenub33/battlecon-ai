@@ -173,11 +173,12 @@ class LearningAgent(agent.Agent):
         this_q = self.get_current_state_value()
         diff = self.alpha * ((reward + self.discount * this_q) - last_strat['q_val'])
         
-        print("REWARD: {} ({} to {}), Q VALUE {} -> {} (diff {})\n".format(reward, self.get_fighter().opponent.effective_life(), self.get_fighter().effective_life(), last_strat['q_val'], this_q, diff))
-        
         w = self.get_weights()
         
+        my_last_pair_name = last_strat['strategy'][0].name + last_strat['strategy'][1].name
         last_enemy_pair_name = self.get_last_enemy_pair_name()
+        
+        print("REWARD: {} ({} to {}). Learning from {} vs. {}, Q VALUE {} -> {} (diff {})".format(reward, self.get_fighter().opponent.effective_life(), self.get_fighter().effective_life(), my_last_pair_name, last_enemy_pair_name, last_strat['q_val'], this_q, diff))
         
         f = last_strat['features_for_enemy_strat'][last_enemy_pair_name]
         
@@ -273,12 +274,12 @@ class LearningAgent(agent.Agent):
         features[base.name] = 1.0
         features["Ante " + str(ante)] = 1.0
         
-        features[pair_name + " when Opponent Close"] = min(0, 6.0 - range) / 6.0
-        features[pair_name + " when Opponent Far"] = min(0, range - 1.0) / 5.0
+        features[pair_name + " when Opponent Close"] = (6.0 - range) / 5.0
+        features[pair_name + " when Opponent Far"] = (range - 1.0) / 5.0
         
         
     """
-    Adds all possible strats to all_features and returns a dictionary containing all generic features plus all features for a specific strat.
+    Adds all possible strats to all_features and returns a dictionary containing all generic features plus all features for a specific enemy option.
     """
     def add_counterplay_features(self, all_features, my_strategy):
         

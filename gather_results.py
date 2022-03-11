@@ -35,6 +35,7 @@ class GatherResults:
             i += 1
             if GatherResults.log_exists_for_game(i):
                 continue
+            GatherResults.create_placeholder_log_for_game(i)
             
             start_time = time.time()
             print(GatherResults.format_time(start_time) + ": starting duel " + str(i))
@@ -47,6 +48,9 @@ class GatherResults:
                 p2.load_weights(GatherResults.weights_file)
             
             game = Game.from_start(p1, p2, default_discards=True)
+            
+            orig_weights = p2.get_weights().copy()
+            
             game_log, winner = game.play_game()
             
             end_time = time.time()
@@ -54,7 +58,14 @@ class GatherResults:
             print(GatherResults.format_time(end_time) + ": " + str(winner) + " won.")
             
             GatherResults.make_output_dir()
-            p2.save_weights(GatherResults.weights_file)
+            
+            if os.path.exists(GatherResults.weights_file):
+                GatherResults.merge_weight_delta(orig_weights, p2.get_weights(), GatherResults.weights_file)
+            else:
+                p2.save_weights(GatherResults.weights_file)
+            
+            
+            
             GatherResults.log_match_results(game, i, winner, end_time - start_time)
             GatherResults.log_learning(p2)
             GatherResults.log_strategies(p1, i, GatherResults.shekhtur_strat_file)
@@ -63,6 +74,27 @@ class GatherResults:
             
             iterations -= 1
 
+
+    
+    @staticmethod
+    def merge_weight_delta(pre_game_weights, post_game_weights, filename):
+        f = open(filename, "r+")
+        file_weights = json.loads(f.read())
+        for k in post_game_weights.keys():
+            file_weights[k] = GatherResults.read_dict_with_default(file_weights, k, 0.0) + GatherResults.read_dict_with_default(post_game_weights, k, 0.0) - GatherResults.read_dict_with_default(pre_game_weights, k, 0.0)
+        f.seek(0)
+        f.write(json.dumps(file_weights))
+        f.truncate()
+        f.close()
+        
+        
+    @staticmethod
+    def read_dict_with_default(dictionary, key, default):
+        if key in dictionary.keys():
+            return dictionary[key]
+        else:
+            return default
+    
 
     @staticmethod
     def format_time(t):
@@ -74,6 +106,7 @@ class GatherResults:
         pathlib.Path(GatherResults.outdir).mkdir(parents=True, exist_ok=True)
         
         
+    @staticmethod
     def game_log_file_name(game_num):
         return GatherResults.log_file_base + str(game_num) + ".log"
         
@@ -81,6 +114,13 @@ class GatherResults:
     @staticmethod
     def log_exists_for_game(game_num):
         return os.path.exists(GatherResults.game_log_file_name(game_num))
+        
+        
+    @staticmethod
+    def create_placeholder_log_for_game(game_num):
+        f = open(GatherResults.game_log_file_name(game_num), "w")
+        f.write("")
+        f.close()
         
         
     @staticmethod
