@@ -33,7 +33,7 @@ class LearningParser:
         file = open(filename, 'w')
         
         # write column headers
-        file.write(','.join(['"' + f + '"' for f in all_features]) + '\n')
+        file.write(','.join(['"' + f + '"' for f in sorted(all_features)]) + '\n')
         
         for d in self.data:
             w = []

@@ -543,7 +543,7 @@ class Game:
             self.reporting = False
             self.simulate_beat()
             self.log_unbeatable_strategies(log)
-            print("Solving matrix... ", end="")
+            print("\nSolving matrix... ", end="")
             start_time = time.time()
             self.solve()
             print("done. ({}s)".format(time.time() - start_time))
@@ -1311,6 +1311,8 @@ class Game:
         if self.interactive and self.cheating == 2:
             print(self.player[0], "plays", self.player[0].get_strategy_name(s0))
         s1 = self.player[1].choose_strategy(post_clash)
+        self.player[0].log_strategy(s0)
+        self.player[1].log_strategy(s1)
         if self.interactive:
             self.interactive_state = None
             self.replay_mode = False
@@ -1411,6 +1413,9 @@ class Game:
             if self.interactive and self.cheating == 2:
                 print(self.player[0], "plays", self.player[0].get_strategy_name(s0))
             s1 = self.player[1].choose_strategy(limit_antes=True)
+            
+            self.player[0].log_strategy(s0)
+            self.player[1].log_strategy(s1)
 
             # Simulate beat based on new solutions
             if self.interactive:
