@@ -64,8 +64,6 @@ class GatherResults:
             else:
                 p2.save(GatherResults.weights_file)
             
-            
-            
             GatherResults.log_match_results(game, i, winner, end_time - start_time)
             GatherResults.log_learning(p2)
             GatherResults.log_strategies(p1, i, GatherResults.shekhtur_strat_file)

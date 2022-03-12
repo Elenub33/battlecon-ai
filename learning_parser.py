@@ -17,6 +17,7 @@ class LearningParser:
         j = file.read()
         file.close()
         self.data = json.loads('[' + j[:-2] + ']')
+        
     
     def write_as_csv(self, filename):
     
