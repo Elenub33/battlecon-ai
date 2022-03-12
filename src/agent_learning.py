@@ -99,14 +99,14 @@ class LearningAgent(agent.Agent):
             return 0.0
 
 
-    def save_weights(self, filename):
+    def save(self, filename):
         w = self.get_weights()
         f = open(filename, "w")
         f.write(json.dumps(w))
         f.close()
 
 
-    def load_weights(self, filename):
+    def load(self, filename):
         f = open(filename, "r")
         w = json.loads(f.read())
         f.close()

@@ -12,7 +12,7 @@ Outer class for CSE 573 data gathering: run Eligor v. Shekhtur and output the wi
 class GatherResults:
 
     
-    outdir = "results/v3"
+    outdir = "results/v4"
     match_results_file = outdir + "/match_results.csv"
     training_file = outdir + "/raw_training_results.txt"
     log_file_base = outdir + "/game_log_"
@@ -45,7 +45,7 @@ class GatherResults:
             
             if os.path.exists(GatherResults.weights_file):
                 print("Using weights from " + GatherResults.weights_file)
-                p2.load_weights(GatherResults.weights_file)
+                p2.load(GatherResults.weights_file)
             
             game = Game.from_start(p1, p2, default_discards=True)
             
@@ -60,9 +60,9 @@ class GatherResults:
             GatherResults.make_output_dir()
             
             if os.path.exists(GatherResults.weights_file):
-                GatherResults.merge_weight_delta(orig_weights, p2.get_weights(), GatherResults.weights_file)
+                GatherResults.merge_save_delta(orig_weights, p2.get_weights(), GatherResults.weights_file)
             else:
-                p2.save_weights(GatherResults.weights_file)
+                p2.save(GatherResults.weights_file)
             
             
             
@@ -75,9 +75,10 @@ class GatherResults:
             iterations -= 1
 
 
-    
+    # TODO: handle this at the learning agent level.
+    # TODO: find a way to lock the output file while it's being modified
     @staticmethod
-    def merge_weight_delta(pre_game_weights, post_game_weights, filename):
+    def merge_save_delta(pre_game_weights, post_game_weights, filename):
         f = open(filename, "r+")
         file_weights = json.loads(f.read())
         for k in post_game_weights.keys():
