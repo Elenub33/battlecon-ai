@@ -3,7 +3,7 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../src")
 
 import battlecon
 
-class TestGameState(unittest.TestCase):
+class TestBeatState(unittest.TestCase):
     
     
     """
@@ -42,6 +42,14 @@ class TestGameState(unittest.TestCase):
     def test_start_of_beat_leads_to_active_before(self):
         self.game_state.set_beat_state(battlecon.StartOfBeat(self.game_state))
         self._test_beat_state_advance(battlecon.ActiveBefore)
+        
+        
+    def test_active_before_leads_to_active_check_range(self):
+        self.game_state.set_beat_state(battlecon.ActiveBefore(self.game_state))
+        self._test_beat_state_advance(battlecon.ActiveCheckRange)
+        
+        
+    # TODO: situational transition to on-hit/damage or after
         
 
 if __name__ == "__main__":

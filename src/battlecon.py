@@ -113,4 +113,9 @@ class StartOfBeat(BeatState):
     
     
 class ActiveBefore(BeatState):
+    def _get_next_state_class(self) -> type:
+        return ActiveCheckRange
+            
+    
+class ActiveCheckRange(BeatState):
     pass

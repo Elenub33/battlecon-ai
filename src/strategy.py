@@ -1,4 +1,4 @@
-import card
+import game_element, card
 
 """
 Includes attack pair, ante, and any other data associated with an attack.
@@ -6,7 +6,7 @@ Includes attack pair, ante, and any other data associated with an attack.
 class AttackStrategy:
     
     
-    def __init__(self, *elements):
+    def __init__(self, *elements: list[game_element.GameElement]):
         self.elements = set(elements)
         
         
@@ -14,6 +14,14 @@ class AttackStrategy:
         return self.elements
         
         
-    def add_elements(self, *elements):
+    def add_elements(self, *elements: list[game_element.GameElement]):
         for element in elements:
             self.elements.add(element)
+            
+            
+    def get_min_range(self):
+        return sum([element.get_min_range() for element in self.elements])
+            
+            
+    def get_max_range(self):
+        return sum([element.get_max_range() for element in self.elements])
