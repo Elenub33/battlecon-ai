@@ -49,7 +49,19 @@ class TestBeatState(unittest.TestCase):
         self._test_beat_state_advance(battlecon.ActiveCheckRange)
         
         
-    # TODO: situational transition to on-hit/damage or after
+    def test_active_check_range_leads_to_active_hit_if_in_range(self):
+        self.game_state.set_beat_state(battlecon.ActiveCheckRange(self.game_state))
+        self._test_beat_state_advance(battlecon.ActiveHit)
+        
+        
+    def test_active_check_range_leads_to_active_after_if_not_in_range(self):
+        self.game_state.set_beat_state(battlecon.ActiveCheckRange(self.game_state))
+        self._test_beat_state_advance(battlecon.ActiveAfter)
+        
+        
+    def test_active_hit_leads_to_active_damage(self):
+        self.game_state.set_beat_state(battlecon.ActiveHit(self.game_state))
+        self._test_beat_state_advance(battlecon.ActiveDamage)
         
 
 if __name__ == "__main__":

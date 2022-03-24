@@ -9,11 +9,13 @@ class Game:
     def __init__(self, agent0, agent1):
         assert isinstance(agent0, agent.Agent)
         assert isinstance(agent1, agent.Agent)
-        self.agents = [agent0, agent1]
+        self.state = 
+        self.agents = [agent0, agent1] # TODO: do we want direct links to these at the game level or just the gamestate level?
         # self.fighters = [agent0.get_fighter(), agent1.get_fighter()]
     
     
     def initialize_from_start(self):
+        # TODO: this should be on the game state.
         self.active_player = random.choice(self.agents)
     
     
@@ -47,12 +49,19 @@ The main state and possible future states are passed to agents to help them anal
 """
 class GameState:
 
-    def __init__(self):
+    def __init__(self, fighter0: fighter.Fighter, fighter1: fighter.Fighter):
         self.set_beat_state(SetPairs(self))
+        self.fighter_states = [fighter.FighterState(fighter0), fighter.FighterState(fighter1)]
+        self.active_player
         
         
     def get_beat_state(self) -> 'BeatState':
         return self.beat_state
+        
+        
+    # TODO: get my fighter state, get active/inactive fighter state instead of this
+    def get_fighter_state(self, i) -> fighter.FighterState:
+        return self.fighter_states[i]
         
         
     def set_beat_state(self, state: 'BeatState'):
@@ -73,6 +82,10 @@ class BeatState:
 
     def __init__(self, game_state: 'GameState'):
         self.game_state = game_state
+        
+        
+    def get_game_state(self):
+        return self.game_state
         
         
     def process(self):
@@ -118,4 +131,18 @@ class ActiveBefore(BeatState):
             
     
 class ActiveCheckRange(BeatState):
+    def _get_next_state_class(self) -> type:
+        return ActiveAfter
+            
+    
+class ActiveHit(BeatState):
+    def _get_next_state_class(self) -> type:
+        return ActiveDamage
+            
+    
+class ActiveDamage(BeatState):
+    pass
+            
+    
+class ActiveAfter(BeatState):
     pass
