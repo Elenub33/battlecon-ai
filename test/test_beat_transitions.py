@@ -56,17 +56,13 @@ class TestBeatTransitions(unittest.TestCase):
         self.game_state.set_fighter_position(self.f0, 2)
         self.game_state.set_fighter_position(self.f1, 4)
         
-        elt0 = game_element.GameElement()
-        elt0.set_min_range(2)
-        elt0.set_max_range(2)
-        elt1 = game_element.GameElement()
-        elt1.set_min_range(2)
-        elt1.set_max_range(2)
-        strat0 = strategy.AttackStrategy(elt0, elt1)
-        strat1 = strategy.AttackStrategy(elt0, elt1)
+        elt = game_element.GameElement()
+        elt.set_min_range(2)
+        elt.set_max_range(2)
+        strat = strategy.AttackStrategy(elt)
         
-        self.game_state.set_fighter_strategy(self.f0, strat0)
-        self.game_state.set_fighter_strategy(self.f1, strat1)
+        self.game_state.set_fighter_strategy(self.f0, strat)
+        self.game_state.set_fighter_strategy(self.f1, strat)
         
         self.game_state.set_beat_state(battlecon.ActiveCheckRange(self.game_state))
         self._test_beat_state_advance(battlecon.ActiveHit)
@@ -77,17 +73,18 @@ class TestBeatTransitions(unittest.TestCase):
         self.game_state.set_fighter_position(self.f0, 2)
         self.game_state.set_fighter_position(self.f1, 5)
         
-        elt0 = game_element.GameElement()
-        elt0.set_min_range(2)
-        elt0.set_max_range(2)
-        elt1 = game_element.GameElement()
-        elt1.set_min_range(2)
-        elt1.set_max_range(2)
-        strat0 = strategy.AttackStrategy(elt0, elt1)
-        strat1 = strategy.AttackStrategy(elt0, elt1)
+        elt = game_element.GameElement()
+        elt.set_min_range(2)
+        elt.set_max_range(2)
+        strat = strategy.AttackStrategy(elt)
         
-        self.game_state.set_fighter_strategy(self.f0, strat0)
-        self.game_state.set_fighter_strategy(self.f1, strat1)
+        self.game_state.set_fighter_strategy(self.f0, strat)
+        self.game_state.set_fighter_strategy(self.f1, strat)
+        
+        self.game_state.set_beat_state(battlecon.ActiveCheckRange(self.game_state))
+        self._test_beat_state_advance(battlecon.ActiveAfter)
+        
+        self.game_state.set_fighter_position(self.f1, 3)
         
         self.game_state.set_beat_state(battlecon.ActiveCheckRange(self.game_state))
         self._test_beat_state_advance(battlecon.ActiveAfter)

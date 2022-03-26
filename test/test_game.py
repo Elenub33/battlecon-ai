@@ -66,6 +66,29 @@ class TestGame(unittest.TestCase):
         self.game.get_state().set_fighter_strategy(self.agt1.get_fighter(), strat1)
         self.assertEqual(self.game.get_state().get_fighter_state(self.agt1.get_fighter()).get_attack_strategy(), strat1)
         
+        
+    def test_get_distance_between_fighters(self):
+        
+        state = self.game.get_state()
+        f0 = self.agt0.get_fighter()
+        f1 = self.agt1.get_fighter()
+        
+        state.set_fighter_position(f0, 2)
+        state.set_fighter_position(f1, 3)
+        self.assertEqual(state.get_distance_between_fighters(), 1)
+        
+        state.set_fighter_position(f0, 0)
+        state.set_fighter_position(f1, 3)
+        self.assertEqual(state.get_distance_between_fighters(), 3)
+        
+        state.set_fighter_position(f0, 3)
+        state.set_fighter_position(f1, 0)
+        self.assertEqual(state.get_distance_between_fighters(), 3)
+        
+        state.set_fighter_position(f0, 6)
+        state.set_fighter_position(f1, 0)
+        self.assertEqual(state.get_distance_between_fighters(), 6)
+        
 
 if __name__ == "__main__":
     unittest.main()

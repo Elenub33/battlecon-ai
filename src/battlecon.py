@@ -90,7 +90,7 @@ class GameState:
         
         
     def process_beat_state(self):
-        self.get_beat_state().process()
+        self.get_beat_state().handle()
         self.advance_beat_state()
         
     
@@ -109,6 +109,10 @@ class GameState:
     def set_fighter_position(self, fighter, position):
         self.get_fighter_state(fighter).set_position(position)
         
+    
+    def get_distance_between_fighters(self):
+        return abs(self.get_active_fighter_state().get_position() - self.get_reactive_fighter_state().get_position())
+        
 
 
 class BeatState:
@@ -122,12 +126,12 @@ class BeatState:
         return self.game_state
         
         
-    def process(self):
+    def handle(self):
         pass
         
         
     def get_next(self) -> 'BeatState':
-        return self.get_next_state_class()(self.game_state)
+        return self.get_next_state_class()(self.get_game_state())
         
         
     def get_next_state_class(self) -> type:
@@ -166,7 +170,13 @@ class ActiveBefore(BeatState):
     
 class ActiveCheckRange(BeatState):
     def get_next_state_class(self) -> type:
-        return ActiveAfter
+        range = self.get_game_state().get_active_fighter_state().get_attack_strategy().get_range()
+        distance = self.get_game_state().get_distance_between_fighters()
+        print(range)
+        if range[0] >= distance and range[1] <= distance:
+            return ActiveHit
+        else:
+            return ActiveAfter
             
     
 class ActiveHit(BeatState):
