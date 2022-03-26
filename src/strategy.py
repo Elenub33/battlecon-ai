@@ -1,4 +1,4 @@
-import game_element, card
+import game_element
 
 """
 Includes attack pair, ante, and any other data associated with an attack.

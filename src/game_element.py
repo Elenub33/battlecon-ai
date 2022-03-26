@@ -18,17 +18,25 @@ class GameElement:
         return self.name
         
         
-    def set_min_range(self, min_range):
+    def set_min_range(self, min_range: int):
         self.min_range = min_range
         
         
-    def get_min_range(self):
+    def get_min_range(self) -> int:
         return self.min_range
         
         
-    def set_max_range(self, max_range):
+    def set_max_range(self, max_range: int):
         self.max_range = max_range
         
         
-    def get_max_range(self):
+    def get_max_range(self) -> int:
         return self.max_range
+        
+        
+class Card(GameElement):
+    pass
+        
+        
+class Token(GameElement):
+    pass
