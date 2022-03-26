@@ -19,9 +19,13 @@ class AttackStrategy:
             self.elements.add(element)
             
             
-    def get_min_range(self):
+    def get_min_range(self) -> int:
         return sum([element.get_min_range() for element in self.elements])
             
             
-    def get_max_range(self):
+    def get_max_range(self) -> int:
         return sum([element.get_max_range() for element in self.elements])
+        
+        
+    def get_range(self) -> (int, int):
+        return (self.get_min_range(), self.get_max_range())

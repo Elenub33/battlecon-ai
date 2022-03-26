@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import random
-import agent
+import agent, fighter
     
 
 class Game:
@@ -9,38 +9,40 @@ class Game:
     def __init__(self, agent0, agent1):
         assert isinstance(agent0, agent.Agent)
         assert isinstance(agent1, agent.Agent)
-        self.state = 
-        self.agents = [agent0, agent1] # TODO: do we want direct links to these at the game level or just the gamestate level?
-        # self.fighters = [agent0.get_fighter(), agent1.get_fighter()]
+        self.agents = [agent0, agent1]
+        self.state = GameState(agent0.get_fighter(), agent1.get_fighter())
     
     
     def initialize_from_start(self):
-        # TODO: this should be on the game state.
-        self.active_player = random.choice(self.agents)
+        self.state.initialize_from_start()
     
     
     def initialize_from_file(self):
         raise NotImplementedError()
     
     
-    def get_active_player(self):
-        return self.active_player
-    
-    
-    def get_reactive_player(self):
+    def get_active_agent(self):
+        active_fighter = self.state.get_active_fighter()
         for agent in self.agents:
-            if agent != self.active_player:
+            if agent.get_fighter() == active_fighter:
                 return agent
+        raise Exception("Unable to find active agent.")
+    
+    
+    def get_reactive_agent(self):
+        active_fighter = self.state.get_reactive_fighter()
+        for agent in self.agents:
+            if agent.get_fighter() == active_fighter:
+                return agent
+        raise Exception("Unable to find reactive agent.")
     
     
     def get_state(self):
-        return GameState()
+        return self.state
         
         
     def execute_beat(self):
         pass
-        
-        
         
         
 """
@@ -49,32 +51,64 @@ The main state and possible future states are passed to agents to help them anal
 """
 class GameState:
 
+
     def __init__(self, fighter0: fighter.Fighter, fighter1: fighter.Fighter):
         self.set_beat_state(SetPairs(self))
-        self.fighter_states = [fighter.FighterState(fighter0), fighter.FighterState(fighter1)]
-        self.active_player
+        self.fighters = [fighter0, fighter1]
+        self.fighter_states = {}
+        self.fighter_states[fighter0] = fighter.FighterState(fighter0)
+        self.fighter_states[fighter1] = fighter.FighterState(fighter1)
+        self.active_fighter_index = 0
+    
+    
+    def initialize_from_start(self):
+        self.active_fighter_index = random.randint(0, 1)
         
         
     def get_beat_state(self) -> 'BeatState':
         return self.beat_state
         
+    
+    def get_active_fighter(self) -> fighter.Fighter:
+        return self.fighters[self.active_fighter_index]
         
-    # TODO: get my fighter state, get active/inactive fighter state instead of this
-    def get_fighter_state(self, i) -> fighter.FighterState:
-        return self.fighter_states[i]
+    
+    def get_reactive_fighter(self) -> fighter.Fighter:
+        return self.fighters[1 - self.active_fighter_index]
+        
+    
+    def get_active_fighter_state(self) -> fighter.FighterState:
+        return self.get_fighter_state(self.get_active_fighter())
+        
+    
+    def get_reactive_fighter_state(self) -> fighter.FighterState:
+        return self.get_fighter_state(self.get_reactive_fighter())
         
         
-    def set_beat_state(self, state: 'BeatState'):
-        self.beat_state = state
+    def get_fighter_state(self, fighter: fighter.Fighter) -> fighter.FighterState:
+        return self.fighter_states[fighter]
         
         
     def process_beat_state(self):
         self.get_beat_state().process()
         self.advance_beat_state()
         
+    
+    def set_beat_state(self, state: 'BeatState'):
+        self.beat_state = state
+        
         
     def advance_beat_state(self):
         self.set_beat_state(self.get_beat_state().get_next())
+        
+        
+    def set_fighter_strategy(self, fighter, strategy):
+        self.get_fighter_state(fighter).set_attack_strategy(strategy)
+        
+        
+    def set_fighter_position(self, fighter, position):
+        self.get_fighter_state(fighter).set_position(position)
+        
 
 
 class BeatState:
@@ -93,50 +127,50 @@ class BeatState:
         
         
     def get_next(self) -> 'BeatState':
-        return self._get_next_state_class()(self.game_state)
+        return self.get_next_state_class()(self.game_state)
         
         
-    def _get_next_state_class(self) -> type:
+    def get_next_state_class(self) -> type:
         raise NotImplementedError()
         
         
 class SetPairs(BeatState):
-    def _get_next_state_class(self) -> type:
+    def get_next_state_class(self) -> type:
         return SetAntes
     
     
 class SetAntes(BeatState):
-    def _get_next_state_class(self) -> type:
+    def get_next_state_class(self) -> type:
         return Reveal
     
     
 class Reveal(BeatState):
-    def _get_next_state_class(self) -> type:
+    def get_next_state_class(self) -> type:
         return CheckForClash
     
     
 class CheckForClash(BeatState):
-    def _get_next_state_class(self) -> type:
+    def get_next_state_class(self) -> type:
         return StartOfBeat
     
     
 class StartOfBeat(BeatState):
-    def _get_next_state_class(self) -> type:
+    def get_next_state_class(self) -> type:
         return ActiveBefore
     
     
 class ActiveBefore(BeatState):
-    def _get_next_state_class(self) -> type:
+    def get_next_state_class(self) -> type:
         return ActiveCheckRange
             
     
 class ActiveCheckRange(BeatState):
-    def _get_next_state_class(self) -> type:
+    def get_next_state_class(self) -> type:
         return ActiveAfter
             
     
 class ActiveHit(BeatState):
-    def _get_next_state_class(self) -> type:
+    def get_next_state_class(self) -> type:
         return ActiveDamage
             
     

@@ -17,10 +17,10 @@ class TestStrategy(unittest.TestCase):
     # Verify something
     # """
     def test_get_elements(self):
-        itm0 = 6
-        itm1 = "some string"
-        itm2 = 6.31
-        itm3 = 7.41
+        itm0 = game_element.GameElement()
+        itm1 = game_element.GameElement()
+        itm2 = game_element.GameElement()
+        itm3 = game_element.GameElement()
         expected = set([itm0, itm1])
         strat = strategy.AttackStrategy(itm0, itm1)
         self.assertEqual(strat.get_elements(), expected, "Elements initialized into strategy could not be retrieved.")

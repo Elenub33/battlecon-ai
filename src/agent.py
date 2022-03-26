@@ -7,5 +7,9 @@ The Agent class does not implement any way to make decisions and is effectively 
 class Agent:
     
     
-    def __init__(self, fighter):
-        pass
+    def __init__(self, fighter: fighter.Fighter):
+        self.fighter = fighter
+        
+        
+    def get_fighter(self):
+        return self.fighter
