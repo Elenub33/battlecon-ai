@@ -19,6 +19,13 @@ class TestFighter(unittest.TestCase):
         for p in range(0, 7):
             fs.set_position(p)
             self.assertEqual(fs.get_position(), p, "Fighter not set to position {}".format(p))
+            
+            
+    def test_set_stunned(self):
+        fs = self.fighter_state
+        for val in (True, False):
+            fs.set_stunned(val)
+            self.assertEqual(fs.is_stunned(), val, "Stun state not set to {}.".format(val))
         
         
     def test_set_attack_strategy(self):

@@ -11,7 +11,8 @@ class FighterState:
     def __init__(self, fighter: Fighter):
         self.fighter = fighter
         self.set_position(-1)
-        self.strategy = None
+        self.set_stunned(False)
+        self.set_attack_strategy(None)
         
         
     def set_position(self, position: int):
@@ -20,6 +21,14 @@ class FighterState:
         
     def get_position(self) -> int:
         return self.position
+        
+        
+    def set_stunned(self, stunned: bool):
+        self.stunned = stunned
+        
+        
+    def is_stunned(self) -> bool:
+        return self.stunned
         
         
     def get_fighter(self) -> Fighter:

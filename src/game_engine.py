@@ -122,6 +122,7 @@ class ActiveBefore(EngineState):
         return ActiveCheckRange
             
     
+# TODO: refactor copied/pasted code
 class ActiveCheckRange(EngineState):
     def get_next_state_class(self) -> type:
         range = self.get_game_state().get_active_fighter_state().get_attack_strategy().get_range()
@@ -138,8 +139,53 @@ class ActiveHit(EngineState):
             
     
 class ActiveDamage(EngineState):
-    pass
+    def get_next_state_class(self) -> type:
+        return ActiveAfter
             
     
 class ActiveAfter(EngineState):
-    pass
+    def get_next_state_class(self) -> type:
+        if self.get_game_state().get_reactive_fighter_state().is_stunned():
+            return EndOfBeat
+        else:
+            return ReactiveBefore
+            
+    
+class ReactiveBefore(EngineState):
+    def get_next_state_class(self) -> type:
+        return ReactiveCheckRange
+            
+    
+class ReactiveCheckRange(EngineState):
+    def get_next_state_class(self) -> type:
+        range = self.get_game_state().get_reactive_fighter_state().get_attack_strategy().get_range()
+        distance = self.get_game_state().get_distance_between_fighters()
+        if range[0] >= distance and range[1] <= distance:
+            return ReactiveHit
+        else:
+            return ReactiveAfter
+            
+    
+class ReactiveHit(EngineState):
+    def get_next_state_class(self) -> type:
+        return ReactiveDamage
+            
+    
+class ReactiveDamage(EngineState):
+    def get_next_state_class(self) -> type:
+        return ReactiveAfter
+            
+    
+class ReactiveAfter(EngineState):
+    def get_next_state_class(self) -> type:
+        return EndOfBeat
+            
+    
+class EndOfBeat(EngineState):
+    def get_next_state_class(self) -> type:
+        return Recycle
+            
+    
+class Recycle(EngineState):
+    def get_next_state_class(self) -> type:
+        return SetPairs

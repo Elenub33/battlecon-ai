@@ -66,8 +66,7 @@ class TestGameEngineTransitions(unittest.TestCase):
         elt.set_max_range(2)
         strat = strategy.AttackStrategy(elt)
         
-        self.game.get_game_state().get_fighter_state(self.f0).set_attack_strategy(strat)
-        self.game.get_game_state().get_fighter_state(self.f1).set_attack_strategy(strat)
+        self.game.get_game_state().get_fighter_state(self.game.get_game_state().get_active_fighter()).set_attack_strategy(strat)
         
         self.game.set_engine_state(game_engine.ActiveCheckRange(self.game, self.game.get_game_state()))
         self._test_beat_state_advance(game_engine.ActiveHit)
@@ -83,8 +82,7 @@ class TestGameEngineTransitions(unittest.TestCase):
         elt.set_max_range(2)
         strat = strategy.AttackStrategy(elt)
         
-        self.game.get_game_state().get_fighter_state(self.f0).set_attack_strategy(strat)
-        self.game.get_game_state().get_fighter_state(self.f1).set_attack_strategy(strat)
+        self.game.get_game_state().get_fighter_state(self.game.get_game_state().get_active_fighter()).set_attack_strategy(strat)
         
         self.game.set_engine_state(game_engine.ActiveCheckRange(self.game, self.game.get_game_state()))
         self._test_beat_state_advance(game_engine.ActiveAfter)
@@ -98,6 +96,90 @@ class TestGameEngineTransitions(unittest.TestCase):
     def test_active_hit_leads_to_active_damage(self):
         self.game.set_engine_state(game_engine.ActiveHit(self.game, self.game.get_game_state()))
         self._test_beat_state_advance(game_engine.ActiveDamage)
+        
+        
+    def test_active_damage_leads_to_active_after(self):
+        self.game.set_engine_state(game_engine.ActiveDamage(self.game, self.game.get_game_state()))
+        self._test_beat_state_advance(game_engine.ActiveAfter)
+        
+        
+    def test_active_after_leads_to_reactive_before_if_reactive_not_stunned(self):
+        self.game.get_game_state().get_fighter_state(self.game.get_game_state().get_reactive_fighter()).set_stunned(False)
+        self.game.set_engine_state(game_engine.ActiveAfter(self.game, self.game.get_game_state()))
+        self._test_beat_state_advance(game_engine.ReactiveBefore)
+        
+        
+    def test_active_after_leads_to_end_of_beat_if_reactive_stunned(self):
+        self.game.get_game_state().get_fighter_state(self.game.get_game_state().get_reactive_fighter()).set_stunned(True)
+        self.game.set_engine_state(game_engine.ActiveAfter(self.game, self.game.get_game_state()))
+        self._test_beat_state_advance(game_engine.EndOfBeat)
+        
+        
+    def test_reactive_before_leads_to_reactive_check_range(self):
+        self.game.set_engine_state(game_engine.ReactiveBefore(self.game, self.game.get_game_state()))
+        self._test_beat_state_advance(game_engine.ReactiveCheckRange)
+        
+        
+    def test_reactive_check_range_leads_to_reactive_hit_if_in_range(self):
+        
+        self.game.get_game_state().set_fighter_position(self.f0, 2)
+        self.game.get_game_state().set_fighter_position(self.f1, 4)
+        
+        elt = game_element.GameElement()
+        elt.set_min_range(2)
+        elt.set_max_range(2)
+        strat = strategy.AttackStrategy(elt)
+        
+        self.game.get_game_state().get_fighter_state(self.game.get_game_state().get_reactive_fighter()).set_attack_strategy(strat)
+        
+        self.game.set_engine_state(game_engine.ReactiveCheckRange(self.game, self.game.get_game_state()))
+        self._test_beat_state_advance(game_engine.ReactiveHit)
+        
+        
+    def test_reactive_check_range_leads_to_reactive_after_if_not_in_range(self):
+        
+        self.game.get_game_state().set_fighter_position(self.f0, 2)
+        self.game.get_game_state().set_fighter_position(self.f1, 5)
+        
+        elt = game_element.GameElement()
+        elt.set_min_range(2)
+        elt.set_max_range(2)
+        strat = strategy.AttackStrategy(elt)
+        
+        self.game.get_game_state().get_fighter_state(self.game.get_game_state().get_reactive_fighter()).set_attack_strategy(strat)
+        
+        self.game.set_engine_state(game_engine.ReactiveCheckRange(self.game, self.game.get_game_state()))
+        self._test_beat_state_advance(game_engine.ReactiveAfter)
+        
+        self.game.get_game_state().set_fighter_position(self.f1, 3)
+        
+        self.game.set_engine_state(game_engine.ReactiveCheckRange(self.game, self.game.get_game_state()))
+        self._test_beat_state_advance(game_engine.ReactiveAfter)
+        
+        
+    def test_reactive_hit_leads_to_reactive_damage(self):
+        self.game.set_engine_state(game_engine.ReactiveHit(self.game, self.game.get_game_state()))
+        self._test_beat_state_advance(game_engine.ReactiveDamage)
+        
+        
+    def test_reactive_damage_leads_to_reactive_after(self):
+        self.game.set_engine_state(game_engine.ReactiveDamage(self.game, self.game.get_game_state()))
+        self._test_beat_state_advance(game_engine.ReactiveAfter)
+        
+        
+    def test_reactive_after_leads_to_end_of_beat(self):
+        self.game.set_engine_state(game_engine.ReactiveAfter(self.game, self.game.get_game_state()))
+        self._test_beat_state_advance(game_engine.EndOfBeat)
+        
+        
+    def test_end_of_beat_leads_to_recycle(self):
+        self.game.set_engine_state(game_engine.EndOfBeat(self.game, self.game.get_game_state()))
+        self._test_beat_state_advance(game_engine.Recycle)
+        
+        
+    def test_recycle_leads_to_set_pairs(self):
+        self.game.set_engine_state(game_engine.Recycle(self.game, self.game.get_game_state()))
+        self._test_beat_state_advance(game_engine.SetPairs)
         
 
 if __name__ == "__main__":
