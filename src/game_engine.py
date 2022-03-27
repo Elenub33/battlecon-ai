@@ -36,10 +36,6 @@ class GameEngine:
         raise Exception("Unable to find reactive agent.")
         
         
-    def execute_beat(self):
-        pass
-        
-        
     def get_engine_state(self) -> 'EngineState':
         return self.engine_state
         
