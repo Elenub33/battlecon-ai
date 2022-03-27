@@ -117,17 +117,47 @@ class StartOfBeat(EngineState):
         return ActiveBefore
     
     
+# -------------------------------------------------
+# parent classes for all attack-based engine states
+# -------------------------------------------------
+class AttackState(EngineState):
+    def get_attacking_fighter_state(self) -> fighter.Fighter:
+        raise NotImplementedError()
+        
+        
+class ActiveAttackState(AttackState):
+    def get_attacking_fighter_state(self) -> fighter.Fighter:
+        return self.get_game_state().get_active_fighter_state()
+    def get_defending_fighter_state(self) -> fighter.Fighter:
+        return self.get_game_state().get_reactive_fighter_state()
+        
+        
+class ReactiveAttackState(AttackState):
+    def get_attacking_fighter_state(self) -> fighter.Fighter:
+        return self.get_game_state().get_reactive_fighter_state()
+    def get_defending_fighter_state(self) -> fighter.Fighter:
+        return self.get_game_state().get_active_fighter_state()
+        
+        
+# ------------------------------------------------------
+# parent classes for specific attack-based engine states
+# ------------------------------------------------------
+class CheckRangeState(AttackState):
+    def opponent_in_range(self) -> bool:
+        range = self.get_attacking_fighter_state().get_attack_strategy().get_range()
+        distance = self.get_game_state().get_distance_between_fighters()
+        return range[0] >= distance and range[1] <= distance
+# ------------------------------------------------------
+
+    
 class ActiveBefore(EngineState):
     def get_next_state_class(self) -> type:
         return ActiveCheckRange
             
     
-# TODO: refactor copied/pasted code
-class ActiveCheckRange(EngineState):
+class ActiveCheckRange(ActiveAttackState, CheckRangeState):
     def get_next_state_class(self) -> type:
-        range = self.get_game_state().get_active_fighter_state().get_attack_strategy().get_range()
-        distance = self.get_game_state().get_distance_between_fighters()
-        if range[0] >= distance and range[1] <= distance:
+        if self.opponent_in_range():
             return ActiveHit
         else:
             return ActiveAfter
@@ -156,11 +186,9 @@ class ReactiveBefore(EngineState):
         return ReactiveCheckRange
             
     
-class ReactiveCheckRange(EngineState):
+class ReactiveCheckRange(ReactiveAttackState, CheckRangeState):
     def get_next_state_class(self) -> type:
-        range = self.get_game_state().get_reactive_fighter_state().get_attack_strategy().get_range()
-        distance = self.get_game_state().get_distance_between_fighters()
-        if range[0] >= distance and range[1] <= distance:
+        if self.opponent_in_range():
             return ReactiveHit
         else:
             return ReactiveAfter
