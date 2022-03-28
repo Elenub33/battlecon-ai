@@ -1,5 +1,5 @@
 @echo off
-if exist htmlcov\ rmdir htmlcov\
+if exist htmlcov rmdir /s /q htmlcov
 pipenv run coverage run --source src -m unittest discover
 pipenv run coverage html
 if exist .coverage del .coverage
