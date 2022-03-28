@@ -15,12 +15,16 @@ class GameState:
         self.fighter_states = {}
         self.fighter_states[fighter0] = fighter.FighterState(fighter0)
         self.fighter_states[fighter1] = fighter.FighterState(fighter1)
-        self.active_fighter = None
+        self.set_active_fighter(None)
     
     
     def initialize_from_start(self):
-        self.active_fighter = random.choice(self.fighters)
+        self.set_active_fighter(random.choice(self.fighters))
         
+    
+    def set_active_fighter(self, fighter: fighter.Fighter):
+        self.active_fighter = fighter
+    
     
     def get_active_fighter(self) -> fighter.Fighter:
         if not self.active_fighter:

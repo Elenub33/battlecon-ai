@@ -66,6 +66,24 @@ class TestGameState(unittest.TestCase):
         self.assertEqual(self.state.get_fighter_state(self.f0).get_position(), 2, "Initial fighter state was not set correctly.")
         with self.assertRaises(Exception) as context:
             self.state.set_fighter_position(self.f1, 2)
+            
+            
+    def test_unable_to_find_active_fighter_when_active_fighter_not_set(self):
+        with self.assertRaises(Exception) as context:
+            self.state.get_active_fighter()
+    
+    
+    def test_unable_to_find_reactive_fighter_when_active_fighter_not_set(self):
+        with self.assertRaises(Exception) as context:
+            self.state.get_reactive_fighter()
+    
+    
+    def test_unable_to_find_reactive_fighter_when_only_one_fighter_exists(self):
+        self.state = game_state.GameState(self.f0, self.f0)
+        self.state.initialize_from_start()
+        with self.assertRaises(Exception) as context:
+            self.state.get_reactive_fighter()
+    
         
 
 if __name__ == "__main__":
