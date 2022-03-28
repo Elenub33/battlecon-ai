@@ -42,6 +42,10 @@ class TestFighter(unittest.TestCase):
         fs.clear_attack_strategy()
         self.assertEqual(fs.get_attack_strategy(), None, "Strategy was not cleared.")
         
+        
+    def test_get_fighter(self):
+        self.assertEqual(self.fighter, self.fighter_state.get_fighter(), "get_fighter did not return the fighter passed to the __init__ function.")
+        
 
 if __name__ == "__main__":
     unittest.main()

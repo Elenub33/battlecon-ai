@@ -26,6 +26,7 @@ class TestGameElement(unittest.TestCase):
         for rg in range(1,6):
             ge.set_min_range(rg)
             self.assertEqual(ge.get_min_range(), rg)
+            
     
     def test_set_max_range(self):
         ge = self.ge
