@@ -10,6 +10,13 @@ This class contains no agents or other information that could lead to deduction 
 class GameState:
 
 
+    @staticmethod
+    def from_start(fighter0: fighter.Fighter, fighter1: fighter.Fighter):
+        state = GameState(fighter0, fighter1)
+        state.initialize_from_start()
+        return state
+
+
     def __init__(self, fighter0: fighter.Fighter, fighter1: fighter.Fighter):
         self.fighters = [fighter0, fighter1]
         self.fighter_states = {}

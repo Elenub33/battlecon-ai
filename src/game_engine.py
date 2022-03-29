@@ -9,11 +9,13 @@ class GameEngine:
         assert isinstance(agent0, agent.Agent)
         assert isinstance(agent1, agent.Agent)
         self.agents = [agent0, agent1]
-        self.engine_state = None
+        self.set_game_state(None)
+        self.set_engine_state(None)
     
     
     def initialize_from_start(self):
-        self.engine_state = EngineState.from_start(self)
+        self.set_game_state(game_state.GameState.from_start(self.agents[0].get_fighter(), self.agents[1].get_fighter()))
+        self.set_engine_state(EngineState.from_start(self))
     
     
     def initialize_from_file(self):
@@ -45,7 +47,11 @@ class GameEngine:
         
         
     def get_game_state(self) -> game_state.GameState:
-        return self.get_engine_state().get_game_state()
+        return self.game_state
+        
+        
+    def set_game_state(self, new_game_state: game_state.GameState):
+        self.game_state = new_game_state
         
         
     def process(self):
@@ -62,14 +68,11 @@ class EngineState:
 
     @staticmethod
     def from_start(engine: GameEngine):
-        state = game_state.GameState(engine.agents[0].get_fighter(), engine.agents[1].get_fighter())
-        state.initialize_from_start()
-        return SetPairs(engine, state)
+        return SetPairs(engine)
 
 
-    def __init__(self, engine: GameEngine, state: game_state.GameState):
+    def __init__(self, engine: GameEngine):
         self.engine = engine
-        self.game_state = state
         
         
     def get_engine(self) -> GameEngine:
@@ -77,7 +80,7 @@ class EngineState:
         
         
     def get_game_state(self):
-        return self.game_state
+        return self.engine.get_game_state()
         
         
     def handle(self):
@@ -85,7 +88,7 @@ class EngineState:
         
         
     def get_next(self) -> 'EngineState':
-        return self.get_next_state_class()(self.get_engine(), self.get_game_state())
+        return self.get_next_state_class()(self.get_engine())
         
         
     def get_next_state_class(self) -> type:
@@ -122,6 +125,8 @@ class StartOfBeat(EngineState):
 # -------------------------------------------------
 class AttackState(EngineState):
     def get_attacking_fighter_state(self) -> fighter.Fighter:
+        raise NotImplementedError()
+    def get_defending_fighter_state(self) -> fighter.Fighter:
         raise NotImplementedError()
         
         
