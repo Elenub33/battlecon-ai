@@ -42,6 +42,7 @@ class TestGameState(unittest.TestCase):
     def test_get_distance_between_fighters(self):
     
         self.state.initialize_from_start()
+        self.state.clear_fighter_positions()
         
         self.state.set_fighter_position(self.f0, 2)
         self.state.set_fighter_position(self.f1, 3)
@@ -62,6 +63,7 @@ class TestGameState(unittest.TestCase):
         
         
     def test_cannot_set_identical_fighter_positions(self):
+        self.state.clear_fighter_positions()
         self.state.set_fighter_position(self.f0, 2)
         self.assertEqual(self.state.get_fighter_state(self.f0).get_position(), 2, "Initial fighter state was not set correctly.")
         with self.assertRaises(Exception) as context:
@@ -80,7 +82,7 @@ class TestGameState(unittest.TestCase):
     
     def test_unable_to_find_reactive_fighter_when_only_one_fighter_exists(self):
         self.state = game_state.GameState(self.f0, self.f0)
-        self.state.initialize_from_start()
+        self.state.set_active_fighter(self.f0)
         with self.assertRaises(Exception) as context:
             self.state.get_reactive_fighter()
     

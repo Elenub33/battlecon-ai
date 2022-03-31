@@ -38,6 +38,15 @@ class TestGameEngine(unittest.TestCase):
         self.assertTrue(self.agt0.get_fighter() == state.get_active_fighter() or self.agt0.get_fighter() == state.get_reactive_fighter(), "Returned state did not contain agent 0's fighter.")
         self.assertTrue(self.agt1.get_fighter() == state.get_active_fighter() or self.agt1.get_fighter() == state.get_reactive_fighter(), "Returned state did not contain agent 1's fighter.")
         
+        
+    def test_initial_fighter_positions(self):
+        self.game.initialize_from_start()
+        state = self.game.get_game_state()
+        positions = set()
+        positions.add(state.get_active_fighter_state().get_position())
+        positions.add(state.get_reactive_fighter_state().get_position())
+        self.assertEqual(positions, set([2, 4]), "Expected fighter positions to start at 2 and 4.")
+        
 
 if __name__ == "__main__":
     unittest.main()

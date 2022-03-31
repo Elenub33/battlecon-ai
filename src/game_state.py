@@ -27,6 +27,8 @@ class GameState:
     
     def initialize_from_start(self):
         self.set_active_fighter(random.choice(self.fighters))
+        self.get_active_fighter_state().set_position(2)
+        self.get_reactive_fighter_state().set_position(4)
         
     
     def set_active_fighter(self, fighter: fighter.Fighter):
@@ -58,6 +60,11 @@ class GameState:
         
     def get_fighter_state(self, fighter: fighter.Fighter) -> fighter.FighterState:
         return self.fighter_states[fighter]
+        
+        
+    def clear_fighter_positions(self):
+        for fighter in self.fighters:
+            self.get_fighter_state(fighter).set_position(-1)
         
         
     def set_fighter_position(self, fighter, position):

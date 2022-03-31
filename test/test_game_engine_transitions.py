@@ -53,6 +53,7 @@ class TestGameEngineTransitions(unittest.TestCase):
         
     def test_active_check_range_leads_to_active_hit_if_in_range(self):
         
+        self.game_state.clear_fighter_positions()
         self.game.get_game_state().set_fighter_position(self.f0, 2)
         self.game.get_game_state().set_fighter_position(self.f1, 4)
         
@@ -68,6 +69,7 @@ class TestGameEngineTransitions(unittest.TestCase):
         
     def test_active_check_range_leads_to_active_after_if_not_in_range(self):
         
+        self.game_state.clear_fighter_positions()
         self.game.get_game_state().set_fighter_position(self.f0, 2)
         self.game.get_game_state().set_fighter_position(self.f1, 5)
         
@@ -109,6 +111,7 @@ class TestGameEngineTransitions(unittest.TestCase):
         
     def test_reactive_check_range_leads_to_reactive_hit_if_in_range(self):
         
+        self.game_state.clear_fighter_positions()
         self.game.get_game_state().set_fighter_position(self.f0, 2)
         self.game.get_game_state().set_fighter_position(self.f1, 4)
         
@@ -124,6 +127,7 @@ class TestGameEngineTransitions(unittest.TestCase):
         
     def test_reactive_check_range_leads_to_reactive_after_if_not_in_range(self):
         
+        self.game_state.clear_fighter_positions()
         self.game.get_game_state().set_fighter_position(self.f0, 2)
         self.game.get_game_state().set_fighter_position(self.f1, 5)
         
