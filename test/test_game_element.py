@@ -1,7 +1,5 @@
-import sys, os, unittest
-sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../src")
-
-import game_element
+import unittest
+import src.game_element as game_element
 
 class TestGameElement(unittest.TestCase):
     

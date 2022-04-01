@@ -15,6 +15,16 @@ class FighterState:
         self.set_attack_strategy(None)
         
         
+    @classmethod
+    def get_full_name(cls):
+        raise NotImplementedError()
+        
+        
+    @classmethod
+    def get_nickname(cls):
+        raise NotImplementedError()
+        
+        
     def set_position(self, position: int):
         self.position = position
         
@@ -45,3 +55,4 @@ class FighterState:
         
     def clear_attack_strategy(self):
         self.strategy = None
+        

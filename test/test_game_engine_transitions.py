@@ -1,7 +1,5 @@
-import sys, os, unittest
-sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../src")
-
-import game_engine, agent, fighter, strategy, game_element
+import unittest
+import src.game_engine as game_engine, src.fighters.fighter as fighter, src.agent as agent, src.game_element as game_element, src.strategy as strategy
 
 
 class TestGameEngineTransitions(unittest.TestCase):

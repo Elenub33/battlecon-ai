@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import random
-import agent, fighter
-        
+import src.agent as agent, src.fighters.fighter as fighter
+
 """
 All state accessor and mutation methods should be on the GameState class.
 The main state and possible future states are passed to agents to help them analyze and make decisions.

@@ -1,4 +1,4 @@
-import fighter
+import src.fighters.fighter as fighter
 
 """
 An agent is any AI or human that can make choices.

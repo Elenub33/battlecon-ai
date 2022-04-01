@@ -1,5 +1,5 @@
 import random
-import game_state, agent, fighter
+import src.game_state as game_state, src.agent as agent
     
 
 class GameEngine:
@@ -124,23 +124,23 @@ class StartOfBeat(EngineState):
 # parent classes for all attack-based engine states
 # -------------------------------------------------
 class AttackState(EngineState):
-    def get_attacking_fighter_state(self) -> fighter.Fighter:
+    def get_attacking_fighter_state(self):
         raise NotImplementedError()
-    def get_defending_fighter_state(self) -> fighter.Fighter:
+    def get_defending_fighter_state(self):
         raise NotImplementedError()
         
         
 class ActiveAttackState(AttackState):
-    def get_attacking_fighter_state(self) -> fighter.Fighter:
+    def get_attacking_fighter_state(self):
         return self.get_game_state().get_active_fighter_state()
-    def get_defending_fighter_state(self) -> fighter.Fighter:
+    def get_defending_fighter_state(self):
         return self.get_game_state().get_reactive_fighter_state()
         
         
 class ReactiveAttackState(AttackState):
-    def get_attacking_fighter_state(self) -> fighter.Fighter:
+    def get_attacking_fighter_state(self):
         return self.get_game_state().get_reactive_fighter_state()
-    def get_defending_fighter_state(self) -> fighter.Fighter:
+    def get_defending_fighter_state(self):
         return self.get_game_state().get_active_fighter_state()
         
         

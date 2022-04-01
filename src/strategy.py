@@ -1,4 +1,4 @@
-import game_element
+import src.game_element as game_element
 
 """
 Includes attack pair, ante, and any other data associated with an attack.
