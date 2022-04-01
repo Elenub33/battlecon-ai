@@ -3,16 +3,6 @@ class Fighter:
 
     def __init__(self):
         pass
-
-
-class FighterState:
-
-
-    def __init__(self, fighter: Fighter):
-        self.fighter = fighter
-        self.set_position(-1)
-        self.set_stunned(False)
-        self.set_attack_strategy(None)
         
         
     @classmethod
@@ -23,6 +13,16 @@ class FighterState:
     @classmethod
     def get_nickname(cls):
         raise NotImplementedError()
+
+
+class FighterState:
+
+
+    def __init__(self, fighter: Fighter):
+        self.fighter = fighter
+        self.set_position(-1)
+        self.set_stunned(False)
+        self.set_attack_strategy(None)
         
         
     def set_position(self, position: int):

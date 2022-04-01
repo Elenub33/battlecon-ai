@@ -5,9 +5,6 @@ import src.fighters.fighter as fighter
 class FighterLoader:
     
     
-    file_exclusions = ['fighter.py', 'fighter_loader.py']
-    
-    
     @staticmethod
     def from_name(name):
         return Fighter
@@ -15,8 +12,14 @@ class FighterLoader:
         
     @staticmethod
     def get_fighter_module_class_pairs():
-        module_names = [os.path.basename(f)[:-3] for f in glob.glob(os.path.join(os.path.dirname(__file__), "*.py")) if os.path.isfile(f) and not f.endswith('__init__.py') and not os.path.basename(f) in FighterLoader.file_exclusions]        
-        return [(name, FighterLoader.get_class_from_module(name)) for name in module_names]
+        module_names = [os.path.basename(f)[:-3] for f in glob.glob(os.path.join(os.path.dirname(__file__), "*.py")) if os.path.isfile(f) and not f.endswith('__init__.py')]
+        result = []
+        for name in module_names:
+            cls = FighterLoader.get_class_from_module(name)
+            if issubclass(cls, fighter.Fighter) and not cls == fighter.Fighter:
+                result.append((name, cls))
+        
+        return result
 
     
     @staticmethod
