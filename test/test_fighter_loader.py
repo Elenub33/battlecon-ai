@@ -4,6 +4,12 @@ import src.fighters.fighter_loader as fighter_loader
 class TestFighterLoader(unittest.TestCase):
     
     
+    expected_fighters = set([
+        "Eligor Larington",
+        "Shekhtur Lenmorre"
+    ])
+    
+    
     """
     Prepare the test case.
     """
@@ -17,14 +23,12 @@ class TestFighterLoader(unittest.TestCase):
             self.assertFalse("fighter" in module, "Fighter was contained in {}.".format(modules_and_classes))
         
         
-    def test_get_fighter_list_cotnains_eligor(self):
-        expected_class_name = "Eligor Larington"
+    def test_get_fighter_list_contains_fighters(self):
         modules_and_classes = fighter_loader.FighterLoader.get_fighter_module_class_pairs()
-        found = False
+        found_fighters = set()
         for module, cls in modules_and_classes:
-            if cls.get_full_name() == expected_class_name:
-                found = True
-        self.assertTrue(found, "{} was not returned in {}.".format(expected_class_name, modules_and_classes))
+            found_fighters.add(cls.get_full_name())
+        self.assertTrue(TestFighterLoader.expected_fighters.issubset(found_fighters), "Some fighters from {} were not returned by fighter loader ({}).".format(TestFighterLoader.expected_fighters, found_fighters))
         
 
 if __name__ == "__main__":
