@@ -1,5 +1,6 @@
 import unittest
-import src.game_element as game_element, src.strategy as strategy
+import src.strategy as strategy
+import src.fighters.elements.element as element
 
 class TestStrategy(unittest.TestCase):
     
@@ -15,10 +16,10 @@ class TestStrategy(unittest.TestCase):
     # Verify something
     # """
     def test_get_elements(self):
-        itm0 = game_element.GameElement()
-        itm1 = game_element.GameElement()
-        itm2 = game_element.GameElement()
-        itm3 = game_element.GameElement()
+        itm0 = element.Element()
+        itm1 = element.Element()
+        itm2 = element.Element()
+        itm3 = element.Element()
         expected = set([itm0, itm1])
         strat = strategy.AttackStrategy(itm0, itm1)
         self.assertEqual(strat.get_elements(), expected, "Elements initialized into strategy could not be retrieved.")
@@ -30,8 +31,8 @@ class TestStrategy(unittest.TestCase):
         
     
     def test_get_min_range(self):
-        elt0 = game_element.GameElement()
-        elt1 = game_element.GameElement()
+        elt0 = element.Element()
+        elt1 = element.Element()
         elt0.min_range = 1
         elt1.min_range = 2
         strat = strategy.AttackStrategy(elt0, elt1)
@@ -39,8 +40,8 @@ class TestStrategy(unittest.TestCase):
         
     
     def test_get_max_range(self):
-        elt0 = game_element.GameElement()
-        elt1 = game_element.GameElement()
+        elt0 = element.Element()
+        elt1 = element.Element()
         elt0.max_range = 2
         elt1.max_range = 3
         strat = strategy.AttackStrategy(elt0, elt1)

@@ -1,7 +1,7 @@
 """
 Any element that can affect an attack.
 """
-class GameElement:
+class Element:
     
     
     def __init__(self):
@@ -32,11 +32,3 @@ class GameElement:
         
     def get_max_range(self) -> int:
         return self.max_range
-        
-        
-class Card(GameElement):
-    pass
-        
-        
-class Token(GameElement):
-    pass
