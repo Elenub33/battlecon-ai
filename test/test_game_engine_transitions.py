@@ -20,10 +20,10 @@ class TestGameEngineTransitions(unittest.TestCase):
         
         
     def _test_beat_state_advance(self, start_state_cls, end_state_cls):
-        self.game.set_engine_state(start_state_cls(self.game))
-        self.game.advance_engine_state()
-        engine_state = self.game.get_engine_state()
-        self.assertTrue(isinstance(engine_state, end_state_cls), "Transitioned from {} to {} instead of instance of {}.".format(start_state_cls, engine_state, end_state_cls))
+        self.game.set_phase_state(start_state_cls(self.game))
+        self.game.advance_phase_state()
+        phase_state = self.game.get_phase_state()
+        self.assertTrue(isinstance(phase_state, end_state_cls), "Transitioned from {} to {} instead of instance of {}.".format(start_state_cls, phase_state, end_state_cls))
         
         
     def test_set_pairs_leads_to_set_antes(self):

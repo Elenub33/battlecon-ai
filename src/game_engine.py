@@ -10,12 +10,12 @@ class GameEngine:
         assert isinstance(agent1, agent.Agent)
         self.agents = [agent0, agent1]
         self.set_game_state(None)
-        self.set_engine_state(None)
+        self.set_phase_state(None)
     
     
     def initialize_from_start(self):
         self.set_game_state(game_state.GameState.from_start(self.agents[0].get_fighter(), self.agents[1].get_fighter()))
-        self.set_engine_state(EngineState.from_start(self))
+        self.set_phase_state(PhaseState.from_start(self))
     
     
     def initialize_from_file(self):
@@ -38,12 +38,12 @@ class GameEngine:
         raise Exception("Unable to find reactive agent.")
         
         
-    def get_engine_state(self) -> 'EngineState':
-        return self.engine_state
+    def get_phase_state(self) -> 'PhaseState':
+        return self.phase_state
         
     
-    def set_engine_state(self, state: 'EngineState'):
-        self.engine_state = state
+    def set_phase_state(self, state: 'PhaseState'):
+        self.phase_state = state
         
         
     def get_game_state(self) -> game_state.GameState:
@@ -55,15 +55,15 @@ class GameEngine:
         
         
     def process(self):
-        self.get_engine_state().handle()
-        self.advance_engine_state()
+        self.get_phase_state().handle()
+        self.advance_phase_state()
     
     
-    def advance_engine_state(self):    
-        self.set_engine_state(self.get_engine_state().get_next())
+    def advance_phase_state(self):    
+        self.set_phase_state(self.get_phase_state().get_next_phase())
         
 
-class EngineState:
+class PhaseState:
 
 
     @staticmethod
@@ -83,11 +83,11 @@ class EngineState:
         return self.engine.get_game_state()
         
         
-    def handle(self):
+    def resolve(self):
         pass
         
         
-    def get_next(self) -> 'EngineState':
+    def get_next_phase(self) -> 'PhaseState':
         return self.get_next_state_class()(self.get_engine())
         
         
@@ -95,27 +95,27 @@ class EngineState:
         raise NotImplementedError()
         
         
-class SetPairs(EngineState):
+class SetPairs(PhaseState):
     def get_next_state_class(self) -> type:
         return SetAntes
     
     
-class SetAntes(EngineState):
+class SetAntes(PhaseState):
     def get_next_state_class(self) -> type:
         return Reveal
     
     
-class Reveal(EngineState):
+class Reveal(PhaseState):
     def get_next_state_class(self) -> type:
         return CheckForClash
     
     
-class CheckForClash(EngineState):
+class CheckForClash(PhaseState):
     def get_next_state_class(self) -> type:
         return StartOfBeat
     
     
-class StartOfBeat(EngineState):
+class StartOfBeat(PhaseState):
     def get_next_state_class(self) -> type:
         return ActiveBefore
     
@@ -123,7 +123,7 @@ class StartOfBeat(EngineState):
 # -------------------------------------------------
 # parent classes for all attack-based engine states
 # -------------------------------------------------
-class AttackState(EngineState):
+class AttackState(PhaseState):
     def get_attacking_fighter_state(self):
         raise NotImplementedError()
     def get_defending_fighter_state(self):
@@ -155,7 +155,7 @@ class CheckRangeState(AttackState):
 # ------------------------------------------------------
 
     
-class ActiveBefore(EngineState):
+class ActiveBefore(PhaseState):
     def get_next_state_class(self) -> type:
         return ActiveCheckRange
             
@@ -168,17 +168,17 @@ class ActiveCheckRange(ActiveAttackState, CheckRangeState):
             return ActiveAfter
             
     
-class ActiveHit(EngineState):
+class ActiveHit(PhaseState):
     def get_next_state_class(self) -> type:
         return ActiveDamage
             
     
-class ActiveDamage(EngineState):
+class ActiveDamage(PhaseState):
     def get_next_state_class(self) -> type:
         return ActiveAfter
             
     
-class ActiveAfter(EngineState):
+class ActiveAfter(PhaseState):
     def get_next_state_class(self) -> type:
         if self.get_game_state().get_reactive_fighter_state().is_stunned():
             return EndOfBeat
@@ -186,7 +186,7 @@ class ActiveAfter(EngineState):
             return ReactiveBefore
             
     
-class ReactiveBefore(EngineState):
+class ReactiveBefore(PhaseState):
     def get_next_state_class(self) -> type:
         return ReactiveCheckRange
             
@@ -199,26 +199,26 @@ class ReactiveCheckRange(ReactiveAttackState, CheckRangeState):
             return ReactiveAfter
             
     
-class ReactiveHit(EngineState):
+class ReactiveHit(PhaseState):
     def get_next_state_class(self) -> type:
         return ReactiveDamage
             
     
-class ReactiveDamage(EngineState):
+class ReactiveDamage(PhaseState):
     def get_next_state_class(self) -> type:
         return ReactiveAfter
             
     
-class ReactiveAfter(EngineState):
+class ReactiveAfter(PhaseState):
     def get_next_state_class(self) -> type:
         return EndOfBeat
             
     
-class EndOfBeat(EngineState):
+class EndOfBeat(PhaseState):
     def get_next_state_class(self) -> type:
         return Recycle
             
     
-class Recycle(EngineState):
+class Recycle(PhaseState):
     def get_next_state_class(self) -> type:
         return SetPairs
