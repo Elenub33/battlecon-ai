@@ -1,4 +1,5 @@
-import src.fighters.elements.element as element
+from . import element
+
 
 class Token(element.Element):
     pass

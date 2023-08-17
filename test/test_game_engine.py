@@ -1,5 +1,8 @@
 import unittest
-import src.game_engine as game_engine, src.game_state as game_state, src.fighters.fighter as fighter, src.agent as agent
+from src import game_engine
+from src.game_state import GameState
+from src.fighters.fighter import Fighter
+from src.agent import Agent
 
 class TestGameEngine(unittest.TestCase):
     
@@ -8,8 +11,8 @@ class TestGameEngine(unittest.TestCase):
     Prepare the test case.
     """
     def setUp(self):
-        self.agt0 = agent.Agent(fighter.Fighter())
-        self.agt1 = agent.Agent(fighter.Fighter())
+        self.agt0 = Agent(Fighter())
+        self.agt1 = Agent(Fighter())
         self.game = game_engine.GameEngine(self.agt0, self.agt1)
         
         
@@ -32,7 +35,7 @@ class TestGameEngine(unittest.TestCase):
     def test_get_game_state(self):
         self.game.initialize_from_start()
         state = self.game.get_game_state()
-        self.assertTrue(isinstance(state, game_state.GameState), "State returned by get_state was not a GameState object.")
+        self.assertTrue(isinstance(state, GameState), "State returned by get_state was not a GameState object.")
         self.assertTrue(self.agt0.get_fighter() == state.get_active_fighter() or self.agt0.get_fighter() == state.get_reactive_fighter(), "Returned state did not contain agent 0's fighter.")
         self.assertTrue(self.agt1.get_fighter() == state.get_active_fighter() or self.agt1.get_fighter() == state.get_reactive_fighter(), "Returned state did not contain agent 1's fighter.")
         

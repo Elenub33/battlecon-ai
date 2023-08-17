@@ -1,5 +1,5 @@
-import src.fighters.elements.base as base
-import src.fighters.elements.style as style
+from . import base
+from . import style
 
 
 def get_default_bases():

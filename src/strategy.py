@@ -1,4 +1,4 @@
-import src.fighters.elements.element as element
+from .fighters.elements.element import Element
 
 """
 Includes attack pair, ante, and any other data associated with an attack.
@@ -6,7 +6,7 @@ Includes attack pair, ante, and any other data associated with an attack.
 class AttackStrategy:
     
     
-    def __init__(self, *elements: list[element.Element]):
+    def __init__(self, *elements: list[Element]):
         self.elements = set(elements)
         
         
@@ -14,7 +14,7 @@ class AttackStrategy:
         return self.elements
         
         
-    def add_elements(self, *elements: list[element.Element]):
+    def add_elements(self, *elements: list[Element]):
         for elt in elements:
             self.elements.add(elt)
             

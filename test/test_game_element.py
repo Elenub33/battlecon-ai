@@ -1,5 +1,6 @@
 import unittest
-import src.fighters.elements.element as element
+from src.fighters.elements.element import Element
+
 
 class TestGameElement(unittest.TestCase):
     
@@ -8,7 +9,7 @@ class TestGameElement(unittest.TestCase):
     Prepare the test case.
     """
     def setUp(self):
-        self.ge = element.Element()
+        self.ge = Element()
         
         
     def test_set_name(self):

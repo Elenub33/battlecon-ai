@@ -1,5 +1,7 @@
 import unittest
-import src.fighters.fighter as fighter, src.strategy as strategy
+from src.fighters.fighter import Fighter, FighterState
+from src import strategy
+
 
 class TestFighter(unittest.TestCase):
     
@@ -8,8 +10,8 @@ class TestFighter(unittest.TestCase):
     Prepare the test case.
     """
     def setUp(self):
-        self.fighter = fighter.Fighter()
-        self.fighter_state = fighter.FighterState(self.fighter)
+        self.fighter = Fighter()
+        self.fighter_state = FighterState(self.fighter)
         
         
     def test_set_position(self):

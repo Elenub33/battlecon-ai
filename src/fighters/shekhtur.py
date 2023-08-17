@@ -1,6 +1,7 @@
-import src.fighters.fighter as fighter
+from .fighter import Fighter
 
-class Eligor(fighter.Fighter):
+
+class Shekhtur(Fighter):
     
     
     @classmethod

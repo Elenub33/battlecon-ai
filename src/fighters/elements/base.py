@@ -1,4 +1,4 @@
-import src.fighters.elements.card as card
+from . import card
 
 class Base(card.Card):
     pass

@@ -1,5 +1,6 @@
 import unittest
-import src.game_state as game_state, src.fighters.fighter as fighter
+from src.game_state import GameState
+from src.fighters.fighter import Fighter
 
 class TestGameState(unittest.TestCase):
     
@@ -8,9 +9,9 @@ class TestGameState(unittest.TestCase):
     Prepare the test case.
     """
     def setUp(self):
-        self.f0 = fighter.Fighter()
-        self.f1 = fighter.Fighter()
-        self.state = game_state.GameState(self.f0, self.f1)
+        self.f0 = Fighter()
+        self.f1 = Fighter()
+        self.state = GameState(self.f0, self.f1)
         
         
     def test_initial_active_and_inactive(self):
@@ -79,12 +80,11 @@ class TestGameState(unittest.TestCase):
     
     
     def test_unable_to_find_reactive_fighter_when_only_one_fighter_exists(self):
-        self.state = game_state.GameState(self.f0, self.f0)
+        self.state = GameState(self.f0, self.f0)
         self.state.set_active_fighter(self.f0)
         with self.assertRaises(Exception) as context:
             self.state.get_reactive_fighter()
     
-        
-
+    
 if __name__ == "__main__":
     unittest.main()

@@ -1,20 +1,21 @@
 import random
-import src.game_state as game_state, src.agent as agent
-    
+from .agent import Agent
+from .game_state import GameState
+
 
 class GameEngine:
 
 
     def __init__(self, agent0, agent1):
-        assert isinstance(agent0, agent.Agent)
-        assert isinstance(agent1, agent.Agent)
+        assert isinstance(agent0, Agent)
+        assert isinstance(agent1, Agent)
         self.agents = [agent0, agent1]
         self.set_game_state(None)
         self.set_phase_state(None)
     
     
     def initialize_from_start(self):
-        self.set_game_state(game_state.GameState.from_start(self.agents[0].get_fighter(), self.agents[1].get_fighter()))
+        self.set_game_state(GameState.from_start(self.agents[0].get_fighter(), self.agents[1].get_fighter()))
         self.set_phase_state(PhaseState.from_start(self))
     
     
@@ -22,7 +23,7 @@ class GameEngine:
         raise NotImplementedError()
     
     
-    def get_active_agent(self) -> agent.Agent:
+    def get_active_agent(self) -> Agent:
         active_fighter = self.get_game_state().get_active_fighter()
         for agent in self.agents:
             if agent.get_fighter() == active_fighter:
@@ -30,7 +31,7 @@ class GameEngine:
         raise Exception("Unable to find active agent.")
     
     
-    def get_reactive_agent(self) -> agent.Agent:
+    def get_reactive_agent(self) -> Agent:
         active_fighter = self.get_game_state().get_reactive_fighter()
         for agent in self.agents:
             if agent.get_fighter() == active_fighter:
@@ -46,11 +47,11 @@ class GameEngine:
         self.phase_state = state
         
         
-    def get_game_state(self) -> game_state.GameState:
+    def get_game_state(self) -> GameState:
         return self.game_state
         
         
-    def set_game_state(self, new_game_state: game_state.GameState):
+    def set_game_state(self, new_game_state: GameState):
         self.game_state = new_game_state
         
         

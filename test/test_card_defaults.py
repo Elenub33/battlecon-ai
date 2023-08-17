@@ -1,7 +1,7 @@
 import unittest
-import src.fighters.elements.defaults as defaults
-import src.fighters.elements.base as base
-import src.fighters.elements.style as style
+from src.fighters.elements import defaults
+from src.fighters.elements import base
+from src.fighters.elements import style
 
 class TestCardDefaults(unittest.TestCase):
     

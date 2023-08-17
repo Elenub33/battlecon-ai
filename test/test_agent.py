@@ -1,5 +1,6 @@
 import unittest
-import src.agent as agent, src.fighters.fighter as fighter
+from src.agent import Agent
+from src.fighters.fighter import Fighter
 
 class TestGame(unittest.TestCase):
     
@@ -8,8 +9,8 @@ class TestGame(unittest.TestCase):
     Prepare the test case.
     """
     def setUp(self):
-        self.fighter = fighter.Fighter()
-        self.agent = agent.Agent(self.fighter)
+        self.fighter = Fighter()
+        self.agent = Agent(self.fighter)
         
         
     def test_get_fighter(self):

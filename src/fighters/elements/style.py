@@ -1,4 +1,5 @@
-import src.fighters.elements.card as card
+from . import card
+
 
 class Style(card.Card):
     pass

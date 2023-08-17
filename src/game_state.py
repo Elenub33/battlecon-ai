@@ -1,6 +1,5 @@
-#!/usr/bin/env python3
 import random
-import src.agent as agent, src.fighters.fighter as fighter
+from .fighters.fighter import Fighter, FighterState
 
 """
 All state accessor and mutation methods should be on the GameState class.
@@ -11,17 +10,17 @@ class GameState:
 
 
     @staticmethod
-    def from_start(fighter0: fighter.Fighter, fighter1: fighter.Fighter):
+    def from_start(fighter0: Fighter, fighter1: Fighter):
         state = GameState(fighter0, fighter1)
         state.initialize_from_start()
         return state
 
 
-    def __init__(self, fighter0: fighter.Fighter, fighter1: fighter.Fighter):
+    def __init__(self, fighter0: Fighter, fighter1: Fighter):
         self.fighters = [fighter0, fighter1]
         self.fighter_states = {}
-        self.fighter_states[fighter0] = fighter.FighterState(fighter0)
-        self.fighter_states[fighter1] = fighter.FighterState(fighter1)
+        self.fighter_states[fighter0] = FighterState(fighter0)
+        self.fighter_states[fighter1] = FighterState(fighter1)
         self.set_active_fighter(None)
     
     
@@ -31,17 +30,17 @@ class GameState:
         self.get_reactive_fighter_state().set_position(4)
         
     
-    def set_active_fighter(self, fighter: fighter.Fighter):
+    def set_active_fighter(self, fighter: Fighter):
         self.active_fighter = fighter
     
     
-    def get_active_fighter(self) -> fighter.Fighter:
+    def get_active_fighter(self) -> Fighter:
         if not self.active_fighter:
             raise Exception("Unable to find active fighter.")
         return self.active_fighter
         
     
-    def get_reactive_fighter(self) -> fighter.Fighter:
+    def get_reactive_fighter(self) -> Fighter:
         if not self.active_fighter:
             raise Exception("Unable to find reactive fighter. Active fighter not set.")
         for f in self.fighters:
@@ -50,15 +49,15 @@ class GameState:
         raise Exception("Unable to find reactive fighter. Active fighter set, but no other fighter exists.")
         
     
-    def get_active_fighter_state(self) -> fighter.FighterState:
+    def get_active_fighter_state(self) -> FighterState:
         return self.get_fighter_state(self.get_active_fighter())
         
     
-    def get_reactive_fighter_state(self) -> fighter.FighterState:
+    def get_reactive_fighter_state(self) -> FighterState:
         return self.get_fighter_state(self.get_reactive_fighter())
         
         
-    def get_fighter_state(self, fighter: fighter.Fighter) -> fighter.FighterState:
+    def get_fighter_state(self, fighter: Fighter) -> FighterState:
         return self.fighter_states[fighter]
         
         

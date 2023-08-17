@@ -1,4 +1,4 @@
-import src.fighters.fighter as fighter
+from .fighters.fighter import Fighter
 
 """
 An agent is any AI or human that can make choices.
@@ -7,7 +7,7 @@ The Agent class does not implement any way to make decisions and is effectively 
 class Agent:
     
     
-    def __init__(self, fighter: fighter.Fighter):
+    def __init__(self, fighter: Fighter):
         self.fighter = fighter
         
         

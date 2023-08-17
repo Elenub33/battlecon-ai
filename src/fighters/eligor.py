@@ -1,6 +1,7 @@
-import src.fighters.fighter as fighter
+from .fighter import Fighter
 
-class Eligor(fighter.Fighter):
+
+class Eligor(Fighter):
     
     
     @classmethod
@@ -11,3 +12,4 @@ class Eligor(fighter.Fighter):
     @classmethod
     def get_nickname(cls):
         return "Eligor"
+        

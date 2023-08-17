@@ -1,5 +1,5 @@
 import unittest
-import src.fighters.fighter_loader as fighter_loader
+from src.fighters.fighter_loader import FighterLoader
 
 class TestFighterLoader(unittest.TestCase):
     
@@ -18,13 +18,13 @@ class TestFighterLoader(unittest.TestCase):
         
         
     def test_get_fighter_list_does_not_contain_fighter(self):
-        modules_and_classes = fighter_loader.FighterLoader.get_fighter_module_class_pairs()
+        modules_and_classes = FighterLoader.get_fighter_module_class_pairs()
         for module, cls in modules_and_classes:
             self.assertFalse("fighter" in module, "Fighter was contained in {}.".format(modules_and_classes))
         
         
     def test_get_fighter_list_contains_fighters(self):
-        modules_and_classes = fighter_loader.FighterLoader.get_fighter_module_class_pairs()
+        modules_and_classes = FighterLoader.get_fighter_module_class_pairs()
         found_fighters = set()
         for module, cls in modules_and_classes:
             found_fighters.add(cls.get_full_name())
@@ -32,6 +32,7 @@ class TestFighterLoader(unittest.TestCase):
         
 
 if __name__ == "__main__":
+    print("TESTING")
     unittest.main()
 
 

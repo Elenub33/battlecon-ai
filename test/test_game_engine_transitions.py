@@ -1,6 +1,10 @@
 import unittest
-import src.game_engine as game_engine, src.fighters.fighter as fighter, src.agent as agent, src.strategy as strategy
-import src.fighters.elements.element as element
+
+from src.fighters.fighter import Fighter
+from src import game_engine
+from src.agent import Agent
+from src.strategy import AttackStrategy
+from src.fighters.elements.element import Element
 
 
 class TestGameEngineTransitions(unittest.TestCase):
@@ -10,10 +14,10 @@ class TestGameEngineTransitions(unittest.TestCase):
     Prepare the test case.
     """
     def setUp(self):
-        self.f0 = fighter.Fighter()
-        self.f1 = fighter.Fighter()
-        self.agt0 = agent.Agent(self.f0)
-        self.agt1 = agent.Agent(self.f1)
+        self.f0 = Fighter()
+        self.f1 = Fighter()
+        self.agt0 = Agent(self.f0)
+        self.agt1 = Agent(self.f1)
         self.game = game_engine.GameEngine(self.agt0, self.agt1)
         self.game.initialize_from_start()
         self.game_state = self.game.get_game_state()
@@ -56,10 +60,10 @@ class TestGameEngineTransitions(unittest.TestCase):
         self.game.get_game_state().set_fighter_position(self.f0, 2)
         self.game.get_game_state().set_fighter_position(self.f1, 4)
         
-        elt = element.Element()
+        elt = Element()
         elt.set_min_range(2)
         elt.set_max_range(2)
-        strat = strategy.AttackStrategy(elt)
+        strat = AttackStrategy(elt)
         
         self.game.get_game_state().get_fighter_state(self.game.get_game_state().get_active_fighter()).set_attack_strategy(strat)
         
@@ -72,10 +76,10 @@ class TestGameEngineTransitions(unittest.TestCase):
         self.game.get_game_state().set_fighter_position(self.f0, 2)
         self.game.get_game_state().set_fighter_position(self.f1, 5)
         
-        elt = element.Element()
+        elt = Element()
         elt.set_min_range(2)
         elt.set_max_range(2)
-        strat = strategy.AttackStrategy(elt)
+        strat = AttackStrategy(elt)
         
         self.game.get_game_state().get_fighter_state(self.game.get_game_state().get_active_fighter()).set_attack_strategy(strat)
         
@@ -114,10 +118,10 @@ class TestGameEngineTransitions(unittest.TestCase):
         self.game.get_game_state().set_fighter_position(self.f0, 2)
         self.game.get_game_state().set_fighter_position(self.f1, 4)
         
-        elt = element.Element()
+        elt = Element()
         elt.set_min_range(2)
         elt.set_max_range(2)
-        strat = strategy.AttackStrategy(elt)
+        strat = AttackStrategy(elt)
         
         self.game.get_game_state().get_fighter_state(self.game.get_game_state().get_reactive_fighter()).set_attack_strategy(strat)
         
@@ -130,10 +134,10 @@ class TestGameEngineTransitions(unittest.TestCase):
         self.game.get_game_state().set_fighter_position(self.f0, 2)
         self.game.get_game_state().set_fighter_position(self.f1, 5)
         
-        elt = element.Element()
+        elt = Element()
         elt.set_min_range(2)
         elt.set_max_range(2)
-        strat = strategy.AttackStrategy(elt)
+        strat = AttackStrategy(elt)
         
         self.game.get_game_state().get_fighter_state(self.game.get_game_state().get_reactive_fighter()).set_attack_strategy(strat)
         
