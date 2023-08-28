@@ -84,6 +84,42 @@ class TestGameState(unittest.TestCase):
         self.state.set_active_fighter(self.f0)
         with self.assertRaises(Exception) as context:
             self.state.get_reactive_fighter()
+
+
+    def test_not_over_at_start_of_game(self):
+        self.state.initialize_from_start()
+        self.assertFalse(self.state.is_over())
+
+
+    def test_over_if_active_fighter_dead(self):
+        self.state.initialize_from_start()
+        self.state.get_active_fighter_state().set_life(0)
+        self.assertTrue(self.state.is_over(), "Game was not over when active fighter was dead.")
+
+
+    def test_over_if_reactive_fighter_dead(self):
+        self.state.initialize_from_start()
+        self.state.get_reactive_fighter_state().set_life(0)
+        self.assertTrue(self.state.is_over(), "Game was not over when reactive fighter was dead.")
+
+
+    def test_over_if_both_fighters_dead(self):
+        self.state.initialize_from_start()
+        self.state.get_active_fighter_state().set_life(0)
+        self.state.get_reactive_fighter_state().set_life(0)
+        self.assertTrue(self.state.is_over(), "Game was not over when both fighters were dead.")
+
+
+    def test_over_if_force_pool_empty(self):
+        self.state.initialize_from_start()
+        self.state.set_force_pool(0)
+        self.assertTrue(self.state.is_over(), "Game was not over when force pool was empty.")
+
+
+    def test_over_if_force_pool_negative(self):
+        self.state.initialize_from_start()
+        self.state.set_force_pool(-1)
+        self.assertTrue(self.state.is_over(), "Game was not over when force pool was negative.")
     
     
 if __name__ == "__main__":

@@ -5,7 +5,6 @@ from .game_engine import GameEngine
 from .ui import UI
 
 
-# TODO: Refactor this into a headless Game object that can be passed any UI
 class Game:
 
 
@@ -20,6 +19,8 @@ class Game:
         a2 = Agent(f2)
         ge = GameEngine(a1, a2)
         ge.initialize_from_start()
-        self.ui.display_game_state(ge.get_game_state())
 
-    # TODO: main loop
+
+        # TODO: main loop
+        while not ge.get_game_state().is_over():
+            self.ui.display_game_state(ge.get_game_state())
