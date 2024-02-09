@@ -38,6 +38,14 @@ class GameEngine:
                 return agent
         raise Exception("Unable to find reactive agent.")
         
+
+    # resolve_phase resolves the current phase and advances to the next.
+    def resolve_phase(self):
+        print("Resolving phase", self.get_phase_state().__class__)
+        self.get_phase_state().resolve()
+        self.advance_phase_state()
+        input("Press enter to continue.")
+
         
     def get_phase_state(self) -> 'PhaseState':
         return self.phase_state
@@ -73,15 +81,15 @@ class PhaseState:
 
 
     def __init__(self, engine: GameEngine):
-        self.engine = engine
+        self._engine = engine
         
         
     def get_engine(self) -> GameEngine:
-        return self.engine
+        return self._engine
         
         
     def get_game_state(self):
-        return self.engine.get_game_state()
+        return self.get_engine().get_game_state()
         
         
     def resolve(self):
@@ -99,6 +107,9 @@ class PhaseState:
 class SetPairs(PhaseState):
     def get_next_state_class(self) -> type:
         return SetAntes
+    def resolve(self):
+        eng = self.get_engine()
+        eng.get_active_agent().choose_attack_pair() # TODO: define decisions, etc.
     
     
 class SetAntes(PhaseState):
