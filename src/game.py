@@ -13,6 +13,7 @@ class Game:
 
 
     # TODO: inject f1, f2, a1, a2 as dependencies
+    # TODO: utilize ui in player agent
     def run(self):
         f1 = FighterLoader.load_fighter_from_module("eligor")
         f2 = FighterLoader.load_fighter_from_module("shekhtur")
@@ -20,10 +21,4 @@ class Game:
         a2 = Agent(f2)
         ge = GameEngine(a1, a2)
         ge.initialize_from_start()
-
-        self.ui.display_game_state(ge.get_game_state())
-
-        # TODO: finish main loop
-        while not ge.get_game_state().is_over():
-            ge.resolve_phase()
-            self.ui.display_game_state(ge.get_game_state())
+        ge.run()
