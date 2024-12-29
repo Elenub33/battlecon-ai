@@ -5,6 +5,7 @@ from .game_engine import GameEngine
 from .ui import UI
 
 
+# Game is a controller that manages a UI and a Game Engine.
 class Game:
 
 

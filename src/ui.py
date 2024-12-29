@@ -1,3 +1,4 @@
+# UI is an abstract class that can display a game state on command.
 class UI:
 
 

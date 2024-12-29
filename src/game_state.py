@@ -2,8 +2,8 @@ import random
 from .fighters.fighter import Fighter, FighterState
 
 """
-All state accessor and mutation methods should be on the GameState class.
-The main state and possible future states are passed to agents to help them analyze and make decisions.
+A GameState object tracks the state of the board fighters. It does not track phase state information; see game_phases.py.
+
 This class contains no agents or other information that could lead to deduction of opponent strategy.
 """
 class GameState:
