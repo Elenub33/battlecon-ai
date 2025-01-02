@@ -3,6 +3,10 @@ from .game_state import GameState
 from .game_phases import PhaseStateMachine
 
 
+"""
+GameEngine tracks a GameStatem, a phase state machine, and two agents.
+It progresses the game engine and requests actions from the agents when appropriate.
+"""
 class GameEngine:
 
 
@@ -13,12 +17,10 @@ class GameEngine:
         self._set_game_state(None)
     
     
-    # TODO: refactor this out into GameState
     def initialize_from_start(self):
         self._set_game_state(GameState.from_start(self.agents[0].get_fighter(), self.agents[1].get_fighter()))
     
-    # TODO: refactor this out into GameState
-    # TODO: if refactored into GameState, how do we know what phase to start from?
+    # TODO: save/load
     def initialize_from_file(self):
         raise NotImplementedError()
     

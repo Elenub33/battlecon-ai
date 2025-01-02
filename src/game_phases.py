@@ -1,6 +1,8 @@
 from .game_state import GameState
 from .fighters.fighter import FighterState
 
+# TODO: phases need some way to ask agents to make decisions
+
 class PhaseStateMachine:
 
     set: 'Set'
@@ -42,21 +44,21 @@ class PhaseStateMachine:
         self.recycle = Recycle()
 
         self.set_state(self.set)
+        
 
-    def do_next(self, game_state: GameState) -> None:
+    def do_next_state(self, game_state: GameState) -> None:
         self.state.do(game_state)
-        self.state.next(self, game_state)
+        self.set_state(state.next_state(self, game_state))
+
 
     def set_state(self, phase_state: 'PhaseState') -> None:
         self.state = phase_state
 
 
 class PhaseState:
-
     def do(self, game_state: GameState):
         raise NotImplementedError()
-    
-    def next(self, state_machine: PhaseStateMachine, game_state: GameState):
+    def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
         raise NotImplementedError()
 
 
@@ -100,8 +102,8 @@ class Set(PhaseState):
     def do(self, game_state: GameState):
         pass
 
-    def next(self, state_machine: PhaseStateMachine, game_state: GameState):
-        state_machine.set_state(state_machine.ante)
+    def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
+        return state_machine.ante
 
 
 class Ante(PhaseState):
@@ -109,8 +111,8 @@ class Ante(PhaseState):
     def do(self, game_state: GameState):
         pass
 
-    def next(self, state_machine: PhaseStateMachine, game_state: GameState):
-        state_machine.set_state(state_machine.reveal)
+    def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
+        return state_machine.reveal
 
 
 class Reveal(PhaseState):
@@ -118,9 +120,9 @@ class Reveal(PhaseState):
     def do(self, game_state: GameState):
         pass
 
-    def next(self, state_machine: PhaseStateMachine, game_state: GameState):
+    def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
         # TODO: check for clash
-        state_machine.set_state(state_machine.start_of_beat)
+        return state_machine.start_of_beat
 
 
 class Clash(PhaseState):
@@ -128,69 +130,132 @@ class Clash(PhaseState):
     def do(self, game_state: GameState):
         pass
 
-    def next(self, state_machine: PhaseStateMachine, game_state: GameState):
-        state_machine.set_state(state_machine.start_of_beat)
+    def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
+        # TODO: skip beat if out of cards from clashing
+        return state_machine.start_of_beat
     
     
 class StartOfBeat(PhaseState):
-    pass
 
-    
-class ActiveBefore(PhaseState):
-    pass
+    def do(self, game_state: GameState):
+        pass
+
+    def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
+        return state_machine.active_before
+
+
+class ActiveBefore(ActiveAttackState):
+
+    def do(self, game_state: GameState):
+        pass
+
+    def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
+        return state_machine.active_check_range
 
 
 class ActiveCheckRange(ActiveAttackState, CheckRangeState):
-    def get_next_state_class(self) -> type:
+
+    def do(self, game_state: GameState):
+        pass
+
+    def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
         if self.opponent_in_range():
-            return ActiveHit
+            return state_machine.active_hit
         else:
-            return ActiveAfter
+            return state_machine.active_after
             
     
-class ActiveHit(PhaseState):
-    pass
+class ActiveHit(ActiveAttackState):
+
+    def do(self, game_state: GameState):
+        pass
+
+    def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
+        return state_machine.active_damage
             
     
-class ActiveDamage(PhaseState):
-    pass
+class ActiveDamage(ActiveAttackState):
+
+    def do(self, game_state: GameState):
+        pass
+
+    def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
+        return state_machine.active_after
             
     
-class ActiveAfter(PhaseState):
-    def get_next_state_class(self) -> type:
+class ActiveAfter(ActiveAttackState):
+
+    def do(self, game_state: GameState):
+        pass
+
+    def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
         if self.get_game_state().get_reactive_fighter_state().is_stunned():
-            return EndOfBeat
+            return state_machine.end_of_beat
         else:
-            return ReactiveBefore
+            return state_machine.reactive_before
             
-    
-class ReactiveBefore(PhaseState):
-    pass
-            
-    
-class ReactiveCheckRange(ReactiveAttackState, CheckRangeState):
-    def get_next_state_class(self) -> type:
+
+class ReactiveBefore(ActiveAttackState):
+
+    def do(self, game_state: GameState):
+        pass
+
+    def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
+        return state_machine.reactive_check_range
+
+
+class ReactiveCheckRange(ActiveAttackState, CheckRangeState):
+
+    def do(self, game_state: GameState):
+        pass
+
+    def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
         if self.opponent_in_range():
-            return ReactiveHit
+            return state_machine.reactive_hit
         else:
-            return ReactiveAfter
+            return state_machine.reactive_after
             
     
-class ReactiveHit(PhaseState):
-    pass
+class ReactiveHit(ActiveAttackState):
+
+    def do(self, game_state: GameState):
+        pass
+
+    def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
+        return state_machine.reactive_damage
             
     
-class ReactiveDamage(PhaseState):
-    pass
+class ReactiveDamage(ActiveAttackState):
+
+    def do(self, game_state: GameState):
+        pass
+
+    def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
+        return state_machine.reactive_after
             
     
-class ReactiveAfter(PhaseState):
-    pass
+class ReactiveAfter(ActiveAttackState):
+
+    def do(self, game_state: GameState):
+        pass
+
+    def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
+        return state_machine.end_of_beat
             
     
 class EndOfBeat(PhaseState):
-    pass
+
+    def do(self, game_state: GameState):
+        pass
+
+    def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
+        return state_machine.recycle
             
     
 class Recycle(PhaseState):
-    pass
+
+    def do(self, game_state: GameState):
+        pass
+
+    def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
+        return state_machine.set

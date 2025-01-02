@@ -2,13 +2,15 @@
 
 class Option:
 
+    description: str
+
 
     def __init__(self, description: str):
-        self.str = str
+        self.description = description
 
 
-    def __str__(self):
-        return self.str
+    def __str__(self) -> str:
+        return self.description
     
 
     # TODO: define apply(GameState)

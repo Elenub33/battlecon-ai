@@ -19,3 +19,4 @@ class AsciiUI(UI):
             print(pos.get(i, "-"), end=" ")
         print()
         print()
+        
