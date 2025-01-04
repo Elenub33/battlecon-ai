@@ -31,7 +31,7 @@ class GameEngine:
             return ValueError("GameEngine not initialized before call to run().")
         psm = PhaseStateMachine()
         while not game_state.is_over():
-            psm.do_next(self._get_game_state())
+            psm.do_next(self._get_game_state(), self.agents)
 
     
     def get_active_agent(self) -> Agent:

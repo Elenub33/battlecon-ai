@@ -1,7 +1,6 @@
+from .agent import Agent
 from .game_state import GameState
 from .fighters.fighter import FighterState
-
-# TODO: phases need some way to ask agents to make decisions
 
 class PhaseStateMachine:
 
@@ -46,9 +45,9 @@ class PhaseStateMachine:
         self.set_state(self.set)
         
 
-    def do_next_state(self, game_state: GameState) -> None:
-        self.state.do(game_state)
-        self.set_state(state.next_state(self, game_state))
+    def do_next(self, game_state: GameState, agents: list[Agent]) -> None:
+        self.state.do(game_state, agents)
+        self.set_state(self.state.next_state(self, game_state))
 
 
     def set_state(self, phase_state: 'PhaseState') -> None:
@@ -56,9 +55,9 @@ class PhaseStateMachine:
 
 
 class PhaseState:
-    def do(self, game_state: GameState):
+    def do(self, game_state: GameState, agents: list[Agent]):
         raise NotImplementedError()
-    def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
+    def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> 'PhaseState':
         raise NotImplementedError()
 
 
@@ -86,20 +85,20 @@ class ReactiveAttackState(AttackState):
         return game_state.get_active_fighter_state()
 
 
-# ------------------------------------------------------
+# ------------------------------------------------------ 
 # parent classes for specific attack-based engine states
 # ------------------------------------------------------
 class CheckRangeState(AttackState):
-    def opponent_in_range(self) -> bool:
-        range = self.get_attacking_fighter_state().get_attack_strategy().get_range()
-        distance = self.get_game_state().get_distance_between_fighters()
+    def opponent_in_range(self, game_state: GameState) -> bool:
+        range = self.get_attacking_fighter_state(game_state).get_attack_strategy().get_range()
+        distance = state.get_distance_between_fighters()
         return range[0] >= distance and range[1] <= distance
 # ------------------------------------------------------
 
 
 class Set(PhaseState):
 
-    def do(self, game_state: GameState):
+    def do(self, game_state: GameState, agents: list[Agent]):
         pass
 
     def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
@@ -108,16 +107,17 @@ class Set(PhaseState):
 
 class Ante(PhaseState):
 
-    def do(self, game_state: GameState):
+    def do(self, game_state: GameState, agents: list[Agent]):
         pass
 
     def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
         return state_machine.reveal
+        
 
 
 class Reveal(PhaseState):
 
-    def do(self, game_state: GameState):
+    def do(self, game_state: GameState, agents: list[Agent]):
         pass
 
     def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
@@ -127,7 +127,7 @@ class Reveal(PhaseState):
 
 class Clash(PhaseState):
 
-    def do(self, game_state: GameState):
+    def do(self, game_state: GameState, agents: list[Agent]):
         pass
 
     def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
@@ -137,7 +137,7 @@ class Clash(PhaseState):
     
 class StartOfBeat(PhaseState):
 
-    def do(self, game_state: GameState):
+    def do(self, game_state: GameState, agents: list[Agent]):
         pass
 
     def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
@@ -146,7 +146,7 @@ class StartOfBeat(PhaseState):
 
 class ActiveBefore(ActiveAttackState):
 
-    def do(self, game_state: GameState):
+    def do(self, game_state: GameState, agents: list[Agent]):
         pass
 
     def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
@@ -155,11 +155,11 @@ class ActiveBefore(ActiveAttackState):
 
 class ActiveCheckRange(ActiveAttackState, CheckRangeState):
 
-    def do(self, game_state: GameState):
+    def do(self, game_state: GameState, agents: list[Agent]):
         pass
 
     def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
-        if self.opponent_in_range():
+        if self.opponent_in_range(game_state):
             return state_machine.active_hit
         else:
             return state_machine.active_after
@@ -167,7 +167,7 @@ class ActiveCheckRange(ActiveAttackState, CheckRangeState):
     
 class ActiveHit(ActiveAttackState):
 
-    def do(self, game_state: GameState):
+    def do(self, game_state: GameState, agents: list[Agent]):
         pass
 
     def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
@@ -176,7 +176,7 @@ class ActiveHit(ActiveAttackState):
     
 class ActiveDamage(ActiveAttackState):
 
-    def do(self, game_state: GameState):
+    def do(self, game_state: GameState, agents: list[Agent]):
         pass
 
     def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
@@ -185,7 +185,7 @@ class ActiveDamage(ActiveAttackState):
     
 class ActiveAfter(ActiveAttackState):
 
-    def do(self, game_state: GameState):
+    def do(self, game_state: GameState, agents: list[Agent]):
         pass
 
     def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
@@ -197,7 +197,7 @@ class ActiveAfter(ActiveAttackState):
 
 class ReactiveBefore(ActiveAttackState):
 
-    def do(self, game_state: GameState):
+    def do(self, game_state: GameState, agents: list[Agent]):
         pass
 
     def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
@@ -206,11 +206,11 @@ class ReactiveBefore(ActiveAttackState):
 
 class ReactiveCheckRange(ActiveAttackState, CheckRangeState):
 
-    def do(self, game_state: GameState):
+    def do(self, game_state: GameState, agents: list[Agent]):
         pass
 
     def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
-        if self.opponent_in_range():
+        if self.opponent_in_range(game_state):
             return state_machine.reactive_hit
         else:
             return state_machine.reactive_after
@@ -218,7 +218,7 @@ class ReactiveCheckRange(ActiveAttackState, CheckRangeState):
     
 class ReactiveHit(ActiveAttackState):
 
-    def do(self, game_state: GameState):
+    def do(self, game_state: GameState, agents: list[Agent]):
         pass
 
     def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
@@ -227,7 +227,7 @@ class ReactiveHit(ActiveAttackState):
     
 class ReactiveDamage(ActiveAttackState):
 
-    def do(self, game_state: GameState):
+    def do(self, game_state: GameState, agents: list[Agent]):
         pass
 
     def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
@@ -236,7 +236,7 @@ class ReactiveDamage(ActiveAttackState):
     
 class ReactiveAfter(ActiveAttackState):
 
-    def do(self, game_state: GameState):
+    def do(self, game_state: GameState, agents: list[Agent]):
         pass
 
     def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
@@ -245,7 +245,7 @@ class ReactiveAfter(ActiveAttackState):
     
 class EndOfBeat(PhaseState):
 
-    def do(self, game_state: GameState):
+    def do(self, game_state: GameState, agents: list[Agent]):
         pass
 
     def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
@@ -254,8 +254,9 @@ class EndOfBeat(PhaseState):
     
 class Recycle(PhaseState):
 
-    def do(self, game_state: GameState):
-        pass
+    def do(self, game_state: GameState, agents: list[Agent]):
+        # TODO: remove this
+        programPause = raw_input("Beat complete.\nPress the <ENTER> key to continue...")
 
     def next_state(self, state_machine: PhaseStateMachine, game_state: GameState) -> PhaseState:
         return state_machine.set
